@@ -1,8 +1,9 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.dagger.hilt.android")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -43,7 +44,6 @@ android {
 }
 
 dependencies {
-
     implementation("androidx.core:core-ktx:1.16.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
@@ -67,26 +67,13 @@ dependencies {
     // Material Design Components
     implementation("com.google.android.material:material:1.12.0")
 
-    // Glide for Image Loading
-    implementation("com.github.bumptech.glide:glide:4.15.1")
-//    ksp("com.github.bumptech.glide:compiler:4.15.1")
-
     // ExoPlayer for Music Streaming
     implementation("androidx.media3:media3-exoplayer:1.6.1")
     implementation("androidx.media3:media3-ui:1.6.1")
 
-    // Use the Firebase BoM to manage versions
-    implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
-
-    // Add dependencies for the Firebase products you need
-//    implementation("com.google.firebase:firebase-analytics-ktx") // Firebase Analytics
-    implementation("com.google.firebase:firebase-auth-ktx") // Firebase Authentication
-//    implementation("com.google.firebase:firebase-firestore-ktx") // Firestore Database
-//    implementation("com.google.firebase:firebase-storage-ktx") // Cloud Storage
-
     // Compose dependencies
     implementation("androidx.activity:activity-compose:1.10.1")
-    implementation(platform("androidx.compose:compose-bom:2023.10.01"))
+    implementation(platform("androidx.compose:compose-bom:2025.05.00"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -94,4 +81,15 @@ dependencies {
 
     // Splash Screen
     implementation("androidx.core:core-splashscreen:1.0.1")
+
+    // Navigation
+    implementation("androidx.navigation:navigation-compose:2.9.0")
+    implementation("androidx.compose.material3:material3:1.3.2")
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+
+    // JSON
+    implementation("com.github.v-play-games:vjson:2.0.0")
+
+    implementation("com.google.dagger:hilt-android:2.56.2")
+    ksp("com.google.dagger:hilt-android-compiler:2.56.2")
 }
