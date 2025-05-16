@@ -16,9 +16,7 @@
 package net.vpg.apex.player
 
 import androidx.media3.common.MediaItem
-import net.vpg.vjson.value.JSONArray
 import net.vpg.vjson.value.JSONObject
-import javax.inject.Inject
 
 data class ApexTrack(
     val id: String,
