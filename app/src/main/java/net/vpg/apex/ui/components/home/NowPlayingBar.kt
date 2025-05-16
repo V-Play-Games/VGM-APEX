@@ -27,12 +27,12 @@ fun NowPlayingBar() {
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .background(Color.DarkGray, shape = RoundedCornerShape(4.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(4.dp))
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text("From Me to You - Mono", color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 14.sp)
-            Text("The Beatles", color = Color.Gray, fontSize = 12.sp)
+            Text("The Beatles", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
         }
         Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = MaterialTheme.colorScheme.onPrimaryContainer)
     }

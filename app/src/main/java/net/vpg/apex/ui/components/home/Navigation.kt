@@ -1,22 +1,65 @@
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import net.vpg.apex.R
+import net.vpg.apex.ui.components.home.NowPlayingBar
+import net.vpg.apex.ui.screens.HomeScreen
+import net.vpg.apex.ui.screens.LibraryScreen
+import net.vpg.apex.ui.screens.SearchScreen
 
 @Composable
-fun BottomNavigationBar() {
-    var selectedItem by remember { mutableStateOf(0) }
+fun MusicAppNavigation() {
+    val navController = rememberNavController()
+
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding(),
+        topBar = { TopBar() },
+        bottomBar = {
+            Column {
+                NowPlayingBar()
+                BottomNavigationBar(navController)
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) { paddingValues ->
+        NavHost(
+            navController = navController,
+            startDestination = BottomNavItem.Home.route,
+            modifier = Modifier.padding(paddingValues)
+        ) {
+            composable(BottomNavItem.Home.route) { HomeScreen() }
+            composable(BottomNavItem.Search.route) { SearchScreen() }
+            composable(BottomNavItem.Library.route) { LibraryScreen() }
+        }
+    }
+}
+
+sealed class BottomNavItem(val route: String, val icon: ImageVector, val title: String) {
+    object Home : BottomNavItem("home", Icons.Default.Home, "Home")
+    object Search : BottomNavItem("search", Icons.Default.Search, "Search")
+    object Library : BottomNavItem("library", Icons.Default.LibraryMusic, "Library")
+}
+
+@Composable
+fun BottomNavigationBar(navController: NavController) {
     val colors = NavigationBarItemDefaults.colors(
         selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
         selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -24,28 +67,32 @@ fun BottomNavigationBar() {
         unselectedIconColor = Color.Gray,
         unselectedTextColor = Color.Gray
     )
+    val items = listOf(
+        BottomNavItem.Home,
+        BottomNavItem.Search,
+        BottomNavItem.Library
+    )
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     NavigationBar(containerColor = MaterialTheme.colorScheme.background) {
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-            label = { Text("Home") },
-            selected = selectedItem == 0,
-            onClick = { selectedItem = 0 },
-            colors = colors
-        )
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-            label = { Text("Search") },
-            selected = selectedItem == 1,
-            onClick = { selectedItem = 1 },
-            colors = colors
-        )
-        NavigationBarItem(
-            icon = { Icon(Icons.Default.Home, contentDescription = "Library") },
-            label = { Text("Library") },
-            selected = selectedItem == 2,
-            onClick = { selectedItem = 2 },
-            colors = colors
-        )
+        items.forEach { item ->
+            NavigationBarItem(
+                icon = { Icon(item.icon, contentDescription = item.title) },
+                label = { Text(item.title) },
+                selected = currentRoute == item.route,
+                onClick = {
+                    if (currentRoute != item.route) {
+                        // Simplify navigation to reduce potential issues
+                        navController.navigate(item.route) {
+                            popUpTo(navController.graph.startDestinationId)
+                            launchSingleTop = true
+                        }
+                    }
+                },
+                colors = colors
+            )
+        }
     }
 }
 
