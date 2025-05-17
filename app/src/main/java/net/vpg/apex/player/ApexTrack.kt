@@ -15,8 +15,12 @@
  */
 package net.vpg.apex.player
 
+import androidx.compose.runtime.Composable
 import androidx.media3.common.MediaItem
+import net.vpg.apex.di.rememberPlayer
 import net.vpg.vjson.value.JSONObject
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 data class ApexTrack(
     val id: String,
@@ -24,8 +28,7 @@ data class ApexTrack(
     val category: String,
     val frameLength: Int,
     val loopStart: Int,
-    val loopEnd: Int,
-    val url: String
+    val loopEnd: Int
 ) {
     constructor(data: JSONObject) : this(
         data.getString("id"),
@@ -33,13 +36,32 @@ data class ApexTrack(
         data.getString("category"),
         data.getInt("frameLength"),
         data.getInt("loopStart"),
-        data.getInt("loopEnd"),
-        data.getString("url")
+        data.getInt("loopEnd")
     )
+
+    val url = "https://github.com/VGM-Apex/%s/raw/main/%s.%s"
+        .format(
+            category,
+            URLEncoder.encode(id, StandardCharsets.UTF_8.name()).replace("+", "%20"),
+            "ogg"
+        )
+
 
     fun toMediaItem() = MediaItem.fromUri(url)
 
+    @Composable
+    fun play() {
+        val player = rememberPlayer()
+        player.setMediaItem(toMediaItem())
+        player.prepare()
+        player.play()
+    }
+
     init {
         println("Loaded Track Info for ID: $id")
+    }
+
+    companion object {
+        val EMPTY = ApexTrack("", "", "", 0, 0, 0)
     }
 }
