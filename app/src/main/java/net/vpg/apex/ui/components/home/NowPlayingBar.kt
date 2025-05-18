@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.RepeatOne
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.CircularProgressIndicator
@@ -90,6 +92,16 @@ fun NowPlayingBar() {
                 Modifier.clickable { player.nextTrack() }
             else
                 Modifier.alpha(0.5f)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Icon(
+            if (player.isLooping.value) Icons.Default.RepeatOne else Icons.Default.Repeat,
+            contentDescription = "Toggle Loop",
+            tint = if (player.isLooping.value)
+                MaterialTheme.colorScheme.primary
+            else
+                MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = Modifier.clickable { player.isLooping.value = !player.isLooping.value }
         )
     }
 }

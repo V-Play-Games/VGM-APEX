@@ -1,6 +1,8 @@
 package net.vpg.apex.player
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -20,6 +22,10 @@ class ApexPlayer {
     val nowPlaying: ApexTrack
         get() = if (currentIndex.intValue < 0) ApexTrack.EMPTY else queue[currentIndex.intValue]
     private var prepared = false
+    val isLooping = mutableStateOf(true)
+    private var lastPositionMs: Long = 0
+    private val loopStart = mutableIntStateOf(0)
+    private val loopEnd = mutableIntStateOf(0)
 
     @OptIn(UnstableApi::class)
     constructor(context: Context) {
@@ -34,11 +40,18 @@ class ApexPlayer {
 
                     Player.STATE_READY -> {
                         _isBuffering.value = false
+                        loopStart.intValue = (nowPlaying.loopStart * 1000 / player.audioFormat!!.sampleRate).also { println(it) }
+                        loopEnd.intValue = (nowPlaying.loopEnd * 1000 / player.audioFormat!!.sampleRate).also { println(it) }
                     }
 
                     Player.STATE_ENDED -> {
-                        _isPlaying.value = false
-                        prepared = false
+                        if (isLooping.value) {
+                            player.seekTo(loopStart.intValue.toLong())
+                            player.play()
+                        } else {
+                            _isPlaying.value = false
+                            prepared = false
+                        }
                     }
 
                     Player.STATE_IDLE -> {
@@ -46,6 +59,26 @@ class ApexPlayer {
                 }
             }
         })
+        executePeriodically {
+            if (isLooping.value &&
+                player.isPlaying &&
+                player.currentPosition.also { lastPositionMs = it } >= loopEnd.intValue &&
+                lastPositionMs < loopEnd.intValue) {
+                player.seekTo(loopStart.intValue.toLong())
+            }
+        }
+    }
+
+    fun executePeriodically(
+        intervalMs: Long = 100L,
+        action: () -> Unit
+    ) = Handler(Looper.getMainLooper()).let { handler ->
+        handler.postDelayed(object : Runnable {
+            override fun run() {
+                action()
+                handler.postDelayed(this, intervalMs)
+            }
+        }, intervalMs)
     }
 
     fun play(track: ApexTrack) {
@@ -56,6 +89,7 @@ class ApexPlayer {
         playCurrentTrack()
     }
 
+    @OptIn(UnstableApi::class)
     fun playCurrentTrack() {
         player.setMediaItem(nowPlaying.mediaItem)
         player.prepare()
