@@ -15,9 +15,9 @@
  */
 package net.vpg.apex.player
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.media3.common.MediaItem
-import net.vpg.apex.di.rememberPlayer
+import androidx.media3.exoplayer.ExoPlayer
 import net.vpg.vjson.value.JSONObject
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -48,14 +48,6 @@ data class ApexTrack(
 
 
     fun toMediaItem() = MediaItem.fromUri(url)
-
-    @Composable
-    fun play() {
-        val player = rememberPlayer()
-        player.setMediaItem(toMediaItem())
-        player.prepare()
-        player.play()
-    }
 
     init {
         println("Loaded Track Info for ID: $id")

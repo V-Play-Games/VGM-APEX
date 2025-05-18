@@ -1,10 +1,13 @@
 package net.vpg.apex.ui.components.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -13,11 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.vpg.apex.di.rememberNowPlaying
+import net.vpg.apex.di.rememberPlayer
 
 @Composable
 fun NowPlayingBar() {
-    val nowPlaying = rememberNowPlaying().value
+    val player = rememberPlayer()
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -32,9 +36,19 @@ fun NowPlayingBar() {
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(nowPlaying.name, color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 14.sp)
-            Text(nowPlaying.category, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+            Text(player.nowPlaying.value.name, color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 14.sp)
+            Text(player.nowPlaying.value.category, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
         }
-        Icon(Icons.Default.PlayArrow, contentDescription = "Play", tint = MaterialTheme.colorScheme.onPrimaryContainer)
+        if (player.isBuffering.value)
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+                color = MaterialTheme.colorScheme.primary
+            )
+        else
+            Icon(
+                if (player.isPlaying.value) Icons.Default.Pause else Icons.Default.PlayArrow,
+                contentDescription = "PlayPause",
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.clickable { player.togglePlayPause() })
     }
 }

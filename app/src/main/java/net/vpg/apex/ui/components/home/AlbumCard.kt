@@ -21,11 +21,7 @@ fun AlbumCard(apexTrack: ApexTrack) {
         modifier = Modifier
             .padding(end = 12.dp)
             .width(150.dp)
-            .clickable {
-                player.setMediaItem(apexTrack.toMediaItem())
-                player.prepare()
-                player.play()
-            }
+            .clickable { player.play(apexTrack) }
     ) {
         Box(
             modifier = Modifier

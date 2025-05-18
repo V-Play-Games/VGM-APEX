@@ -11,6 +11,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import net.vpg.apex.player.ApexPlayer
 import net.vpg.apex.unwrapActivity
 import javax.inject.Singleton
 
@@ -19,13 +20,13 @@ import javax.inject.Singleton
 object PlayerInjector {
     @Provides
     @Singleton
-    fun player(@ApplicationContext context: Context) = ExoPlayer.Builder(context).build()
+    fun player(@ApplicationContext context: Context) = ApexPlayer(context)
 }
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface PlayerProvider {
-    fun player(): ExoPlayer
+    fun player(): ApexPlayer
 }
 
 @Composable
