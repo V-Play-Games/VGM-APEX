@@ -17,9 +17,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.di.rememberPlayer
+import net.vpg.apex.player.ApexTrack
 
 @Composable
 fun NowPlayingBar() {
@@ -39,9 +41,22 @@ fun NowPlayingBar() {
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(player.nowPlaying.name, color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 14.sp)
-            Text(player.nowPlaying.category, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+            Text(
+                text = player.nowPlaying.name,
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                fontSize = 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = player.nowPlaying.category,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
+        Spacer(modifier = Modifier.width(8.dp))
         Icon(
             Icons.Default.SkipPrevious,
             contentDescription = "Previous",
@@ -62,7 +77,10 @@ fun NowPlayingBar() {
                 if (player.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                 contentDescription = "PlayPause",
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.clickable { player.togglePlayPause() })
+                modifier = if (player.nowPlaying != ApexTrack.EMPTY)
+                    Modifier.clickable { player.nextTrack() }
+                else
+                    Modifier.alpha(0.5f))
         Spacer(modifier = Modifier.width(8.dp))
         Icon(
             Icons.Default.SkipNext,
