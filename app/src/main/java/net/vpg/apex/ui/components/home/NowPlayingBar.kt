@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -14,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.di.rememberPlayer
@@ -36,19 +39,39 @@ fun NowPlayingBar() {
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(player.nowPlaying.value.name, color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 14.sp)
-            Text(player.nowPlaying.value.category, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+            Text(player.nowPlaying.name, color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 14.sp)
+            Text(player.nowPlaying.category, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
         }
-        if (player.isBuffering.value)
+        Icon(
+            Icons.Default.SkipPrevious,
+            contentDescription = "Previous",
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = if (player.canGoPrevious())
+                Modifier.clickable { player.previousTrack() }
+            else
+                Modifier.alpha(0.5f)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        if (player.isBuffering)
             CircularProgressIndicator(
                 modifier = Modifier.size(24.dp),
                 color = MaterialTheme.colorScheme.primary
             )
         else
             Icon(
-                if (player.isPlaying.value) Icons.Default.Pause else Icons.Default.PlayArrow,
+                if (player.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                 contentDescription = "PlayPause",
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.clickable { player.togglePlayPause() })
+        Spacer(modifier = Modifier.width(8.dp))
+        Icon(
+            Icons.Default.SkipNext,
+            contentDescription = "Next",
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = if (player.canGoNext())
+                Modifier.clickable { player.nextTrack() }
+            else
+                Modifier.alpha(0.5f)
+        )
     }
 }

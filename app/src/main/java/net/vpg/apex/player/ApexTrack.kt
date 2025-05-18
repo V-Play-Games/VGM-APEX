@@ -15,9 +15,7 @@
  */
 package net.vpg.apex.player
 
-import androidx.compose.runtime.MutableState
 import androidx.media3.common.MediaItem
-import androidx.media3.exoplayer.ExoPlayer
 import net.vpg.vjson.value.JSONObject
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -46,8 +44,7 @@ data class ApexTrack(
             "ogg"
         )
 
-
-    fun toMediaItem() = MediaItem.fromUri(url)
+    val mediaItem by lazy { MediaItem.fromUri(url) }
 
     init {
         println("Loaded Track Info for ID: $id")
