@@ -1,15 +1,23 @@
 package net.vpg.apex.player
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.audio.AudioSink
+import androidx.media3.exoplayer.audio.DefaultAudioSink
+import androidx.media3.exoplayer.source.ClippingMediaSource
+import androidx.media3.exoplayer.source.LoopingMediaSource
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
 
 class ApexPlayer {
     private val player: ExoPlayer
@@ -29,7 +37,29 @@ class ApexPlayer {
 
     @OptIn(UnstableApi::class)
     constructor(context: Context) {
-        player = ExoPlayer.Builder(context).build()
+        val loopingAudioProcessor = LoopingAudioProcessor(isLooping, loopStart, loopEnd)
+        // Create audio processor array with our custom processor
+        val audioProcessors = arrayOf<AudioProcessor>(loopingAudioProcessor)
+
+        // Create a custom RenderersFactory that uses our audio processors
+        val renderersFactory = object : DefaultRenderersFactory(context) {
+            @OptIn(UnstableApi::class)
+            override fun buildAudioSink(
+                context: Context,
+                enableFloatOutput: Boolean,
+                enableAudioTrackPlaybackParams: Boolean
+            ): AudioSink? {
+                return DefaultAudioSink.Builder(context)
+                    .setAudioProcessors(audioProcessors)
+                    .setEnableFloatOutput(enableFloatOutput)
+                    .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
+                    .build()
+            }
+        }
+
+        player = ExoPlayer.Builder(context)
+            .setRenderersFactory(renderersFactory)
+            .build()
         player.addListener(object : Player.Listener {
             override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                 _isPlaying.value = playWhenReady
@@ -40,18 +70,11 @@ class ApexPlayer {
 
                     Player.STATE_READY -> {
                         _isBuffering.value = false
-                        loopStart.intValue = (nowPlaying.loopStart * 1000 / player.audioFormat!!.sampleRate).also { println(it) }
-                        loopEnd.intValue = (nowPlaying.loopEnd * 1000 / player.audioFormat!!.sampleRate).also { println(it) }
                     }
 
                     Player.STATE_ENDED -> {
-                        if (isLooping.value) {
-                            player.seekTo(loopStart.intValue.toLong())
-                            player.play()
-                        } else {
-                            _isPlaying.value = false
-                            prepared = false
-                        }
+                        _isPlaying.value = false
+                        prepared = false
                     }
 
                     Player.STATE_IDLE -> {
@@ -59,26 +82,6 @@ class ApexPlayer {
                 }
             }
         })
-        executePeriodically {
-            if (isLooping.value &&
-                player.isPlaying &&
-                player.currentPosition.also { lastPositionMs = it } >= loopEnd.intValue &&
-                lastPositionMs < loopEnd.intValue) {
-                player.seekTo(loopStart.intValue.toLong())
-            }
-        }
-    }
-
-    fun executePeriodically(
-        intervalMs: Long = 100L,
-        action: () -> Unit
-    ) = Handler(Looper.getMainLooper()).let { handler ->
-        handler.postDelayed(object : Runnable {
-            override fun run() {
-                action()
-                handler.postDelayed(this, intervalMs)
-            }
-        }, intervalMs)
     }
 
     fun play(track: ApexTrack) {
@@ -94,6 +97,8 @@ class ApexPlayer {
         player.setMediaItem(nowPlaying.mediaItem)
         player.prepare()
         player.play()
+        loopStart.intValue = nowPlaying.loopStart
+        loopEnd.intValue = nowPlaying.loopEnd
         prepared = true
     }
 
