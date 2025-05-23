@@ -80,7 +80,7 @@ fun NowPlayingBar() {
                 contentDescription = "PlayPause",
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = if (player.nowPlaying != ApexTrack.EMPTY)
-                    Modifier.clickable { player.nextTrack() }
+                    Modifier.clickable { player.togglePlayPause() }
                 else
                     Modifier.alpha(0.5f))
         Spacer(modifier = Modifier.width(8.dp))

@@ -2,16 +2,13 @@ package net.vpg.apex.di
 
 import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
-import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import net.vpg.apex.player.ApexTrack
-import net.vpg.apex.unwrapActivity
 import net.vpg.vjson.parser.JSONParser.toJSON
 import javax.inject.Singleton
 
@@ -25,9 +22,7 @@ object TracksListProvider {
             .open("tracks.json")
             .toJSON()
             .toArray()
-            .map { it.toObject() }
-            .map { ApexTrack(it) }
-            .onEach { println(it) }
+            .map { ApexTrack(it.toObject()) }
             .associateBy { it.id }
 }
 
@@ -38,8 +33,4 @@ interface TracksListInjector {
 }
 
 @Composable
-fun rememberTracksList() = EntryPointAccessors.fromApplication(
-    LocalContext.current.unwrapActivity(),
-    TracksListInjector::class.java
-).tracksList()
-
+fun rememberTracksList() = rememberInjector<TracksListInjector>().tracksList()

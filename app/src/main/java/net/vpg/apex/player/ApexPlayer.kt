@@ -5,19 +5,13 @@ import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DataSource
-import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.audio.DefaultAudioSink
-import androidx.media3.exoplayer.source.ClippingMediaSource
-import androidx.media3.exoplayer.source.LoopingMediaSource
-import androidx.media3.exoplayer.source.ProgressiveMediaSource
 
 class ApexPlayer {
     private val player: ExoPlayer
@@ -37,7 +31,12 @@ class ApexPlayer {
 
     @OptIn(UnstableApi::class)
     constructor(context: Context) {
-        val loopingAudioProcessor = LoopingAudioProcessor(isLooping, loopStart, loopEnd)
+        val loopingAudioProcessor = LoopingAudioProcessor(
+            isLooping,
+            loopStart,
+            loopEnd,
+            { nowPlaying.frameLength }
+        )
         // Create audio processor array with our custom processor
         val audioProcessors = arrayOf<AudioProcessor>(loopingAudioProcessor)
 

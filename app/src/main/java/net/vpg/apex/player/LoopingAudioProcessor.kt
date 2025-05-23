@@ -3,7 +3,6 @@ package net.vpg.apex.player
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.media3.common.C
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.util.UnstableApi
@@ -14,10 +13,9 @@ import java.nio.ByteOrder
 class LoopingAudioProcessor(
     _isLoopingEnabled: MutableState<Boolean>,
     _loopStartFrame: MutableIntState,
-    _loopEndFrame: MutableIntState
+    _loopEndFrame: MutableIntState,
+    val getMaxFrameLength: () -> Int
 ) : AudioProcessor {
-    private var buffer = EMPTY_BUFFER
-    private var outputBuffer = EMPTY_BUFFER
     private var active = false
     private var ended = false
 
@@ -25,31 +23,27 @@ class LoopingAudioProcessor(
     private var sampleRateHz = 0
     private var channelCount = 0
     private var encoding = C.ENCODING_INVALID
-    private var bytesPerFrame = 0
 
-    private var loopStartFrame by _loopStartFrame
-    private var loopEndFrame by _loopEndFrame
-    private var isLoopingEnabled by _isLoopingEnabled
+    private val loopStartFrame by _loopStartFrame
+    private val loopEndFrame by _loopEndFrame
+    private val isLoopingEnabled by _isLoopingEnabled
     private var currentFramePosition = 0
+    private var accumulator: ByteBuffer = EMPTY_BUFFER
 
     companion object {
         private val EMPTY_BUFFER = ByteBuffer.allocateDirect(0).order(ByteOrder.nativeOrder())
     }
 
-    override fun configure(inputAudioFormat: AudioProcessor.AudioFormat): AudioProcessor.AudioFormat {
-        sampleRateHz = inputAudioFormat.sampleRate
-        channelCount = inputAudioFormat.channelCount
-        encoding = inputAudioFormat.encoding
-
-        bytesPerFrame = channelCount * (if (encoding == C.ENCODING_PCM_16BIT) 2 else 4)
-
-        active = bytesPerFrame > 0
-        return inputAudioFormat
+    override fun configure(format: AudioProcessor.AudioFormat) = format.also {
+        sampleRateHz = format.sampleRate
+        channelCount = format.channelCount
+        encoding = format.encoding
+        active = true
     }
 
-    override fun isActive(): Boolean = active
+    override fun isActive() = active
 
-    override fun isEnded(): Boolean = ended
+    override fun isEnded() = ended
 
     override fun queueEndOfStream() {
         println("LoopingAudioProcessor: queueEndOfStream() called")
@@ -63,74 +57,57 @@ class LoopingAudioProcessor(
     }
 
     override fun queueInput(inputBuffer: ByteBuffer) {
-//        println("LoopingAudioProcessor: queueInput() called with ${inputBuffer.remaining()} bytes")
-        if (!inputBuffer.hasRemaining()) {
-            return
-        }
-        if (!active) {
-            // Pass through if not active
-            buffer = inputBuffer
-            return
-        }
-
-        // How many frames are in this buffer
-        val inputFrames = inputBuffer.remaining() / bytesPerFrame
-        
-        // Create a new buffer to hold our output data
-        outputBuffer = ByteBuffer.allocateDirect(inputBuffer.remaining()).order(ByteOrder.nativeOrder())
-
-        if (!isLoopingEnabled) {
-            // If looping is disabled, just copy the input
-            outputBuffer.put(inputBuffer)
-            outputBuffer.flip()
-            buffer = outputBuffer
-            currentFramePosition += inputFrames
-            return
-        }
-
-        // Process frame by frame
-        val startPosition = inputBuffer.position()
-        for (frameIndex in 0 until inputFrames) {
-            // Check if we need to loop
-            if (currentFramePosition >= loopEndFrame) {
-                // We've reached the loop end, jump back to loop start
-                currentFramePosition = loopStartFrame
-
-                // Clear remaining input - we're jumping to a different point
-                inputBuffer.position(inputBuffer.limit())
-                break
-            }
-
-            // Copy this frame to output
-            val frameStartPos = startPosition + (frameIndex * bytesPerFrame)
-            for (b in 0 until bytesPerFrame) {
-                outputBuffer.put(inputBuffer.get(frameStartPos + b))
-            }
-
-            // Advance the frame counter
-            currentFramePosition++
-        }
-
-        // Update input buffer position
-        inputBuffer.position(inputBuffer.limit())
-
-        // Prepare the output buffer
-        outputBuffer.flip()
-        buffer = outputBuffer
+        if (!inputBuffer.hasRemaining()) return
+        ensureCapacity(inputBuffer.remaining())
+        accumulator.put(inputBuffer)
     }
 
     override fun getOutput(): ByteBuffer {
-//        println("LoopingAudioProcessor: getOutput() returned ${buffer.remaining()} bytes")
-        val output = buffer
-        buffer = EMPTY_BUFFER
-        return output.slice()
+        val limit = if (isLoopingEnabled) loopEndFrame else accumulator.position()
+        val len = minOf(limit - currentFramePosition, sampleRateHz / 20)
+        return accumulator.subBuffer(currentFramePosition, currentFramePosition + len).also {
+            currentFramePosition += len
+            if (currentFramePosition == loopEndFrame && isLoopingEnabled) {
+                currentFramePosition = loopStartFrame
+            }
+        }
+        //    private fun playAudio() {
+        //        while (isPlaying) {
+        //            val limit = if (loopCount == 0) data.frameLength else loopEnd
+        //            val len = min(limit - data.readPos, frameRate / 20)
+        //            data.readData(len).also { sourceDataLine.write(it, 0, it.size) }
+        //            if (data.readPos == loopEnd && loopCount != 0) {
+        //                data.readPos = loopStart
+        //                if (loopCount != Clip.LOOP_CONTINUOUSLY) loopCount--
+        //            }
+        //        }
+        //    }
+    }
+
+    fun ByteBuffer.subBuffer(start: Int, end: Int): ByteBuffer {
+        require(start in 0..capacity()) { "start($start) must be within [0, capacity=${capacity()}]" }
+        require(end in start..capacity()) { "end($end) must be within [start=$start, capacity=${capacity()}]" }
+        // Duplicate so we don’t disturb the original buffer’s position/limit.
+        val dup = this.duplicate()
+        // Set up the window:
+        dup.position(start)
+        dup.limit(end)
+        // slice() creates a new buffer from position..limit
+        return dup.slice()
+    }
+
+
+    /** Returns a read‐only slice of all raw data ever queued. */
+    fun getAllBufferedData(): ByteBuffer {
+        val slice = accumulator.duplicate()
+        slice.flip()
+        return slice.asReadOnlyBuffer()
     }
 
     override fun flush() {
         println("LoopingAudioProcessor: flush() called")
-        buffer = EMPTY_BUFFER
-        outputBuffer = EMPTY_BUFFER
         ended = false
+        accumulator.clear()    // drop all accumulated data
     }
 
     override fun reset() {
@@ -139,9 +116,26 @@ class LoopingAudioProcessor(
         sampleRateHz = 0
         channelCount = 0
         encoding = C.ENCODING_INVALID
-        bytesPerFrame = 0
         active = false
         currentFramePosition = 0
         ended = false
+    }
+
+    /** Grow `accumulator` if needed to fit `additional` more bytes. */
+    private fun ensureCapacity(additional: Int) {
+        val required = accumulator.position() + additional
+        if (accumulator.capacity() >= required) return
+
+        // new capacity: double or just enough to cover required
+        val newCap = maxOf(getMaxFrameLength(), required)
+        val bigger = ByteBuffer
+            .allocateDirect(newCap)
+            .order(ByteOrder.nativeOrder())
+
+        // copy old data
+        accumulator.flip()
+        bigger.put(accumulator)
+
+        accumulator = bigger
     }
 }
