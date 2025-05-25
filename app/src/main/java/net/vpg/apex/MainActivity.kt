@@ -51,7 +51,7 @@ class MainActivity : ComponentActivity() {
         }
 
         // Trigger the transition after a delay
-        LaunchedEffect(true) {
+        LaunchedEffect(Unit) {
             delay(500)
             showSplash = false
         }

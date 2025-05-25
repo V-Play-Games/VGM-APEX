@@ -39,7 +39,6 @@ android {
 
 dependencies {
     implementation(libs.core.ktx)
-    implementation(libs.appcompat)
 
     // Jetpack Compose
     implementation(libs.activity.compose)
@@ -47,9 +46,6 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.graphics)
     implementation(libs.compose.ui.tooling.preview)
-
-    // Splash Screen
-    implementation(libs.core.splashscreen)
 
     // Navigation
     implementation(libs.navigation.compose)

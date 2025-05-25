@@ -175,17 +175,9 @@ private val ApexShapes = Shapes(
 )
 
 @Composable
-fun ApexTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
-) {
-    // Use dark theme by default, or respect system setting if specified
-    val colorScheme = if (darkTheme) DarkColors else LightColors
-
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = ApexTypography,
-        shapes = ApexShapes,
-        content = content
-    )
-}
+fun ApexTheme(content: @Composable () -> Unit) = MaterialTheme(
+    colorScheme = if (isSystemInDarkTheme()) DarkColors else LightColors,
+    typography = ApexTypography,
+    shapes = ApexShapes,
+    content = content
+)

@@ -85,7 +85,6 @@ fun BottomNavigationBar(navController: NavController) {
                     if (currentRoute != item.route) {
                         // Simplify navigation to reduce potential issues
                         navController.navigate(item.route) {
-                            popUpTo(navController.graph.startDestinationId)
                             launchSingleTop = true
                         }
                     }
@@ -105,9 +104,7 @@ fun TopBar() {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Image(
                 painter = painterResource(id = R.drawable.ic_pika_chill),
                 contentDescription = "App Logo",
