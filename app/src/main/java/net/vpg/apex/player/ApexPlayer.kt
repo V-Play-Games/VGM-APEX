@@ -5,11 +5,14 @@ import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.audio.DefaultAudioSink
+import java.io.File
+
 
 class ApexPlayer {
     private val player: ExoPlayer
@@ -18,23 +21,17 @@ class ApexPlayer {
     val isPlaying by _isPlaying
     private val _isBuffering = mutableStateOf(false)
     val isBuffering by _isBuffering
-    private val currentIndex = mutableIntStateOf(-1)
-    val nowPlaying: ApexTrack
-        get() = if (currentIndex.intValue < 0) ApexTrack.EMPTY else queue[currentIndex.intValue]
+    private var currentIndex by mutableIntStateOf(-1)
+    val nowPlaying get() = if (currentIndex < 0) ApexTrack.EMPTY else queue[currentIndex]
     private var prepared = false
-    val isLooping = mutableStateOf(true)
-    private val loopStart = mutableIntStateOf(0)
-    private val loopEnd = mutableIntStateOf(0)
+    private val _isLooping = mutableStateOf(true)
+    var isLooping by _isLooping
+    val loopStart get() = if (nowPlaying.loopStart == -1) 0 else nowPlaying.loopStart
+    val loopEnd get() = if (nowPlaying.loopEnd == -1) nowPlaying.frameLength else nowPlaying.loopEnd
+    val cacheDir: File
 
     @OptIn(UnstableApi::class)
     constructor(context: Context) {
-        val loopingAudioProcessor = LoopingAudioProcessor(
-            isLooping,
-            loopStart,
-            loopEnd,
-            { nowPlaying.frameLength }
-        )
-
         // Create a custom RenderersFactory that uses our audio processors
         val renderersFactory = object : DefaultRenderersFactory(context) {
             override fun buildAudioSink(
@@ -42,12 +39,13 @@ class ApexPlayer {
                 enableFloatOutput: Boolean,
                 enableAudioTrackPlaybackParams: Boolean
             ) = DefaultAudioSink.Builder(context)
-                .setAudioProcessors(arrayOf(loopingAudioProcessor))
+                .setAudioProcessors(arrayOf(LoopingAudioProcessor(this@ApexPlayer)))
                 .setEnableFloatOutput(enableFloatOutput)
                 .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
                 .build()
         }
 
+        cacheDir = context.cacheDir
         player = ExoPlayer.Builder(context)
             .setRenderersFactory(renderersFactory)
             .build()
@@ -76,20 +74,23 @@ class ApexPlayer {
     }
 
     fun play(track: ApexTrack) {
-        for (i in queue.size - 1 downTo currentIndex.intValue + 1)
-            queue.removeAt(currentIndex.intValue + 1)
+        for (i in queue.size - 1 downTo currentIndex + 1)
+            queue.removeAt(currentIndex + 1)
         queue(track)
-        currentIndex.intValue++
+        currentIndex++
         playCurrentTrack()
     }
 
     @OptIn(UnstableApi::class)
     fun playCurrentTrack() {
+//        nowPlaying.cacheFile(cacheDir)
+//            ?.readBytes()
+//            ?.let { ByteArrayDataSource(it) }
+//            ?.also { player.setMediaSource(it) }
+//            ?: nowPlaying.downloadedFile(cacheDir)?.let { FileDataSource(it) }
         player.setMediaItem(nowPlaying.mediaItem)
         player.prepare()
         player.play()
-        loopStart.intValue = nowPlaying.loopStart
-        loopEnd.intValue = nowPlaying.loopEnd
         prepared = true
     }
 
@@ -111,20 +112,19 @@ class ApexPlayer {
         queue.removeAt(index)
     }
 
-    fun canGoPrevious() = currentIndex.intValue > 0
+    fun canGoPrevious() = currentIndex > 0
 
     fun previousTrack() {
         if (!canGoPrevious()) return
-        currentIndex.intValue--
+        currentIndex--
         playCurrentTrack()
     }
 
-    fun canGoNext() = currentIndex.intValue < queue.size - 1
+    fun canGoNext() = currentIndex < queue.size - 1
 
     fun nextTrack() {
         if (!canGoNext()) return
-        currentIndex.intValue++
+        currentIndex++
         playCurrentTrack()
     }
-
 }

@@ -17,6 +17,7 @@ package net.vpg.apex.player
 
 import androidx.media3.common.MediaItem
 import net.vpg.vjson.value.JSONObject
+import java.io.File
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -46,9 +47,9 @@ data class ApexTrack(
 
     val mediaItem by lazy { MediaItem.fromUri(url) }
 
-    init {
-//        println("Loaded Track Info for ID: $id")
-    }
+    fun cacheFile(cacheDir: File) = File(cacheDir, "$id.cache").takeIf { it.exists() }
+
+    fun downloadedFile(cacheDir: File) = File(cacheDir, "$id.ogg").takeIf { it.exists() }
 
     companion object {
         val EMPTY = ApexTrack("", "", "", 0, 0, 0)

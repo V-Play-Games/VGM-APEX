@@ -95,13 +95,13 @@ fun NowPlayingBar() {
         )
         Spacer(modifier = Modifier.width(8.dp))
         Icon(
-            if (player.isLooping.value) Icons.Default.RepeatOne else Icons.Default.Repeat,
+            if (player.isLooping) Icons.Default.RepeatOne else Icons.Default.Repeat,
             contentDescription = "Toggle Loop",
-            tint = if (player.isLooping.value)
+            tint = if (player.isLooping)
                 MaterialTheme.colorScheme.primary
             else
                 MaterialTheme.colorScheme.onPrimaryContainer,
-            modifier = Modifier.clickable { player.isLooping.value = !player.isLooping.value }
+            modifier = Modifier.clickable { player.isLooping = !player.isLooping }
         )
     }
 }

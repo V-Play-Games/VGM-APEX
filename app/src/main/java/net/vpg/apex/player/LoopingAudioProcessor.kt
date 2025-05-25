@@ -1,33 +1,23 @@
 package net.vpg.apex.player
 
-import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.audio.AudioProcessor.AudioFormat
 import androidx.media3.common.util.UnstableApi
 import net.vpg.apex.subBuffer
+import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.max
 import kotlin.math.min
 
 @UnstableApi
-class LoopingAudioProcessor(
-    _isLoopingEnabled: MutableState<Boolean>,
-    _loopStartFrame: MutableIntState,
-    _loopEndFrame: MutableIntState,
-    val getMaxFrameLength: () -> Int
-) : AudioProcessor {
+class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
     private var active = false
     private var ended = false
 
-    private val loopStartFrame by _loopStartFrame
-    private val loopEndFrame by _loopEndFrame
-    private val isLoopingEnabled by _isLoopingEnabled
-
     private var bytesPerFrame = 0
     private var accumulator = EMPTY_BUFFER
-    private var currentByteOffset = 0
+    private var currentFrame = 0
 
     companion object {
         private val EMPTY_BUFFER = ByteBuffer.allocateDirect(0).order(ByteOrder.nativeOrder())
@@ -44,6 +34,7 @@ class LoopingAudioProcessor(
 
     override fun queueEndOfStream() {
         println("LoopingAudioProcessor: queueEndOfStream() called")
+        File(player.cacheDir, player.nowPlaying.id + ".cache").writeBytes(accumulator.array())
     }
 
     override fun queueInput(inputBuffer: ByteBuffer) {
@@ -53,32 +44,28 @@ class LoopingAudioProcessor(
     }
 
     override fun getOutput(): ByteBuffer {
+        val startPos = currentFrame * bytesPerFrame
         val limit = accumulator.position().let { availableBytes ->
-            if (isLoopingEnabled) {
-                min(loopEndFrame * bytesPerFrame, availableBytes)
+            if (player.isLooping) {
+                min(player.loopEnd * bytesPerFrame, availableBytes)
             } else {
                 availableBytes
             }
         }
-
-        // pull out [currentByteOffset..limit)
-        return accumulator.subBuffer(currentByteOffset * bytesPerFrame, limit).also {
-            currentByteOffset = limit / bytesPerFrame
-            if (currentByteOffset >= loopEndFrame) {
-                if (isLoopingEnabled) {
-                    currentByteOffset = loopStartFrame
-                } else {
-                    ended = true
-                }
-            }
+        currentFrame = limit / bytesPerFrame
+        ended = currentFrame == player.loopEnd && !player.isLooping
+        if (player.isLooping && currentFrame == player.loopEnd) {
+            currentFrame = max(0, player.loopStart)
         }
+
+        return accumulator.subBuffer(startPos, limit)
     }
 
     override fun flush() {
         println("LoopingAudioProcessor: flush() called")
         ended = false
         accumulator = EMPTY_BUFFER
-        currentByteOffset = 0
+        currentFrame = 0
     }
 
     override fun reset() {
@@ -92,11 +79,10 @@ class LoopingAudioProcessor(
         val required = accumulator.position() + additional
         if (accumulator.capacity() >= required) return
 
-        val newCap = maxOf(getMaxFrameLength() * bytesPerFrame, required)
+        val newCap = maxOf(player.nowPlaying.frameLength * bytesPerFrame, required)
         println("Resized accumulator from ${accumulator.capacity()} to $newCap bytes")
 
-        accumulator = ByteBuffer
-            .allocateDirect(newCap)
+        accumulator = ByteBuffer.allocateDirect(newCap)
             .order(ByteOrder.nativeOrder())
             .put(accumulator.flip() as ByteBuffer)
     }
