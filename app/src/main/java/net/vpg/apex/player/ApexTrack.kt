@@ -47,7 +47,7 @@ data class ApexTrack(
     val mediaItem by lazy { MediaItem.fromUri(url) }
 
     init {
-        println("Loaded Track Info for ID: $id")
+//        println("Loaded Track Info for ID: $id")
     }
 
     companion object {
