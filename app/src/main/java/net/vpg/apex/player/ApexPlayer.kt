@@ -6,11 +6,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.media3.common.Player
-import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.audio.DefaultAudioSink
 
 class ApexPlayer {
@@ -25,7 +23,6 @@ class ApexPlayer {
         get() = if (currentIndex.intValue < 0) ApexTrack.EMPTY else queue[currentIndex.intValue]
     private var prepared = false
     val isLooping = mutableStateOf(true)
-    private var lastPositionMs: Long = 0
     private val loopStart = mutableIntStateOf(0)
     private val loopEnd = mutableIntStateOf(0)
 
@@ -37,23 +34,18 @@ class ApexPlayer {
             loopEnd,
             { nowPlaying.frameLength }
         )
-        // Create audio processor array with our custom processor
-        val audioProcessors = arrayOf<AudioProcessor>(loopingAudioProcessor)
 
         // Create a custom RenderersFactory that uses our audio processors
         val renderersFactory = object : DefaultRenderersFactory(context) {
-            @OptIn(UnstableApi::class)
             override fun buildAudioSink(
                 context: Context,
                 enableFloatOutput: Boolean,
                 enableAudioTrackPlaybackParams: Boolean
-            ): AudioSink? {
-                return DefaultAudioSink.Builder(context)
-                    .setAudioProcessors(audioProcessors)
-                    .setEnableFloatOutput(enableFloatOutput)
-                    .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
-                    .build()
-            }
+            ) = DefaultAudioSink.Builder(context)
+                .setAudioProcessors(arrayOf(loopingAudioProcessor))
+                .setEnableFloatOutput(enableFloatOutput)
+                .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
+                .build()
         }
 
         player = ExoPlayer.Builder(context)
