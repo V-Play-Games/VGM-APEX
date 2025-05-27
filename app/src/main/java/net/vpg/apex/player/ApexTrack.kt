@@ -45,11 +45,15 @@ data class ApexTrack(
             "ogg"
         )
 
-    val mediaItem by lazy { MediaItem.fromUri(url) }
+    fun toMediaItem(cacheDir: File) = MediaItem.fromUri(
+        downloadedFile(cacheDir).takeIf { it.exists() }?.toURI()?.toString()
+            ?: cacheFile(cacheDir).takeIf { it.exists() }?.toURI()?.toString()
+            ?: url
+    )
 
-    fun cacheFile(cacheDir: File) = File(cacheDir, "$id.cache").takeIf { it.exists() }
+    fun cacheFile(cacheDir: File) = File(cacheDir, "$id.wav")
 
-    fun downloadedFile(cacheDir: File) = File(cacheDir, "$id.ogg").takeIf { it.exists() }
+    fun downloadedFile(cacheDir: File) = File(cacheDir, "$id.ogg")
 
     companion object {
         val EMPTY = ApexTrack("", "", "", 0, 0, 0)

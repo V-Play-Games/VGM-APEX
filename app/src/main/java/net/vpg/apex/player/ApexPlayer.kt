@@ -83,12 +83,7 @@ class ApexPlayer {
 
     @OptIn(UnstableApi::class)
     fun playCurrentTrack() {
-//        nowPlaying.cacheFile(cacheDir)
-//            ?.readBytes()
-//            ?.let { ByteArrayDataSource(it) }
-//            ?.also { player.setMediaSource(it) }
-//            ?: nowPlaying.downloadedFile(cacheDir)?.let { FileDataSource(it) }
-        player.setMediaItem(nowPlaying.mediaItem)
+        player.setMediaItem(nowPlaying.toMediaItem(cacheDir))
         player.prepare()
         player.play()
         prepared = true

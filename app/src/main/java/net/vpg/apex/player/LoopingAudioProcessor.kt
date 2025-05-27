@@ -3,11 +3,10 @@ package net.vpg.apex.player
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.audio.AudioProcessor.AudioFormat
 import androidx.media3.common.util.UnstableApi
+import net.vpg.apex.savePcmAsWav
 import net.vpg.apex.subBuffer
-import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import kotlin.math.max
 import kotlin.math.min
 
 @UnstableApi
@@ -15,8 +14,8 @@ class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
     private var active = false
     private var ended = false
 
-    private var bytesPerFrame = 0
-    private var accumulator = EMPTY_BUFFER
+    private var format = AudioFormat.NOT_SET
+    private var audioData = EMPTY_BUFFER
     private var currentFrame = 0
 
     companion object {
@@ -24,7 +23,7 @@ class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
     }
 
     override fun configure(format: AudioFormat) = format.also {
-        bytesPerFrame = format.bytesPerFrame
+        this.format = format
         active = true
     }
 
@@ -32,58 +31,64 @@ class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
 
     override fun isEnded() = ended
 
-    override fun queueEndOfStream() {
-        println("LoopingAudioProcessor: queueEndOfStream() called")
-        File(player.cacheDir, player.nowPlaying.id + ".cache").writeBytes(accumulator.array())
-    }
+    override fun queueEndOfStream() {}
 
     override fun queueInput(inputBuffer: ByteBuffer) {
         if (!inputBuffer.hasRemaining()) return
         ensureCapacity(inputBuffer.remaining())
-        accumulator.put(inputBuffer)
+        audioData.put(inputBuffer)
+        if (audioData.position() >= player.nowPlaying.frameLength * format.bytesPerFrame) {
+            player.nowPlaying.downloadedFile(player.cacheDir)
+                .takeIf { !it.exists() }
+                ?.let { player.nowPlaying.cacheFile(player.cacheDir) }
+                ?.takeIf { !it.exists() }
+                ?.also { it.createNewFile() }
+                ?.let { cacheFile -> audioData.array().savePcmAsWav(cacheFile, format) }
+                ?.also { println("LoopingAudioProcessor: Cache audio data for ${player.nowPlaying.id}") }
+        }
     }
 
     override fun getOutput(): ByteBuffer {
-        val startPos = currentFrame * bytesPerFrame
-        val limit = accumulator.position().let { availableBytes ->
+        val startPos = currentFrame * format.bytesPerFrame
+        val limit = audioData.position().let { availableBytes ->
             if (player.isLooping) {
-                min(player.loopEnd * bytesPerFrame, availableBytes)
+                min(player.loopEnd * format.bytesPerFrame, availableBytes)
             } else {
                 availableBytes
             }
         }
-        currentFrame = limit / bytesPerFrame
+        currentFrame = limit / format.bytesPerFrame
         ended = currentFrame == player.loopEnd && !player.isLooping
         if (player.isLooping && currentFrame == player.loopEnd) {
-            currentFrame = max(0, player.loopStart)
+            currentFrame = player.loopStart
         }
 
-        return accumulator.subBuffer(startPos, limit)
+        return audioData.subBuffer(startPos, limit)
     }
 
     override fun flush() {
         println("LoopingAudioProcessor: flush() called")
         ended = false
-        accumulator = EMPTY_BUFFER
+        audioData = EMPTY_BUFFER
         currentFrame = 0
     }
 
     override fun reset() {
         println("LoopingAudioProcessor: reset() called")
         flush()
-        bytesPerFrame = 0
+        format = AudioFormat.NOT_SET
         active = false
     }
 
     private fun ensureCapacity(additional: Int) {
-        val required = accumulator.position() + additional
-        if (accumulator.capacity() >= required) return
+        val required = audioData.position() + additional
+        if (audioData.capacity() >= required) return
 
-        val newCap = maxOf(player.nowPlaying.frameLength * bytesPerFrame, required)
-        println("Resized accumulator from ${accumulator.capacity()} to $newCap bytes")
+        val newCap = maxOf(player.nowPlaying.frameLength * format.bytesPerFrame, required)
+        println("Resized accumulator from ${audioData.capacity()} to $newCap bytes")
 
-        accumulator = ByteBuffer.allocateDirect(newCap)
+        audioData = ByteBuffer.allocateDirect(newCap)
             .order(ByteOrder.nativeOrder())
-            .put(accumulator.flip() as ByteBuffer)
+            .put(audioData.flip() as ByteBuffer)
     }
 }
