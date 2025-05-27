@@ -1,16 +1,12 @@
 package net.vpg.apex.ui.components.home
 
+import ApexScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Repeat
-import androidx.compose.material.icons.filled.RepeatOne
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -22,17 +18,21 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import net.vpg.apex.di.rememberPlayer
 import net.vpg.apex.player.ApexTrack
 
 @Composable
-fun NowPlayingBar() {
+fun NowPlayingBar(navController: NavController) {
     val player = rememberPlayer()
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface)
+            .clickable {
+                // Navigate to Now Playing Screen when bar is clicked
+                navController.navigate(ApexScreen.NowPlaying.route)
+            }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

@@ -26,9 +26,13 @@ class ApexPlayer {
     private var prepared = false
     private val _isLooping = mutableStateOf(true)
     var isLooping by _isLooping
+    private val _isShuffling = mutableStateOf(false)
+    var isShuffling by _isShuffling
     val loopStart get() = if (nowPlaying.loopStart == -1) 0 else nowPlaying.loopStart
     val loopEnd get() = if (nowPlaying.loopEnd == -1) nowPlaying.frameLength else nowPlaying.loopEnd
     val cacheDir: File
+    val duration: Long get() = player.duration
+    val currentPosition: Long get() = player.currentPosition
 
     @OptIn(UnstableApi::class)
     constructor(context: Context) {
