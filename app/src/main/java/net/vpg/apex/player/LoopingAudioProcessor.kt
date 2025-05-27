@@ -7,6 +7,7 @@ import net.vpg.apex.savePcmAsWav
 import net.vpg.apex.subBuffer
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.util.logging.Logger
 import kotlin.math.min
 
 @UnstableApi
@@ -20,6 +21,7 @@ class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
 
     companion object {
         private val EMPTY_BUFFER = ByteBuffer.allocateDirect(0).order(ByteOrder.nativeOrder())
+        private val logger = Logger.getLogger(LoopingAudioProcessor::class.java.name)
     }
 
     override fun configure(format: AudioFormat) = format.also {
@@ -44,7 +46,7 @@ class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
                 ?.takeIf { !it.exists() }
                 ?.also { it.createNewFile() }
                 ?.let { cacheFile -> audioData.array().savePcmAsWav(cacheFile, format) }
-                ?.also { println("LoopingAudioProcessor: Cache audio data for ${player.nowPlaying.id}") }
+                ?.also { logger.info("Cache audio data for ${player.nowPlaying.id}") }
         }
     }
 
@@ -67,14 +69,14 @@ class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
     }
 
     override fun flush() {
-        println("LoopingAudioProcessor: flush() called")
+        logger.info("flush() called")
         ended = false
         audioData = EMPTY_BUFFER
         currentFrame = 0
     }
 
     override fun reset() {
-        println("LoopingAudioProcessor: reset() called")
+        logger.info("reset() called")
         flush()
         format = AudioFormat.NOT_SET
         active = false
@@ -85,7 +87,7 @@ class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
         if (audioData.capacity() >= required) return
 
         val newCap = maxOf(player.nowPlaying.frameLength * format.bytesPerFrame, required)
-        println("Resized accumulator from ${audioData.capacity()} to $newCap bytes")
+        logger.info("Resized accumulator from ${audioData.capacity()} to $newCap bytes")
 
         audioData = ByteBuffer.allocateDirect(newCap)
             .order(ByteOrder.nativeOrder())
