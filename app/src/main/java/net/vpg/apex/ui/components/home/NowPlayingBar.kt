@@ -1,6 +1,5 @@
 package net.vpg.apex.ui.components.home
 
-import ApexScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import net.vpg.apex.di.rememberPlayer
 import net.vpg.apex.player.ApexTrack
+import net.vpg.apex.ui.screens.NowPlayingScreen
 
 @Composable
 fun NowPlayingBar(navController: NavController) {
@@ -31,7 +31,7 @@ fun NowPlayingBar(navController: NavController) {
             .background(MaterialTheme.colorScheme.surface)
             .clickable {
                 // Navigate to Now Playing Screen when bar is clicked
-                navController.navigate(ApexScreen.NowPlaying.route)
+                navController.navigate(NowPlayingScreen.route)
             }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
