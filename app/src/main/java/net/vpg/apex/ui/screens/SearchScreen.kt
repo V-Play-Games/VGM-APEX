@@ -6,9 +6,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -22,8 +26,20 @@ object SearchScreen : ApexBottomBarScreen(
     icon = Icons.Default.Search,
     title = "Search",
     screen = {
+        // State management
+        var searchQuery by remember { mutableStateOf("") }
+        var isSearchActive by remember { mutableStateOf(false) }
         val searchHistory = remember {
             ApexTrack.TRACKS_DB.values.shuffled().take(5)
+        }
+
+        // Store search results
+        val searchResults = remember(searchQuery) {
+            if (searchQuery.isEmpty()) {
+                emptyList()
+            } else {
+                searchTracks(searchQuery)
+            }
         }
 
         Column(
@@ -33,8 +49,11 @@ object SearchScreen : ApexBottomBarScreen(
                 .padding(16.dp)
         ) {
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = searchQuery,
+                onValueChange = {
+                    searchQuery = it
+                    isSearchActive = it.isNotEmpty()
+                },
                 placeholder = { Text("Search", color = Color.Gray) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -47,22 +66,62 @@ object SearchScreen : ApexBottomBarScreen(
                         contentDescription = "Search Icon",
                         tint = Color.Gray
                     )
-                }
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = {
+                            searchQuery = ""
+                            isSearchActive = false
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Clear Search",
+                                tint = Color.Gray
+                            )
+                        }
+                    }
+                },
+                singleLine = true
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            Text(
-                text = "Recent searches",
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold
-            )
+            // Display either search results or recent searches
+            if (isSearchActive) {
+                Text(
+                    text = "Search Results",
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            LazyColumn {
-                items(searchHistory) { track ->
-                    RecentSearchItem(track)
+                if (searchResults.isEmpty() && searchQuery.isNotEmpty()) {
+                    Text(
+                        text = "No results found for \"$searchQuery\"",
+                        color = Color.Gray
+                    )
+                } else {
+                    LazyColumn {
+                        items(searchResults) { track ->
+                            RecentSearchItem(track)
+                        }
+                    }
+                }
+            } else {
+                Text(
+                    text = "Recent searches",
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LazyColumn {
+                    items(searchHistory) { track ->
+                        RecentSearchItem(track)
+                    }
                 }
             }
         }
@@ -70,7 +129,12 @@ object SearchScreen : ApexBottomBarScreen(
 )
 
 fun searchTracks(query: String): List<ApexTrack> {
-    // This function should implement the actual search logic.
-    // For now, it returns an empty list.
-    return emptyList()
+    if (query.isEmpty()) return emptyList()
+
+    // Filter tracks based on the query
+    return ApexTrack.TRACKS_DB.values.filter { track ->
+        // Case-insensitive search
+        track.name.contains(query, ignoreCase = true) ||
+                track.category.contains(query, ignoreCase = true)
+    }
 }
