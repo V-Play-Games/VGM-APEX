@@ -12,13 +12,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.vpg.apex.di.rememberSearchHistory
 import net.vpg.apex.player.ApexTrack
+import net.vpg.apex.ui.components.search.CurrentSearchItem
 import net.vpg.apex.ui.components.search.RecentSearchItem
 
 object SearchScreen : ApexBottomBarScreen(
@@ -27,11 +30,8 @@ object SearchScreen : ApexBottomBarScreen(
     title = "Search",
     screen = {
         // State management
-        var searchQuery by remember { mutableStateOf("") }
-        var isSearchActive by remember { mutableStateOf(false) }
-        val searchHistory = remember {
-            ApexTrack.TRACKS_DB.values.shuffled().take(5)
-        }
+        var searchQuery by rememberSaveable { mutableStateOf("") }
+        val searchHistory = rememberSearchHistory()
 
         // Store search results
         val searchResults = remember(searchQuery) {
@@ -50,10 +50,7 @@ object SearchScreen : ApexBottomBarScreen(
         ) {
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = {
-                    searchQuery = it
-                    isSearchActive = it.isNotEmpty()
-                },
+                onValueChange = { searchQuery = it },
                 placeholder = { Text("Search", color = Color.Gray) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -69,10 +66,7 @@ object SearchScreen : ApexBottomBarScreen(
                 },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = {
-                            searchQuery = ""
-                            isSearchActive = false
-                        }) {
+                        IconButton(onClick = { searchQuery = "" }) {
                             Icon(
                                 imageVector = Icons.Default.Clear,
                                 contentDescription = "Clear Search",
@@ -86,7 +80,7 @@ object SearchScreen : ApexBottomBarScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Display either search results or recent searches
-            if (isSearchActive) {
+            if (searchQuery.isNotEmpty()) {
                 Text(
                     text = "Search Results",
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -104,7 +98,7 @@ object SearchScreen : ApexBottomBarScreen(
                 } else {
                     LazyColumn {
                         items(searchResults) { track ->
-                            RecentSearchItem(track)
+                            CurrentSearchItem(track)
                         }
                     }
                 }
@@ -119,7 +113,7 @@ object SearchScreen : ApexBottomBarScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 LazyColumn {
-                    items(searchHistory) { track ->
+                    items(searchHistory.getTracks()) { track ->
                         RecentSearchItem(track)
                     }
                 }

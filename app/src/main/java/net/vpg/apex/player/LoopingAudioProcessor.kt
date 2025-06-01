@@ -21,7 +21,7 @@ class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
 
     companion object {
         private val EMPTY_BUFFER = ByteBuffer.allocateDirect(0).order(ByteOrder.nativeOrder())
-        private val logger = Logger.getLogger(LoopingAudioProcessor::class.java.name)
+        private val LOGGER = Logger.getLogger(LoopingAudioProcessor::class.java.name)
     }
 
     override fun configure(format: AudioFormat) = format.also {
@@ -46,7 +46,7 @@ class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
                 ?.takeIf { !it.exists() }
                 ?.also { it.createNewFile() }
                 ?.let { cacheFile -> audioData.array().savePcmAsWav(cacheFile, format) }
-                ?.also { logger.info("Cache audio data for ${player.nowPlaying.id}") }
+                ?.also { LOGGER.info("Cache audio data for ${player.nowPlaying.id}") }
         }
     }
 
@@ -69,14 +69,14 @@ class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
     }
 
     override fun flush() {
-        logger.info("flush() called")
+        LOGGER.info("flush() called")
         ended = false
         audioData = EMPTY_BUFFER
         currentFrame = 0
     }
 
     override fun reset() {
-        logger.info("reset() called")
+        LOGGER.info("reset() called")
         flush()
         format = AudioFormat.NOT_SET
         active = false
@@ -87,7 +87,7 @@ class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
         if (audioData.capacity() >= required) return
 
         val newCap = maxOf(player.nowPlaying.frameLength * format.bytesPerFrame, required)
-        logger.info("Resized accumulator from ${audioData.capacity()} to $newCap bytes")
+        LOGGER.info("Resized accumulator from ${audioData.capacity()} to $newCap bytes")
 
         audioData = ByteBuffer.allocateDirect(newCap)
             .order(ByteOrder.nativeOrder())

@@ -29,6 +29,10 @@ data class ApexTrack(
     val loopStart: Int,
     val loopEnd: Int
 ) {
+    companion object {
+        val TRACKS_DB = mutableMapOf<String, ApexTrack>()
+        val EMPTY = ApexTrack("", "", "", 0, 0, 0)
+    }
 
     constructor(data: JSONObject) : this(
         data.getString("id"),
@@ -59,9 +63,4 @@ data class ApexTrack(
     fun cacheFile(cacheDir: File) = File(cacheDir, "$id.wav")
 
     fun downloadedFile(cacheDir: File) = File(cacheDir, "$id.ogg")
-
-    companion object {
-        val TRACKS_DB = mutableMapOf<String, ApexTrack>()
-        val EMPTY = ApexTrack("", "", "", 0, 0, 0)
-    }
 }

@@ -13,7 +13,6 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.audio.DefaultAudioSink
 import java.io.File
 
-
 class ApexPlayer {
     private val player: ExoPlayer
     private val queue = mutableListOf<ApexTrack>()
