@@ -29,6 +29,7 @@ data class ApexTrack(
     val loopStart: Int,
     val loopEnd: Int
 ) {
+
     constructor(data: JSONObject) : this(
         data.getString("id"),
         data.getString("name"),
@@ -37,6 +38,10 @@ data class ApexTrack(
         data.getInt("loopStart"),
         data.getInt("loopEnd")
     )
+
+    init {
+        TRACKS_DB.put(id, this)
+    }
 
     val url = "https://github.com/VGM-Apex/%s/raw/main/%s.%s"
         .format(
@@ -56,6 +61,7 @@ data class ApexTrack(
     fun downloadedFile(cacheDir: File) = File(cacheDir, "$id.ogg")
 
     companion object {
+        val TRACKS_DB = mutableMapOf<String, ApexTrack>()
         val EMPTY = ApexTrack("", "", "", 0, 0, 0)
     }
 }

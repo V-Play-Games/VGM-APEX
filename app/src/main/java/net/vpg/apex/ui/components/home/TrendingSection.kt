@@ -16,9 +16,9 @@ import androidx.compose.ui.unit.sp
 import net.vpg.apex.player.ApexTrack
 
 @Composable
-fun TrendingSection(trending: Map<String, ApexTrack>) {
+fun TrendingSection() {
     val searchHistory = remember {
-        trending.values.shuffled().take(5)
+        ApexTrack.TRACKS_DB.values.shuffled().take(5)
     }
 
     Column(modifier = Modifier.padding(16.dp)) {

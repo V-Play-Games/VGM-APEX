@@ -8,7 +8,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
-import net.vpg.apex.di.rememberTracksList
 import net.vpg.apex.ui.components.home.RecentlyPlayedSection
 import net.vpg.apex.ui.components.home.TrendingSection
 
@@ -17,16 +16,13 @@ object HomeScreen : ApexBottomBarScreen(
     icon = Icons.Default.Home,
     title = "Home",
     screen = {
-        val tracksList = rememberTracksList()
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            // Add your main content here
-            TrendingSection(tracksList)
-            RecentlyPlayedSection(tracksList)
+            TrendingSection()
+            RecentlyPlayedSection()
         }
     }
 )

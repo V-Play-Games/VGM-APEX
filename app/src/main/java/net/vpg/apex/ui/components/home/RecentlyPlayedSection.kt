@@ -16,9 +16,9 @@ import androidx.compose.ui.unit.sp
 import net.vpg.apex.player.ApexTrack
 
 @Composable
-fun RecentlyPlayedSection(recentlyPlayed: Map<String, ApexTrack>) {
+fun RecentlyPlayedSection() {
     val recents = remember {
-        recentlyPlayed.values.shuffled().take(5)
+        ApexTrack.TRACKS_DB.values.shuffled().take(5)
     }
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Recently played", color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 20.sp)

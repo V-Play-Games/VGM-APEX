@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
+import net.vpg.apex.di.rememberContext
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -40,8 +40,7 @@ class MainActivity : ComponentActivity() {
         // Implement the crossfade transition
         Crossfade(
             targetState = showSplash,
-            animationSpec = tween(durationMillis = 800),
-            label = "splash_transition"
+            animationSpec = tween(durationMillis = 800)
         ) { isShowingSplash ->
             if (isShowingSplash) {
                 SplashScreen()
@@ -51,8 +50,9 @@ class MainActivity : ComponentActivity() {
         }
 
         // Trigger the transition after a delay
+        val context = rememberContext()
         LaunchedEffect(Unit) {
-            delay(500)
+            DataLoader.loadData(context)
             showSplash = false
         }
     }

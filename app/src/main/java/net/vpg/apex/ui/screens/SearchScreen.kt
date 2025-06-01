@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.vpg.apex.di.rememberTracksList
+import net.vpg.apex.player.ApexTrack
 import net.vpg.apex.ui.components.search.RecentSearchItem
 
 object SearchScreen : ApexBottomBarScreen(
@@ -22,9 +22,8 @@ object SearchScreen : ApexBottomBarScreen(
     icon = Icons.Default.Search,
     title = "Search",
     screen = {
-        val tracksList = rememberTracksList()
         val searchHistory = remember {
-            tracksList.values.shuffled().take(5)
+            ApexTrack.TRACKS_DB.values.shuffled().take(5)
         }
 
         Column(
@@ -69,3 +68,9 @@ object SearchScreen : ApexBottomBarScreen(
         }
     }
 )
+
+fun searchTracks(query: String): List<ApexTrack> {
+    // This function should implement the actual search logic.
+    // For now, it returns an empty list.
+    return emptyList()
+}
