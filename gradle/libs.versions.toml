@@ -12,7 +12,6 @@ hilt-android = "2.56.2"
 android = "8.10.0-alpha05"
 kotlin = "2.1.21"
 ksp = "2.1.21-2.0.1"
-fuzzywuzzy = "1.4.0"
 
 [libraries]
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
@@ -27,7 +26,6 @@ media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = 
 vjson = { module = "com.github.v-play-games:vjson", version.ref = "vjson" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt-android" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt-android" }
-fuzzywuzzy = { module = "me.xdrop:fuzzywuzzy", version.ref = "fuzzywuzzy" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android" }

@@ -62,7 +62,4 @@ dependencies {
     // Dependency Injection
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
-
-    // Fuzzy Matcher
-    implementation(libs.fuzzywuzzy)
 }

@@ -8,22 +8,22 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import net.vpg.apex.player.ApexPlayer
+import net.vpg.apex.PlayHistory
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object PlayerProvider {
+object PlayHistoryProvider {
     @Provides
     @Singleton
-    fun providePlayer(@ApplicationContext context: Context) = ApexPlayer(context)
+    fun providePlayHistory(@ApplicationContext context: Context) = PlayHistory(context)
 }
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
-interface PlayerInjector {
-    fun injectPlayer(): ApexPlayer
+interface PlayHistoryInjector {
+    fun injectPlayHistory(): PlayHistory
 }
 
 @Composable
-fun rememberPlayer() = rememberInjector<PlayerInjector>().injectPlayer()
+fun rememberPlayHistory() = rememberInjector<PlayHistoryInjector>().injectPlayHistory()

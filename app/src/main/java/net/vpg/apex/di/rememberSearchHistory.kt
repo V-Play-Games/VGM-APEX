@@ -16,14 +16,14 @@ import javax.inject.Singleton
 object SearchHistoryProvider {
     @Provides
     @Singleton
-    fun provider(@ApplicationContext context: Context) = SearchHistory(context)
+    fun provideSearchHistory(@ApplicationContext context: Context) = SearchHistory(context)
 }
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 private interface SearchHistoryInjector {
-    fun inject(): SearchHistory
+    fun injectSearchHistory(): SearchHistory
 }
 
 @Composable
-fun rememberSearchHistory() = rememberInjector<SearchHistoryInjector>().inject()
+fun rememberSearchHistory() = rememberInjector<SearchHistoryInjector>().injectSearchHistory()

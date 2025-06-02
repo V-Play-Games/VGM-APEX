@@ -28,17 +28,12 @@ fun ByteBuffer.subBuffer(start: Int, end: Int): ByteBuffer {
 }
 
 @OptIn(UnstableApi::class)
-fun ByteArray.savePcmAsWav(outputFile: File, format: AudioProcessor.AudioFormat) {
-    // Check if bytesPerFrame is per channel or total
-    val bytesPerSample = format.bytesPerFrame / format.channelCount
-
-    return this.savePcmAsWav(
-        outputFile,
-        format.sampleRate,
-        format.channelCount,
-        bytesPerSample
-    )
-}
+fun ByteArray.savePcmAsWav(outputFile: File, format: AudioProcessor.AudioFormat) = this.savePcmAsWav(
+    outputFile = outputFile,
+    sampleRate = format.sampleRate,
+    channels = format.channelCount,
+    bytesPerSample = format.bytesPerFrame / format.channelCount
+)
 
 fun ByteArray.savePcmAsWav(outputFile: File, sampleRate: Int, channels: Int, bytesPerSample: Int) {
     val blockAlign = channels * bytesPerSample

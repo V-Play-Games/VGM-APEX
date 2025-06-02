@@ -122,13 +122,10 @@ object SearchScreen : ApexBottomBarScreen(
     }
 )
 
-fun searchTracks(query: String): List<ApexTrack> {
-    if (query.isEmpty()) return emptyList()
-
-    // Filter tracks based on the query
-    return ApexTrack.TRACKS_DB.values.filter { track ->
-        // Case-insensitive search
+fun searchTracks(query: String) = if (query.isEmpty())
+    emptyList()
+else
+    ApexTrack.TRACKS_DB.values.filter { track ->
         track.name.contains(query, ignoreCase = true) ||
                 track.category.contains(query, ignoreCase = true)
     }
-}
