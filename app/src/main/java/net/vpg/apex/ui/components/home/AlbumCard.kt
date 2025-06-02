@@ -10,18 +10,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import net.vpg.apex.di.rememberPlayHistory
 import net.vpg.apex.di.rememberPlayer
 import net.vpg.apex.player.ApexTrack
 
 @Composable
 fun AlbumCard(apexTrack: ApexTrack) {
     val player = rememberPlayer()
+    val playHistory = rememberPlayHistory()
 
     Column(
         modifier = Modifier
             .padding(end = 12.dp)
             .width(150.dp)
-            .clickable { player.play(apexTrack) }
+            .clickable {
+                player.play(apexTrack)
+                playHistory.addTrack(apexTrack)
+            }
     ) {
         Box(
             modifier = Modifier

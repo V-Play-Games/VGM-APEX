@@ -1,6 +1,5 @@
 package net.vpg.apex.ui.components.search
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +14,7 @@ import net.vpg.apex.player.ApexTrack
 @Composable
 fun CurrentSearchItem(apexTrack: ApexTrack) {
     val searchHistory = rememberSearchHistory()
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -24,7 +24,7 @@ fun CurrentSearchItem(apexTrack: ApexTrack) {
     ) {
         TrackBar(
             apexTrack = apexTrack,
-            onClick = { println("gurt: Yo"); searchHistory.addTrack(apexTrack) }
+            onClick = { searchHistory.addTrack(apexTrack) }
         )
     }
 }

@@ -18,20 +18,20 @@ import javax.inject.Singleton
 object ContextProvider {
     @Provides
     @Singleton
-    fun context(@ApplicationContext context: Context) = context
+    fun provideContext(@ApplicationContext context: Context) = context
 }
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface ContextInjector {
-    fun context(): Context
+    fun injectContext(): Context
 }
 
 @Composable
 fun rememberContext() = EntryPointAccessors.fromApplication(
     LocalContext.current.unwrapActivity(),
     ContextInjector::class.java
-).context()
+).injectContext()
 
 @Composable
 inline fun <reified T> rememberInjector() = EntryPointAccessors.fromApplication<T>(rememberContext())
