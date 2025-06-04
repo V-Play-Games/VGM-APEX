@@ -54,6 +54,8 @@ object SearchScreen : ApexBottomBarScreen(
                 placeholder = { Text("Search", color = Color.Gray) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
                     focusedContainerColor = Color.White,
                     unfocusedContainerColor = Color.LightGray,
                 ),
