@@ -14,7 +14,7 @@ VGM APEX is a dedicated audio streaming platform designed specifically for video
 - ~~**Personalized Experience**: Create custom playlists, mark favorites, and get recommendations based on your listening habits~~ (Coming Soon!)
 - ~~**Advanced Search**: Find music by game, composer, genre, console, or year~~ (Coming Soon!)
 - ~~**High-Quality Audio**: Stream in various quality settings to match your internet connection or download for offline listening~~ (Coming Soon!)
-- ~~**Dark/Light Theme**: Choose the UI that suits your preference~~ (Coming Soon!)
+- **Dark/Light Theme**: Choose the UI that suits your preference
 - ~~**Social Features**: Share your favorite tracks and playlists with friends~~ (Coming Soon!)
 
 [//]: # (## 📱 Screenshots)
