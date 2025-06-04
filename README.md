@@ -29,12 +29,13 @@ VGM APEX is a dedicated audio streaming platform designed specifically for video
 
 ### Prerequisites
 
-- Android 8.0+
+- Android 9+
 - Internet connection for streaming (offline mode coming soon!)
 
-### Installation
+### Download
 
 #### Mobile
+- [Download from GitHub Releases](https://github.com/V-Play-Games/VGM-APEX/releases)
 - [Download on Google Play] (Coming Soon!)
 
 ## 🔧 For Developers
