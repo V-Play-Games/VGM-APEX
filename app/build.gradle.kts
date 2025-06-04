@@ -16,7 +16,7 @@ android {
         //noinspection OldTargetApi
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0"
+        versionName = "0.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -34,7 +34,11 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1" // Use the compatible version with Kotlin 2.0
     }
-
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+        }
+    }
 }
 
 dependencies {
