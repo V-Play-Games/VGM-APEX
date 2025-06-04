@@ -1,7 +1,6 @@
 [versions]
 core-ktx = "1.16.0"
 activity-compose = "1.10.1"
-compose-bom = "2025.05.01"
 compose-ui = "1.8.2"
 navigation-compose = "2.9.0"
 material3 = "1.3.2"
@@ -16,9 +15,7 @@ ksp = "2.1.21-2.0.1"
 [libraries]
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
 compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose-ui" }
-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics", version.ref = "compose-ui" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material-icons-extended" }
