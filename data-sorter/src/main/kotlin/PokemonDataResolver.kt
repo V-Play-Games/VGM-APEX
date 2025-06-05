@@ -22,7 +22,7 @@ fun main() {
         "GSC" to "Pokemon Gold, Silver, and Crystal",
         "HGSS" to "Pokemon HeartGold & SoulSilver",
         "HOME" to "Pokemon Home",
-        "ORAS" to "Pokemon OmegaRuby & AlphaSapphire",
+        "ORAS" to "Pokemon Omega Ruby & Alpha Sapphire",
         "PB" to "Pokemon Pinball",
         "PIC" to "Pokemon Picross",
         "PLA" to "Pokemon Legends: Arceus",

@@ -35,13 +35,13 @@ sealed class TrackHistory(context: Context, val fileName: String) {
     open fun addTrack(track: ApexTrack) {
         trackHistory.add(track)
         writeFile()
-        LOGGER.info("Added ${track.name} (id=${track.id} to $fileName")
+        LOGGER.info("Added ${track.title} (id=${track.id} to $fileName")
     }
 
     open fun removeTrack(track: ApexTrack) {
         trackHistory.remove(track)
         writeFile()
-        LOGGER.info("Removed ${track.name} (id=${track.id} from $fileName")
+        LOGGER.info("Removed ${track.title} (id=${track.id} from $fileName")
     }
 
     open fun getTracks() = trackHistory.reversed()

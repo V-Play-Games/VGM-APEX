@@ -127,7 +127,4 @@ object SearchScreen : ApexBottomBarScreen(
 fun searchTracks(query: String) = if (query.isEmpty())
     emptyList()
 else
-    ApexTrack.TRACKS_DB.values.filter { track ->
-        track.name.contains(query, ignoreCase = true) ||
-                track.category.contains(query, ignoreCase = true)
-    }
+    ApexTrack.TRACKS_DB.values.filter { it.title.contains(query, ignoreCase = true) }

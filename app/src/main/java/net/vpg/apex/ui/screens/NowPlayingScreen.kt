@@ -51,14 +51,14 @@ object NowPlayingScreen : ApexScreen(
             Spacer(Modifier.height(24.dp))
 
             Text(
-                text = nowPlaying.name,
+                text = nowPlaying.title,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 22.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = nowPlaying.category,
+                text = nowPlaying.album.name,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 16.sp,
                 maxLines = 1,

@@ -36,7 +36,7 @@ fun AlbumCard(apexTrack: ApexTrack) {
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = apexTrack.name,
+            text = apexTrack.title,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             style = MaterialTheme.typography.headlineSmall,
             maxLines = 1,
@@ -44,7 +44,7 @@ fun AlbumCard(apexTrack: ApexTrack) {
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = apexTrack.category,
+            text = apexTrack.album.name,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.bodyLarge,
             maxLines = 1,

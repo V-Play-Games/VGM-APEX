@@ -43,14 +43,14 @@ inline fun TrackBar(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = apexTrack.name,
+                text = apexTrack.title,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 18.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = apexTrack.category,
+                text = apexTrack.album.name,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 14.sp,
                 maxLines = 1,

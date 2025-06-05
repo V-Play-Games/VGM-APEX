@@ -18,41 +18,41 @@ package net.vpg.apex.player
 import androidx.media3.common.MediaItem
 import net.vpg.vjson.value.JSONObject
 import java.io.File
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 
 data class ApexTrack(
     val id: String,
-    val name: String,
-    val category: String,
+    val title: String,
+    private val uploaderId: String,
+    private val albumId: String,
     val frameLength: Int,
     val loopStart: Int,
-    val loopEnd: Int
+    val loopEnd: Int,
+    val dateAdded: String,
+    val url: String
 ) {
     companion object {
         val TRACKS_DB = mutableMapOf<String, ApexTrack>()
-        val EMPTY = ApexTrack("", "", "", 0, 0, 0)
+        val EMPTY = ApexTrack("", "", "", "", 0, 0, 0, "", "")
     }
 
     constructor(data: JSONObject) : this(
         data.getString("id"),
-        data.getString("name"),
-        data.getString("category"),
+        data.getString("title"),
+        data.getString("uploaderId"),
+        data.getString("albumId"),
         data.getInt("frameLength"),
         data.getInt("loopStart"),
-        data.getInt("loopEnd")
+        data.getInt("loopEnd"),
+        data.getString("dateAdded"),
+        data.getString("url")
     )
 
     init {
         TRACKS_DB.put(id, this)
     }
 
-    val url = "https://github.com/VGM-Apex/%s/raw/main/%s.%s"
-        .format(
-            category,
-            URLEncoder.encode(id, StandardCharsets.UTF_8.name()).replace("+", "%20"),
-            "ogg"
-        )
+    val album by lazy { ApexAlbum.ALBUMS_DB[albumId]!! }
+    val uploader by lazy { ApexUploader.UPLOADERS_DB[uploaderId]!! }
 
     fun toMediaItem(cacheDir: File) = MediaItem.fromUri(
         downloadedFile(cacheDir).takeIf { it.exists() }?.toURI()?.toString()

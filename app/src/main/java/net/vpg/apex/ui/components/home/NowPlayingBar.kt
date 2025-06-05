@@ -44,14 +44,14 @@ fun NowPlayingBar(navController: NavController) {
         Spacer(modifier = Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = player.nowPlaying.name,
+                text = player.nowPlaying.title,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 14.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = player.nowPlaying.category,
+                text = player.nowPlaying.album.name,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
                 maxLines = 1,
