@@ -9,13 +9,6 @@ import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
 fun main() {
-    // Get the raw track data
-    val rawTrackDataList = File("data-sorter/raw-tracks.json")
-        .toJSON()
-        .toArray()
-        .map { RawTrackData(it.toObject()) }
-
-    // Establish constants
     val titleRegex = "^(([A-Za-z\\- ]+|[A-Za-z\\-0-9]+) \\d{2,3}[a-z]?) (.+)$".toRegex()
     val date = "2025-06-05"
     val idToNameMap = mapOf(
@@ -46,41 +39,45 @@ fun main() {
         "XY" to "Pokemon X & Y",
     )
 
-    // init other data
-    val tracks = rawTrackDataList.map {
-        val url = URLEncoder.encode(it.id, StandardCharsets.UTF_8.name()).replace("+", "%20")
-        TrackData(
-            id = titleRegex.find(it.name)?.groupValues[1]?.replace(" ", "") ?: it.name,
-            title = titleRegex.find(it.name)?.groupValues[3] ?: it.name,
-            uploaderId = "V Play Games",
-            albumId = it.category,
-            frameLength = it.frameLength,
-            loopStart = it.loopStart,
-            loopEnd = it.loopEnd,
-            dateAdded = date,
-            url = "https://github.com/VGM-Apex/${it.category}/raw/main/$url.ogg"
-        )
-    }
-
-    // Replace Duplicate IDs
-    val tracksDistinct = tracks.distinctBy { it.id }
-    tracks.map { it }
-        .toMutableList()
-        .also { it.removeAll(tracksDistinct) }
-
+    val tracks = File("data-sorter/raw-tracks.json")
+        .toJSON()
+        .toArray()
+        .map { RawTrackData(it.toObject()) }
+        .map {
+            val encodedFileName = URLEncoder.encode(it.id, StandardCharsets.UTF_8.name()).replace("+", "%20")
+            TrackData(
+                id = titleRegex.find(it.name)?.groupValues[1]?.replace(" ", "") ?: it.id,
+                title = titleRegex.find(it.name)?.groupValues[3] ?: it.name,
+                uploaderId = "V Play Games",
+                albumId = it.category,
+                frameLength = it.frameLength,
+                loopStart = it.loopStart,
+                loopEnd = it.loopEnd,
+                dateAdded = date,
+                url = "https://github.com/VGM-Apex/${it.category}/raw/main/$encodedFileName.ogg"
+            )
+        }.groupBy { it.id }
+        // Replace Duplicate IDs
+        .map { (id, trackList) ->
+            if (trackList.size == 1)
+                trackList
+            else
+                trackList.mapIndexed { index, track -> track.copy(id = "${id}${(index + 'a'.code).toChar()}") }
+        }.flatten()
 
     val albums = tracks.groupBy { it.albumId }.map { (albumId, albumTracks) ->
-        val baseAlbumUrl = "https://github.com/VGM-Apex/apex-image/raw/main/$albumId.png"
-        URI.create(baseAlbumUrl).toURL().openConnection()
-        val connection = URI.create(baseAlbumUrl).toURL().openConnection() as HttpURLConnection
-        connection.requestMethod = "GET"
-        val success = try {
-            connection.responseCode
-        } finally {
-            connection.disconnect()
-        } / 100 == 2
-        val url = if (success) baseAlbumUrl.format(albumId) else "null"
-        println("Album $albumId: $url, ${albumTracks.size} tracks, ${if (success) "success" else "failed"}")
+        val albumUrl = "https://github.com/VGM-Apex/apex-image/raw/main/$albumId.png"
+        val responseCode = (URI.create(albumUrl).toURL().openConnection() as HttpURLConnection)
+            .also { it.requestMethod = "GET" }
+            .let {
+                try {
+                    it.responseCode
+                } finally {
+                    it.disconnect()
+                }
+            }
+        val url = if (responseCode / 100 == 2) albumUrl else null
+        println("Album $albumId: $url, ${albumTracks.size} tracks")
         AlbumData(
             id = albumId,
             name = idToNameMap[albumId]!!,
