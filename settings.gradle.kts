@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "APEX"
 include(":app")
- 
+include("data-sorter")

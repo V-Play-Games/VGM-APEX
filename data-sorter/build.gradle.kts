@@ -1,16 +1,12 @@
 plugins {
-    kotlin("jvm") version "2.1.20"
+    kotlin("jvm")
 }
 
 group = "com.github.v-play-games"
-version = "1.0-SNAPSHOT"
-
-repositories {
-    mavenCentral()
-}
+version = "0.0.1"
 
 dependencies {
-    implementation("com.github.v-play-games:vjson:2.0.0")
+    implementation(libs.vjson)
 }
 
 kotlin {
