@@ -1,9 +1,9 @@
-package net.vpg.apex
+package net.vpg.apex.core
 
 import android.content.Context
-import net.vpg.apex.player.ApexAlbum
-import net.vpg.apex.player.ApexTrack
-import net.vpg.apex.player.ApexUploader
+import net.vpg.apex.entities.ApexAlbum
+import net.vpg.apex.entities.ApexTrack
+import net.vpg.apex.entities.ApexUploader
 import net.vpg.vjson.parser.JSONParser.toJSON
 import net.vpg.vjson.value.JSONObject
 

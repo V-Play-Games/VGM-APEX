@@ -10,8 +10,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import net.vpg.apex.di.rememberSearchHistory
-import net.vpg.apex.player.ApexTrack
+import net.vpg.apex.core.di.rememberSearchHistory
+import net.vpg.apex.entities.ApexTrack
+import net.vpg.apex.ui.components.common.TrackBar
 
 @Composable
 fun RecentSearchItem(apexTrack: ApexTrack) {

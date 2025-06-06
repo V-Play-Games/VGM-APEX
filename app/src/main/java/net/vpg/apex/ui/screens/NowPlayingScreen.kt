@@ -1,24 +1,21 @@
 package net.vpg.apex.ui.screens
 
-import ApexScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
-import net.vpg.apex.di.rememberPlayer
-import net.vpg.apex.player.ApexTrack
-import net.vpg.apex.ui.components.home.AlbumImage
+import net.vpg.apex.core.di.rememberPlayer
+import net.vpg.apex.ui.components.common.AlbumImage
+import net.vpg.apex.ui.components.player.PlayerActions
 import kotlin.math.max
 
 object NowPlayingScreen : ApexScreen(
@@ -27,7 +24,7 @@ object NowPlayingScreen : ApexScreen(
         val player = rememberPlayer()
         val nowPlaying = player.nowPlaying
         var position by remember { mutableLongStateOf(player.currentPosition) }
-        val duration = max(0 ,player.duration)
+        val duration = max(0, player.duration)
         val progress = if (duration > 0) position.toFloat() / duration else 0f
 
         LaunchedEffect(Unit) {
@@ -104,47 +101,7 @@ object NowPlayingScreen : ApexScreen(
                         MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(30.dp).clickable { player.isShuffling = !player.isShuffling }
                 )
-                Icon(
-                    Icons.Default.SkipPrevious,
-                    contentDescription = "Previous",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = if (player.canGoPrevious())
-                        Modifier.size(30.dp).clickable { player.previousTrack() }
-                    else
-                        Modifier.size(30.dp).alpha(0.5f)
-                )
-                if (player.isBuffering)
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(30.dp),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                else
-                    Icon(
-                        if (player.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = "PlayPause",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = if (player.nowPlaying != ApexTrack.EMPTY)
-                            Modifier.size(30.dp).clickable { player.togglePlayPause() }
-                        else
-                            Modifier.size(30.dp).alpha(0.5f))
-                Icon(
-                    Icons.Default.SkipNext,
-                    contentDescription = "Next",
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = if (player.canGoNext())
-                        Modifier.size(30.dp).clickable { player.nextTrack() }
-                    else
-                        Modifier.size(30.dp).alpha(0.5f)
-                )
-                Icon(
-                    if (player.isLooping) Icons.Default.RepeatOne else Icons.Default.Repeat,
-                    contentDescription = "Toggle Loop",
-                    tint = if (player.isLooping)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(30.dp).clickable { player.isLooping = !player.isLooping }
-                )
+                PlayerActions(player, Modifier.size(30.dp))
             }
         }
     }

@@ -1,4 +1,4 @@
-package net.vpg.apex.ui.components.home
+package net.vpg.apex.ui.components.common
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,12 +8,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import net.vpg.apex.di.rememberPlayHistory
-import net.vpg.apex.di.rememberPlayer
-import net.vpg.apex.player.ApexTrack
+import net.vpg.apex.core.di.rememberPlayHistory
+import net.vpg.apex.core.di.rememberPlayer
+import net.vpg.apex.entities.ApexTrack
 
 @Composable
-fun AlbumCard(apexTrack: ApexTrack) {
+fun TrackCard(apexTrack: ApexTrack) {
     val player = rememberPlayer()
     val playHistory = rememberPlayHistory()
 

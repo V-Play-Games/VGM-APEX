@@ -1,4 +1,4 @@
-package net.vpg.apex.player
+package net.vpg.apex.core.player
 
 import android.content.Context
 import androidx.annotation.OptIn
@@ -6,11 +6,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.audio.DefaultAudioSink
+import net.vpg.apex.entities.ApexTrack
 import java.io.File
 
 class ApexPlayer {
@@ -86,7 +88,11 @@ class ApexPlayer {
 
     @OptIn(UnstableApi::class)
     fun playCurrentTrack() {
-        player.setMediaItem(nowPlaying.toMediaItem(cacheDir))
+        player.setMediaItem(MediaItem.fromUri(
+            nowPlaying.downloadedFile(cacheDir).takeIf { it.exists() }?.toURI()?.toString()
+                ?: nowPlaying.cacheFile(cacheDir).takeIf { it.exists() }?.toURI()?.toString()
+                ?: nowPlaying.url
+        ))
         player.prepare()
         player.play()
         prepared = true

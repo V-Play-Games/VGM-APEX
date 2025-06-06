@@ -1,6 +1,5 @@
 package net.vpg.apex.ui.screens
 
-import ApexBottomBarScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize

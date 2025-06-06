@@ -1,9 +1,7 @@
-package net.vpg.apex.ui.components.search
+package net.vpg.apex.ui.components.common
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -12,10 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.vpg.apex.di.rememberPlayHistory
-import net.vpg.apex.di.rememberPlayer
-import net.vpg.apex.player.ApexTrack
-import net.vpg.apex.ui.components.home.AlbumImage
+import net.vpg.apex.core.di.rememberPlayHistory
+import net.vpg.apex.core.di.rememberPlayer
+import net.vpg.apex.entities.ApexTrack
 
 @Composable
 inline fun TrackBar(

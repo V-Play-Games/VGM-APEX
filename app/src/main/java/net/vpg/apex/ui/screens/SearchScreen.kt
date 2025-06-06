@@ -1,6 +1,5 @@
 package net.vpg.apex.ui.screens
 
-import ApexBottomBarScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,8 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.vpg.apex.di.rememberSearchHistory
-import net.vpg.apex.player.ApexTrack
+import net.vpg.apex.core.di.rememberSearchHistory
+import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.ui.components.search.CurrentSearchItem
 import net.vpg.apex.ui.components.search.RecentSearchItem
 

@@ -1,4 +1,4 @@
-package net.vpg.apex
+package net.vpg.apex.core
 
 import android.app.Activity
 import android.content.Context

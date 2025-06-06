@@ -1,4 +1,4 @@
-package net.vpg.apex.ui.components.home
+package net.vpg.apex.ui.components.common
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,8 +20,8 @@ import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import net.vpg.apex.R
-import net.vpg.apex.di.rememberContext
-import net.vpg.apex.player.ApexAlbum
+import net.vpg.apex.core.di.rememberContext
+import net.vpg.apex.entities.ApexAlbum
 
 @Composable
 fun AlbumImage(album: ApexAlbum, size: Int) {

@@ -12,7 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.vpg.apex.di.rememberPlayHistory
+import net.vpg.apex.core.di.rememberPlayHistory
+import net.vpg.apex.ui.components.common.TrackCard
 
 @Composable
 fun RecentlyPlayedSection() {
@@ -22,21 +23,18 @@ fun RecentlyPlayedSection() {
         Text("Recently played", color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 20.sp)
         Spacer(modifier = Modifier.height(8.dp))
         val tracks = playHistory.getTracks()
-        LazyRow {
-            if (tracks.isEmpty()) {
-                item {
-                    Text(
-                        "No recently played tracks",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 16.sp
-                    )
-                }
-            } else {
+        if (tracks.isEmpty()) {
+            Text(
+                "No recently played tracks",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 16.sp
+            )
+        } else {
+            LazyRow {
                 items(tracks.take(5)) {
-                    AlbumCard(it)
+                    TrackCard(it)
                 }
             }
-
         }
     }
 }

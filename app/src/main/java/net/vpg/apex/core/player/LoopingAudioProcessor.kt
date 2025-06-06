@@ -1,10 +1,10 @@
-package net.vpg.apex.player
+package net.vpg.apex.core.player
 
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.audio.AudioProcessor.AudioFormat
 import androidx.media3.common.util.UnstableApi
-import net.vpg.apex.savePcmAsWav
-import net.vpg.apex.subBuffer
+import net.vpg.apex.core.savePcmAsWav
+import net.vpg.apex.core.subBuffer
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.logging.Logger

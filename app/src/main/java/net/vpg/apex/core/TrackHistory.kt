@@ -1,8 +1,8 @@
-package net.vpg.apex
+package net.vpg.apex.core
 
 import android.content.Context
 import androidx.compose.runtime.toMutableStateList
-import net.vpg.apex.player.ApexTrack
+import net.vpg.apex.entities.ApexTrack
 import java.io.File
 import java.util.logging.Logger
 

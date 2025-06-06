@@ -13,20 +13,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.vpg.apex.player.ApexTrack
+import net.vpg.apex.entities.ApexTrack
+import net.vpg.apex.ui.components.common.TrackCard
 
 @Composable
 fun TrendingSection() {
-    val searchHistory = remember {
-        ApexTrack.TRACKS_DB.values.shuffled().take(5)
+    val trending = remember {
+        ApexTrack.TRACKS_DB.values.shuffled()
     }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Trending", color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 20.sp)
         Spacer(modifier = Modifier.height(8.dp))
         LazyRow {
-            items(searchHistory) {
-                AlbumCard(it)
+            items(trending.take(5)) {
+                TrackCard(it)
             }
         }
     }
