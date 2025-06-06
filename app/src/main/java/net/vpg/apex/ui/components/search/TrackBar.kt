@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import net.vpg.apex.di.rememberPlayHistory
 import net.vpg.apex.di.rememberPlayer
 import net.vpg.apex.player.ApexTrack
+import net.vpg.apex.ui.components.home.AlbumImage
 
 @Composable
 inline fun TrackBar(
@@ -33,11 +34,7 @@ inline fun TrackBar(
             onClick()
         }
     ) {
-        Box(
-            modifier = Modifier
-                .size(50.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(4.dp))
-        )
+        AlbumImage(apexTrack.album, 50)
         Spacer(modifier = Modifier.width(16.dp))
         Column(
             modifier = Modifier.weight(1f)

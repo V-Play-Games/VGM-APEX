@@ -30,7 +30,7 @@ fun main() {
         "Ranger" to "Pokemon Ranger",
         "Ranger-SOA" to "Pokemon Ranger: Shadows of Almia",
         "RBY" to "Pokemon Red, Blue & Yellow",
-        "RSE" to "Pokemon Rube, Sapphire & Emerald",
+        "RSE" to "Pokemon Ruby, Sapphire & Emerald",
         "SM" to "Pokemon Sun & Moon",
         "SwSh" to "Pokemon Sword & Shield",
         "TA" to "Pokemon Typing Adventure",

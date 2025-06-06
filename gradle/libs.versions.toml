@@ -11,6 +11,7 @@ hilt-android = "2.56.2"
 android = "8.10.0"
 kotlin = "2.1.21"
 ksp = "2.1.21-2.0.1"
+coil = "3.2.0"
 
 [libraries]
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
@@ -23,6 +24,8 @@ media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = 
 vjson = { module = "com.github.v-play-games:vjson", version.ref = "vjson" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt-android" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt-android" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android" }

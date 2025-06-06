@@ -1,9 +1,7 @@
 package net.vpg.apex.ui.components.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,12 +26,7 @@ fun AlbumCard(apexTrack: ApexTrack) {
                 playHistory.addTrack(apexTrack)
             }
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(150.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(8.dp))
-        )
+        AlbumImage(apexTrack.album, 150)
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = apexTrack.title,

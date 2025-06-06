@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import net.vpg.apex.di.rememberPlayer
 import net.vpg.apex.player.ApexTrack
+import net.vpg.apex.ui.components.home.AlbumImage
 import kotlin.math.max
 
 object NowPlayingScreen : ApexScreen(
@@ -42,11 +43,7 @@ object NowPlayingScreen : ApexScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
-                modifier = Modifier
-                    .size(360.dp)
-                    .background(MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(4.dp))
-            )
+            AlbumImage(nowPlaying.album, 360)
 
             Spacer(Modifier.height(24.dp))
 
