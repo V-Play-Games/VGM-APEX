@@ -42,10 +42,17 @@ class MainActivity : ComponentActivity() {
             targetState = showSplash,
             animationSpec = tween(durationMillis = 800)
         ) { isShowingSplash ->
-            if (isShowingSplash) {
-                SplashScreen()
-            } else {
-                MainContent()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center
+            ) {
+                if (isShowingSplash) {
+                    SplashScreen()
+                } else {
+                    MainContent()
+                }
             }
         }
 
@@ -59,27 +66,15 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun SplashScreen() {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_pika_chill),
-                contentDescription = "App Logo",
-                modifier = Modifier.size(200.dp)
-            )
-        }
+        Image(
+            painter = painterResource(id = R.drawable.ic_pika_chill),
+            contentDescription = "App Logo",
+            modifier = Modifier.size(200.dp)
+        )
     }
 
     @Composable
     fun MainContent() {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            MusicAppNavigation()
-        }
+        MusicAppNavigation()
     }
 }
