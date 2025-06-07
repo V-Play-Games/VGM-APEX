@@ -25,11 +25,15 @@ inline fun TrackBar(
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.clickable {
-            player.play(apexTrack)
-            playHistory.addTrack(apexTrack)
-            onClick()
-        }
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clickable {
+                player.play(apexTrack)
+                playHistory.addTrack(apexTrack)
+                onClick()
+            }
     ) {
         AlbumImage(apexTrack.album, 50)
         Spacer(modifier = Modifier.width(16.dp))
