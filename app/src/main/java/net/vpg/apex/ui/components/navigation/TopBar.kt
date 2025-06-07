@@ -1,3 +1,5 @@
+package net.vpg.apex.ui.components.navigation
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons

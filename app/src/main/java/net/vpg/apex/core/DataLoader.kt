@@ -9,10 +9,6 @@ import net.vpg.vjson.value.JSONObject
 
 object DataLoader {
     fun loadData(context: Context) {
-        loadTracksList(context)
-    }
-
-    fun loadTracksList(context: Context) {
         mapOf<String, (JSONObject) -> Unit>(
             "tracks" to { ApexTrack(it) },
             "albums" to { ApexAlbum(it) },

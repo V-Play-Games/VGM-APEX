@@ -1,4 +1,4 @@
-package net.vpg.apex.ui.components.home
+package net.vpg.apex.ui.components.navigation
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme

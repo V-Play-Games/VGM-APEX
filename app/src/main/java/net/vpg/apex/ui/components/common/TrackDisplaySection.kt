@@ -1,4 +1,4 @@
-package net.vpg.apex.ui.components.home
+package net.vpg.apex.ui.components.common
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,19 +10,22 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.vpg.apex.core.di.rememberPlayHistory
-import net.vpg.apex.ui.components.common.TrackCard
+import net.vpg.apex.entities.ApexTrack
 
 @Composable
-fun RecentlyPlayedSection() {
-    val playHistory = rememberPlayHistory()
-
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("Recently played", color = MaterialTheme.colorScheme.onPrimaryContainer, fontSize = 20.sp)
+fun TrackDisplaySection(sectionTitle: String, tracks: List<ApexTrack>) {
+    Column {
+        Text(
+            text = sectionTitle,
+            modifier = Modifier.padding(start = 12.dp),
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            fontWeight = FontWeight.Bold,
+            fontSize = 20.sp
+        )
         Spacer(modifier = Modifier.height(8.dp))
-        val tracks = playHistory.getTracks()
         if (tracks.isEmpty()) {
             Text(
                 "No recently played tracks",
@@ -31,7 +34,10 @@ fun RecentlyPlayedSection() {
             )
         } else {
             LazyRow {
-                items(tracks.take(5)) {
+                item {
+                    Spacer(modifier = Modifier.padding(start = 12.dp))
+                }
+                items(tracks) {
                     TrackCard(it)
                 }
             }

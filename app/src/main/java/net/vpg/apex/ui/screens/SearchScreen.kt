@@ -1,7 +1,10 @@
 package net.vpg.apex.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -27,92 +30,89 @@ object SearchScreen : ApexBottomBarScreen(
     route = "search",
     icon = Icons.Default.Search,
     title = "Search",
-    screen = {
+    columnModifier = Modifier.padding(16.dp),
+    content = {
         // State management
         var searchQuery by rememberSaveable { mutableStateOf("") }
         val searchHistory = rememberSearchHistory()
 
         // Store search results
         val searchResults = remember(searchQuery) {
-            if (searchQuery.isEmpty()) {
+            if (searchQuery.isEmpty())
                 emptyList()
-            } else {
-                searchTracks(searchQuery)
-            }
+            else
+                ApexTrack.TRACKS_DB.values.filter { it.title.contains(searchQuery, ignoreCase = true) }
         }
 
-        Column(
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(16.dp)
-        ) {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                placeholder = { Text("Search", color = Color.Gray) },
-                modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.LightGray,
-                ),
-                leadingIcon = {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = { Text("Search", color = Color.Gray) },
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Black,
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.LightGray,
+            ),
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Search Icon",
+                    tint = Color.Gray
+                )
+            },
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
                     Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search Icon",
+                        imageVector = Icons.Default.Clear,
+                        modifier = Modifier.clickable { searchQuery = "" },
+                        contentDescription = "Clear Search",
                         tint = Color.Gray
                     )
-                },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
-                            Icon(
-                                imageVector = Icons.Default.Clear,
-                                contentDescription = "Clear Search",
-                                tint = Color.Gray
-                            )
-                        }
-                    }
-                },
-                singleLine = true
+                }
+            },
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Display either search results or recent searches
+        if (searchQuery.isNotEmpty()) {
+            Text(
+                text = "Search Results",
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold
             )
-            Spacer(modifier = Modifier.height(24.dp))
 
-            // Display either search results or recent searches
-            if (searchQuery.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (searchResults.isEmpty() && searchQuery.isNotEmpty()) {
                 Text(
-                    text = "Search Results",
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold
+                    text = "No results found for \"$searchQuery\"",
+                    color = Color.Gray
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                if (searchResults.isEmpty() && searchQuery.isNotEmpty()) {
-                    Text(
-                        text = "No results found for \"$searchQuery\"",
-                        color = Color.Gray
-                    )
-                } else {
-                    LazyColumn {
-                        items(searchResults) { track ->
-                            CurrentSearchItem(track)
-                        }
+            } else {
+                LazyColumn {
+                    items(searchResults) { track ->
+                        CurrentSearchItem(track)
                     }
                 }
-            } else {
+            }
+        } else {
+            Text(
+                text = "Recent searches",
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            if (searchHistory.getTracks().isEmpty()) {
                 Text(
-                    text = "Recent searches",
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold
+                    text = "No recent searches",
+                    color = Color.Gray
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
+            } else {
                 LazyColumn {
                     items(searchHistory.getTracks()) { track ->
                         RecentSearchItem(track)
@@ -122,8 +122,3 @@ object SearchScreen : ApexBottomBarScreen(
         }
     }
 )
-
-fun searchTracks(query: String) = if (query.isEmpty())
-    emptyList()
-else
-    ApexTrack.TRACKS_DB.values.filter { it.title.contains(query, ignoreCase = true) }

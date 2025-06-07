@@ -1,9 +1,9 @@
 package net.vpg.apex
 
-import TopBar
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -22,7 +22,8 @@ import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import net.vpg.apex.core.DataLoader
 import net.vpg.apex.core.di.rememberContext
-import net.vpg.apex.ui.components.home.BottomBar
+import net.vpg.apex.ui.components.navigation.BottomBar
+import net.vpg.apex.ui.components.navigation.TopBar
 import net.vpg.apex.ui.components.player.NowPlayingBar
 import net.vpg.apex.ui.screens.HomeScreen
 import net.vpg.apex.ui.screens.LibraryScreen
@@ -88,21 +89,17 @@ class MainActivity : ComponentActivity() {
         val currentRoute = navBackStackEntry?.destination?.route
 
         Scaffold(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding(),
+            modifier = Modifier.statusBarsPadding(),
             topBar = { TopBar() },
             bottomBar = {
                 Column {
                     // Only show the NowPlayingBar if not on the NowPlayingScreen
-                    if (currentRoute != NowPlayingScreen.route) {
+                    AnimatedVisibility(currentRoute != NowPlayingScreen.route) {
                         NowPlayingBar(navController)
                     }
                     BottomBar(navController)
                 }
             },
-            containerColor = MaterialTheme.colorScheme.background,
-            contentWindowInsets = WindowInsets(0, 0, 0, 0)
         ) { paddingValues ->
             NavHost(
                 navController = navController,

@@ -1,13 +1,11 @@
 package net.vpg.apex.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -20,7 +18,15 @@ import kotlin.math.max
 
 object NowPlayingScreen : ApexScreen(
     route = "now_playing",
-    screen = {
+    columnModifier = Modifier.padding(16.dp),
+    content = {
+        fun formatDuration(durationMs: Long): String {
+            val totalSeconds = durationMs / 1000
+            val minutes = totalSeconds / 60
+            val seconds = totalSeconds % 60
+            return "%d:%02d".format(minutes, seconds)
+        }
+
         val player = rememberPlayer()
         val nowPlaying = player.nowPlaying
         var position by remember { mutableLongStateOf(player.currentPosition) }
@@ -33,83 +39,68 @@ object NowPlayingScreen : ApexScreen(
                 delay(1000) // Delay for 1 second
             }
         }
-        Column(
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        AlbumImage(nowPlaying.album, 360)
+
+        Spacer(Modifier.height(24.dp))
+
+        Text(
+            text = nowPlaying.title,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            fontSize = 22.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text = nowPlaying.album.name,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 16.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        Slider(
+            value = progress,
+            onValueChange = { /*player.seekTo((it * duration).toLong())*/ },
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            )
+        )
+        Spacer(Modifier.height(4.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            AlbumImage(nowPlaying.album, 360)
-
-            Spacer(Modifier.height(24.dp))
-
             Text(
-                text = nowPlaying.title,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                fontSize = 22.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = nowPlaying.album.name,
+                text = formatDuration(position),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 16.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                fontSize = 12.sp
             )
-
-            Spacer(Modifier.height(16.dp))
-
-            Slider(
-                value = progress,
-                onValueChange = { /*player.seekTo((it * duration).toLong())*/ },
-                colors = SliderDefaults.colors(
-                    thumbColor = MaterialTheme.colorScheme.primary,
-                    activeTrackColor = MaterialTheme.colorScheme.primary,
-                    inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                )
+            Text(
+                text = formatDuration(duration),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 12.sp
             )
-            Spacer(Modifier.height(4.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = formatDuration(player.currentPosition),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 12.sp
-                )
-                Text(
-                    text = formatDuration(player.duration),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 12.sp
-                )
-            }
-            Spacer(Modifier.height(24.dp))
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    Icons.Default.Shuffle,
-                    contentDescription = "Previous",
-                    tint = if (player.isShuffling)
-                        MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(30.dp).clickable { player.isShuffling = !player.isShuffling }
-                )
-                PlayerActions(player, Modifier.size(30.dp))
-            }
+        }
+        Spacer(Modifier.height(24.dp))
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                Icons.Default.Shuffle,
+                contentDescription = "Previous",
+                tint = if (player.isShuffling)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(30.dp).clickable { player.isShuffling = !player.isShuffling }
+            )
+            PlayerActions(player, Modifier.size(30.dp))
         }
     }
 )
-
-private fun formatDuration(durationMs: Long): String {
-    val totalSeconds = durationMs / 1000
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return "%d:%02d".format(minutes, seconds)
-}

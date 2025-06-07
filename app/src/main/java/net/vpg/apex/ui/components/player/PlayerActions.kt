@@ -25,7 +25,6 @@ fun PlayerActions(player: ApexPlayer, modifier: Modifier = Modifier) {
     PlayPauseButton(player, modifier)
     NextButton(player, modifier)
     LoopButton(player, modifier)
-
 }
 
 @Composable
