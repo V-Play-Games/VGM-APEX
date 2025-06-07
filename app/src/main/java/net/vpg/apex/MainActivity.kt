@@ -22,13 +22,11 @@ import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import net.vpg.apex.core.DataLoader
 import net.vpg.apex.core.di.rememberContext
+import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.ui.components.navigation.BottomBar
 import net.vpg.apex.ui.components.navigation.TopBar
 import net.vpg.apex.ui.components.player.NowPlayingBar
-import net.vpg.apex.ui.screens.HomeScreen
-import net.vpg.apex.ui.screens.LibraryScreen
-import net.vpg.apex.ui.screens.NowPlayingScreen
-import net.vpg.apex.ui.screens.SearchScreen
+import net.vpg.apex.ui.screens.*
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -85,31 +83,35 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun MainContent() {
         val navController = rememberNavController()
+        val navControllerProvider = rememberNavControllerProvider()
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
 
-        Scaffold(
-            modifier = Modifier.statusBarsPadding(),
-            topBar = { TopBar() },
-            bottomBar = {
-                Column {
-                    // Only show the NowPlayingBar if not on the NowPlayingScreen
-                    AnimatedVisibility(currentRoute != NowPlayingScreen.route) {
-                        NowPlayingBar(navController)
+        CompositionLocalProvider(navControllerProvider provides navController) {
+            Scaffold(
+                modifier = Modifier.statusBarsPadding(),
+                topBar = { TopBar() },
+                bottomBar = {
+                    Column {
+                        // Only show the NowPlayingBar if not on the NowPlayingScreen
+                        AnimatedVisibility(currentRoute != NowPlayingScreen.route) {
+                            NowPlayingBar()
+                        }
+                        BottomBar()
                     }
-                    BottomBar(navController)
+                },
+            ) { paddingValues ->
+                NavHost(
+                    navController = navController,
+                    startDestination = HomeScreen.route,
+                    modifier = Modifier.padding(paddingValues)
+                ) {
+                    HomeScreen.composeTo(this)
+                    SearchScreen.composeTo(this)
+                    LibraryScreen.composeTo(this)
+                    NowPlayingScreen.composeTo(this)
+                    TrackInfoScreen.composeTo(this)
                 }
-            },
-        ) { paddingValues ->
-            NavHost(
-                navController = navController,
-                startDestination = HomeScreen.route,
-                modifier = Modifier.padding(paddingValues)
-            ) {
-                HomeScreen.composeTo(this)
-                SearchScreen.composeTo(this)
-                LibraryScreen.composeTo(this)
-                NowPlayingScreen.composeTo(this)
             }
         }
     }

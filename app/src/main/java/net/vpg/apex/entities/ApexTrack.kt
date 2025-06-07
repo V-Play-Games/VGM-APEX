@@ -1,8 +1,10 @@
 package net.vpg.apex.entities
 
+import kotlinx.serialization.Serializable
 import net.vpg.vjson.value.JSONObject
 import java.io.File
 
+@Serializable
 data class ApexTrack(
     val id: String,
     val title: String,

@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.core.di.rememberPlayHistory
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexTrack
@@ -16,6 +17,7 @@ import net.vpg.apex.entities.ApexTrack
 fun TrackCard(apexTrack: ApexTrack) {
     val player = rememberPlayer()
     val playHistory = rememberPlayHistory()
+    val navController = rememberNavControllerProvider().current
 
     Column(
         modifier = Modifier
@@ -26,7 +28,9 @@ fun TrackCard(apexTrack: ApexTrack) {
                 playHistory.addTrack(apexTrack)
             }
     ) {
-        AlbumImage(apexTrack.album, 150)
+        AlbumImageWithInfoButton(apexTrack.album, 150, onClick = {
+            navController.navigate(apexTrack)
+        })
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = apexTrack.title,

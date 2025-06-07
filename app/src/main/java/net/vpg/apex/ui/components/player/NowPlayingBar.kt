@@ -11,14 +11,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
+import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.ui.components.common.AlbumImage
 import net.vpg.apex.ui.screens.NowPlayingScreen
 
 @Composable
-fun NowPlayingBar(navController: NavController) {
+fun NowPlayingBar() {
     val player = rememberPlayer()
+    val navController = rememberNavControllerProvider().current
     Row(
         modifier = Modifier
             .fillMaxWidth()

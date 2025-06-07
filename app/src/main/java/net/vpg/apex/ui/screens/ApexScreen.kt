@@ -12,6 +12,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
+import kotlin.reflect.KClass
+
+sealed class ApexScreenWithParameters<T : Any>(
+    val route: KClass<T>,
+    columnModifier: Modifier = Modifier,
+    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    content: @Composable ColumnScope.(T) -> Unit
+) {
+    private val screen: @Composable (T) -> Unit by lazy {
+        @Composable { t ->
+            Column(
+                modifier = columnModifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+                verticalArrangement = verticalArrangement,
+                horizontalAlignment = horizontalAlignment,
+                content = { content(t) }
+            )
+        }
+    }
+
+    fun composeTo(builder: NavGraphBuilder) {
+        builder.composable(route) { entry ->
+            screen(entry.toRoute(route))
+        }
+    }
+}
 
 sealed class ApexScreen(
     val route: String,

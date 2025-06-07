@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import net.vpg.apex.core.di.rememberPlayer
-import net.vpg.apex.ui.components.common.AlbumImage
+import net.vpg.apex.ui.components.common.AlbumImageWithInfoButton
 import net.vpg.apex.ui.components.player.PlayerActions
 import kotlin.math.max
 
@@ -36,10 +36,10 @@ object NowPlayingScreen : ApexScreen(
         LaunchedEffect(Unit) {
             while (true) {
                 position = player.currentPosition
-                delay(1000) // Delay for 1 second
+                delay(1000) // Update every 1 second
             }
         }
-        AlbumImage(nowPlaying.album, 360)
+        AlbumImageWithInfoButton(nowPlaying.album, 360)
 
         Spacer(Modifier.height(24.dp))
 

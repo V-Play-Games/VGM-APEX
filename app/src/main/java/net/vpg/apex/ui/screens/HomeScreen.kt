@@ -20,7 +20,7 @@ object HomeScreen : ApexBottomBarScreen(
         val trending = remember { ApexTrack.TRACKS_DB.values.shuffled() }
 
         TrackDisplaySection("Trending", trending.take(5))
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(32.dp))
         TrackDisplaySection("Recently Played", playHistory.getTracks().take(5))
     }
 )
