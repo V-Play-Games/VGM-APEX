@@ -11,6 +11,7 @@ import kotlin.time.ExperimentalTime
 fun main() {
     val titleRegex = "^(([A-Za-z\\- ]+|[A-Za-z\\-0-9]+) \\d{2,3}[a-z]?) (.+)$".toRegex()
     val date = "2025-06-05"
+    val defaultUploaderId = "vplaygames"
     val idToNameMap = mapOf(
         "B2W2" to "Pokemon Black 2 & White 2",
         "BR" to "Pokemon Battle Revolution",
@@ -48,7 +49,7 @@ fun main() {
             TrackData(
                 id = titleRegex.find(it.name)?.groupValues[1]?.replace(" ", "") ?: it.id,
                 title = titleRegex.find(it.name)?.groupValues[3] ?: it.name,
-                uploaderId = "V Play Games",
+                uploaderId = defaultUploaderId,
                 albumId = it.category,
                 frameLength = it.frameLength,
                 loopStart = it.loopStart,
@@ -88,7 +89,7 @@ fun main() {
     }
 
     val uploaderData = UploaderData(
-        id = "vplaygames",
+        id = defaultUploaderId,
         name = "V Play Games",
         trackIds = tracks.map { it.id }
     )
