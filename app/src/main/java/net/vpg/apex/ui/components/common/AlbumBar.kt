@@ -10,18 +10,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.entities.ApexAlbum
 
 @Composable
 fun AlbumBar(apexAlbum: ApexAlbum) {
+    val navController = rememberNavControllerProvider().current
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .clickable {
-            }
+            .clickable { navController.navigate(apexAlbum) }
     ) {
         AlbumImage(apexAlbum, size = 75, cornerRadius = 0)
         Spacer(modifier = Modifier.width(16.dp))

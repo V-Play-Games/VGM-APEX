@@ -27,7 +27,7 @@ object LibraryScreen : ApexBottomBarScreen(
             fontWeight = FontWeight.Bold,
             fontSize = 24.sp
         )
-        Spacer(modifier = Modifier.padding(16.dp))
+        Spacer(modifier = Modifier.padding(8.dp))
         LazyColumn {
             items(ApexAlbum.ALBUMS_DB.values.toList()) { album ->
                 if (album != ApexAlbum.EMPTY)

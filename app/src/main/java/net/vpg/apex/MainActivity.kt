@@ -111,6 +111,7 @@ class MainActivity : ComponentActivity() {
                     LibraryScreen.composeTo(this)
                     NowPlayingScreen.composeTo(this)
                     TrackInfoScreen.composeTo(this)
+                    AlbumInfoScreen.composeTo(this)
                 }
             }
         }

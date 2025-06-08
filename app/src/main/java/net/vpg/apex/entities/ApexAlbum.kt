@@ -1,7 +1,9 @@
 package net.vpg.apex.entities
 
+import kotlinx.serialization.Serializable
 import net.vpg.vjson.value.JSONObject
 
+@Serializable
 data class ApexAlbum(
     val id: String,
     val name: String,
