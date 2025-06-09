@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -26,6 +27,7 @@ import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.ui.components.navigation.BottomBar
 import net.vpg.apex.ui.components.navigation.TopBar
 import net.vpg.apex.ui.components.player.NowPlayingBar
+import net.vpg.apex.ui.components.player.SeekBar
 import net.vpg.apex.ui.screens.*
 
 @AndroidEntryPoint
@@ -95,7 +97,17 @@ class MainActivity : ComponentActivity() {
                     Column {
                         // Only show the NowPlayingBar if not on the NowPlayingScreen
                         AnimatedVisibility(currentRoute != NowPlayingScreen.route) {
-                            NowPlayingBar()
+                            Box {
+                                NowPlayingBar()
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomCenter)
+                                        .zIndex(1f)
+                                        .offset(y = 20.dp)
+                                ) {
+                                    SeekBar(bottomBar = true)
+                                }
+                            }
                         }
                         BottomBar()
                     }

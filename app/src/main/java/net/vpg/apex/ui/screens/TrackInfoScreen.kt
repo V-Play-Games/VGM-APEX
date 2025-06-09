@@ -21,7 +21,7 @@ import net.vpg.apex.ui.components.common.AlbumImage
 import java.text.SimpleDateFormat
 import java.util.*
 
-object TrackInfoScreen : ApexScreenWithParameters<ApexTrack>(
+object TrackInfoScreen : ApexScreenDynamic<ApexTrack>(
     route = ApexTrack::class,
     content = { track ->
         TrackInfo(track)

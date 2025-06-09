@@ -15,7 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import kotlin.reflect.KClass
 
-sealed class ApexScreenWithParameters<T : Any>(
+sealed class ApexScreenDynamic<T : Any>(
     val route: KClass<T>,
     columnModifier: Modifier = Modifier,
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
@@ -42,7 +42,7 @@ sealed class ApexScreenWithParameters<T : Any>(
     }
 }
 
-sealed class ApexScreen(
+sealed class ApexScreenStatic(
     val route: String,
     columnModifier: Modifier = Modifier,
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
@@ -73,4 +73,4 @@ sealed class ApexBottomBarScreen(
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     content: @Composable ColumnScope.() -> Unit
-) : ApexScreen(route, columnModifier, verticalArrangement, horizontalAlignment, content)
+) : ApexScreenStatic(route, columnModifier, verticalArrangement, horizontalAlignment, content)

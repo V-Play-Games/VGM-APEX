@@ -32,7 +32,7 @@ import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.ui.components.common.AlbumImage
 import net.vpg.apex.ui.components.common.TrackBar
 
-object AlbumInfoScreen : ApexScreenWithParameters<ApexAlbum>(
+object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
     route = ApexAlbum::class,
     content = { album ->
         AlbumInfo(album)
