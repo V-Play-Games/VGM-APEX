@@ -2,7 +2,6 @@ package net.vpg.apex.ui.components.common
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -24,7 +23,9 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import net.vpg.apex.core.di.rememberContext
+import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.entities.ApexAlbum
+import net.vpg.apex.entities.ApexTrack
 
 @Composable
 fun AlbumImage(album: ApexAlbum, size: Int, cornerRadius: Int = 8) {
@@ -37,11 +38,7 @@ fun AlbumImage(album: ApexAlbum, size: Int, cornerRadius: Int = 8) {
         contentDescription = "${album.name} cover",
         contentScale = ContentScale.Crop,
         loading = {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(
                     modifier = Modifier.size((size * 2 / 3).dp),
                     color = MaterialTheme.colorScheme.primary
@@ -50,11 +47,7 @@ fun AlbumImage(album: ApexAlbum, size: Int, cornerRadius: Int = 8) {
         },
         error = {
             it.result.throwable.printStackTrace()
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = Icons.Default.MusicNote,
                     contentDescription = "App Logo",
@@ -69,9 +62,10 @@ fun AlbumImage(album: ApexAlbum, size: Int, cornerRadius: Int = 8) {
 }
 
 @Composable
-fun AlbumImageWithInfoButton(album: ApexAlbum, size: Int, cornerRadius: Int = 8, onClick: () -> Unit = {}) {
+fun AlbumImageWithInfoButton(album: ApexAlbum, size: Int, apexTrack: ApexTrack) {
+    val navController = rememberNavControllerProvider().current
     Box {
-        AlbumImage(album, size, cornerRadius)
+        AlbumImage(album, size)
         Icon(
             Icons.Outlined.Info,
             contentDescription = "Star",
@@ -79,7 +73,7 @@ fun AlbumImageWithInfoButton(album: ApexAlbum, size: Int, cornerRadius: Int = 8,
                 .shadow(elevation = 4.dp)
                 .align(Alignment.TopEnd)
                 .zIndex(1f)
-                .clickable { onClick() }
+                .clickable { navController.navigate(apexTrack) }
         )
     }
 }

@@ -9,6 +9,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,12 +21,16 @@ import net.vpg.apex.ui.components.player.SeekBar
 @OptIn(ExperimentalMaterial3Api::class)
 object NowPlayingScreen : ApexScreenStatic(
     route = "now_playing",
-    columnModifier = Modifier.padding(16.dp),
+    columnModifier = Modifier.padding(horizontal = 12.dp),
     content = {
         val player = rememberPlayer()
         val nowPlaying = player.nowPlaying
 
-        AlbumImageWithInfoButton(nowPlaying.album, 360)
+        AlbumImageWithInfoButton(
+            album = nowPlaying.album,
+            size = 360,
+            apexTrack = nowPlaying
+        )
 
         Spacer(Modifier.height(24.dp))
 
@@ -33,6 +38,7 @@ object NowPlayingScreen : ApexScreenStatic(
             text = nowPlaying.title,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -51,7 +57,7 @@ object NowPlayingScreen : ApexScreenStatic(
         Spacer(Modifier.height(24.dp))
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth() // don't remove
         ) {
             Icon(
                 Icons.Default.Shuffle,

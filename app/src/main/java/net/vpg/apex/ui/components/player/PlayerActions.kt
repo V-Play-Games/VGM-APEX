@@ -1,14 +1,8 @@
 package net.vpg.apex.ui.components.player
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Pause
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Repeat
-import androidx.compose.material.icons.filled.RepeatOne
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
+import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.player.ApexPlayer
 import net.vpg.apex.entities.ApexTrack
 
@@ -36,7 +31,7 @@ fun LoopButton(player: ApexPlayer, modifier: Modifier = Modifier) {
             MaterialTheme.colorScheme.primary
         else
             MaterialTheme.colorScheme.onPrimaryContainer,
-        modifier = modifier.clickable { player.isLooping = !player.isLooping }
+        modifier = modifier.bounceClick { player.isLooping = !player.isLooping }
     )
 }
 
@@ -47,7 +42,7 @@ fun NextButton(player: ApexPlayer, modifier: Modifier = Modifier) {
         contentDescription = "Next",
         tint = MaterialTheme.colorScheme.onPrimaryContainer,
         modifier = if (player.canGoNext())
-            modifier.clickable { player.nextTrack() }
+            modifier.bounceClick { player.nextTrack() }
         else
             modifier.alpha(0.5f)
     )
@@ -66,7 +61,7 @@ fun PlayPauseButton(player: ApexPlayer, modifier: Modifier = Modifier) {
             contentDescription = "PlayPause",
             tint = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = if (player.nowPlaying != ApexTrack.EMPTY)
-                modifier.clickable { player.togglePlayPause() }
+                modifier.bounceClick { player.togglePlayPause() }
             else
                 modifier.alpha(0.5f))
 }
@@ -77,9 +72,11 @@ fun PreviousButton(player: ApexPlayer, modifier: Modifier = Modifier) {
         Icons.Default.SkipPrevious,
         contentDescription = "Previous",
         tint = MaterialTheme.colorScheme.onPrimaryContainer,
-        modifier = if (player.canGoPrevious())
-            modifier.clickable { player.previousTrack() }
-        else
-            modifier.alpha(0.5f)
+        modifier = modifier.bounceClick {
+            if (player.currentPosition > 5000L || !player.canGoPrevious())
+                player.seekTo(0L)
+            else
+                player.previousTrack()
+        }
     )
 }

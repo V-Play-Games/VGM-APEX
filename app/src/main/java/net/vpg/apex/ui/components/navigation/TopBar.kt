@@ -18,7 +18,7 @@ import net.vpg.apex.R
 fun TopBar() {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxWidth() // don't remove
             .padding(16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically

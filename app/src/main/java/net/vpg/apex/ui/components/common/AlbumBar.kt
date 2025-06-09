@@ -1,15 +1,16 @@
 package net.vpg.apex.ui.components.common
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.entities.ApexAlbum
 
@@ -20,19 +21,18 @@ fun AlbumBar(apexAlbum: ApexAlbum) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxWidth() // don't remove
             .padding(vertical = 8.dp)
-            .clickable { navController.navigate(apexAlbum) }
+            .bounceClick { navController.navigate(apexAlbum) }
     ) {
         AlbumImage(apexAlbum, size = 75, cornerRadius = 0)
         Spacer(modifier = Modifier.width(16.dp))
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = apexAlbum.name,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 18.sp,
+                fontWeight = FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -52,6 +52,5 @@ fun AlbumBar(apexAlbum: ApexAlbum) {
                 overflow = TextOverflow.Ellipsis
             )
         }
-        Spacer(modifier = Modifier.width(16.dp))
     }
 }

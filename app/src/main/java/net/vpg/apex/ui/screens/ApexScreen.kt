@@ -1,11 +1,8 @@
 package net.vpg.apex.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,9 +22,7 @@ sealed class ApexScreenDynamic<T : Any>(
     private val screen: @Composable (T) -> Unit by lazy {
         @Composable { t ->
             Column(
-                modifier = columnModifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
+                modifier = columnModifier,
                 verticalArrangement = verticalArrangement,
                 horizontalAlignment = horizontalAlignment,
                 content = { content(t) }
@@ -52,9 +47,7 @@ sealed class ApexScreenStatic(
     private val screen by lazy {
         @Composable {
             Column(
-                modifier = columnModifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
+                modifier = columnModifier,
                 verticalArrangement = verticalArrangement,
                 horizontalAlignment = horizontalAlignment,
                 content = content

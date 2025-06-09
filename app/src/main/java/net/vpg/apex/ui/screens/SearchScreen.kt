@@ -27,7 +27,7 @@ object SearchScreen : ApexBottomBarScreen(
     route = "search",
     icon = Icons.Default.Search,
     title = "Search",
-    columnModifier = Modifier.padding(16.dp),
+    columnModifier = Modifier.padding(horizontal = 12.dp),
     content = {
         // State management
         var searchQuery by rememberSaveable { mutableStateOf("") }
@@ -45,7 +45,7 @@ object SearchScreen : ApexBottomBarScreen(
             value = searchQuery,
             onValueChange = { searchQuery = it },
             placeholder = { Text("Search", color = Color.Gray) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(), // don't remove
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = Color.Black,
                 unfocusedTextColor = Color.Black,

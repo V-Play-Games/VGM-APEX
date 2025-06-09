@@ -19,7 +19,7 @@ object LibraryScreen : ApexBottomBarScreen(
     route = "library",
     icon = Icons.Default.LibraryMusic,
     title = "Library",
-    columnModifier = Modifier.padding(16.dp),
+    columnModifier = Modifier.padding(horizontal = 12.dp),
     content = {
         Text(
             text = "APEX Library",
@@ -27,7 +27,7 @@ object LibraryScreen : ApexBottomBarScreen(
             fontWeight = FontWeight.Bold,
             fontSize = 24.sp
         )
-        Spacer(modifier = Modifier.padding(8.dp))
+        Spacer(modifier = Modifier.padding(4.dp))
         LazyColumn {
             items(ApexAlbum.ALBUMS_DB.values.toList()) { album ->
                 if (album != ApexAlbum.EMPTY)

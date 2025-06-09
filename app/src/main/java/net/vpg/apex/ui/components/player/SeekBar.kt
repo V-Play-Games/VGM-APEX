@@ -11,12 +11,14 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.core.formatDuration
+import net.vpg.apex.entities.ApexTrack
 import kotlin.math.max
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SeekBar(bottomBar: Boolean) {
     val player = rememberPlayer()
+    if (player.nowPlaying == ApexTrack.EMPTY) return
     var position by remember { mutableLongStateOf(player.currentPosition) }
     val duration = max(0, player.duration)
     val progress = if (position > 0 && duration > 0) position.toFloat() / duration else 0f
@@ -70,7 +72,7 @@ fun SeekBar(bottomBar: Boolean) {
     if (!bottomBar) {
         Spacer(Modifier.height(4.dp))
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(), // don't remove
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(

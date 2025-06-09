@@ -1,6 +1,5 @@
 package net.vpg.apex.ui.components.common
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -10,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.di.rememberPlayHistory
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexTrack
@@ -27,9 +27,8 @@ inline fun TrackBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
-            .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .clickable {
+            .bounceClick {
                 player.play(apexTrack)
                 playHistory.addTrack(apexTrack)
                 onClick()
@@ -37,9 +36,7 @@ inline fun TrackBar(
     ) {
         AlbumImage(apexTrack.album, 50)
         Spacer(modifier = Modifier.width(16.dp))
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = apexTrack.title,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,

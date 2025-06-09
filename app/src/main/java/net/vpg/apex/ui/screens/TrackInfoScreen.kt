@@ -5,7 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,14 +34,12 @@ fun TrackInfo(track: ApexTrack) {
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
             .padding(16.dp)
             .verticalScroll(scrollState)
     ) {
         // Top section with album art and basic info
         Row(
             modifier = Modifier
-                .fillMaxWidth()
                 .padding(bottom = 24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -82,7 +80,7 @@ fun TrackInfo(track: ApexTrack) {
             }
         }
 
-        Divider(
+        HorizontalDivider(
             modifier = Modifier.padding(vertical = 16.dp),
             color = MaterialTheme.colorScheme.outlineVariant
         )

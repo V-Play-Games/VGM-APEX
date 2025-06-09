@@ -1,14 +1,15 @@
 package net.vpg.apex.ui.components.common
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import net.vpg.apex.core.di.rememberNavControllerProvider
+import androidx.compose.ui.unit.sp
+import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.di.rememberPlayHistory
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexTrack
@@ -17,25 +18,27 @@ import net.vpg.apex.entities.ApexTrack
 fun TrackCard(apexTrack: ApexTrack) {
     val player = rememberPlayer()
     val playHistory = rememberPlayHistory()
-    val navController = rememberNavControllerProvider().current
 
     Column(
         modifier = Modifier
             .padding(end = 12.dp)
             .width(150.dp)
-            .clickable {
+            .bounceClick {
                 player.play(apexTrack)
                 playHistory.addTrack(apexTrack)
             }
     ) {
-        AlbumImageWithInfoButton(apexTrack.album, 150, onClick = {
-            navController.navigate(apexTrack)
-        })
+        AlbumImageWithInfoButton(
+            album = apexTrack.album,
+            size = 150,
+            apexTrack = apexTrack
+        )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = apexTrack.title,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
-            style = MaterialTheme.typography.headlineSmall,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )

@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
         ) { isShowingSplash ->
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxSize() // don't remove
                     .background(MaterialTheme.colorScheme.background),
                 contentAlignment = Alignment.Center
             ) {

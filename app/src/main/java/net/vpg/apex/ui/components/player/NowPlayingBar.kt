@@ -1,6 +1,5 @@
 package net.vpg.apex.ui.components.player
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
@@ -13,21 +12,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.core.di.rememberPlayer
+import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.ui.components.common.AlbumImage
 import net.vpg.apex.ui.screens.NowPlayingScreen
 
 @Composable
 fun NowPlayingBar() {
     val player = rememberPlayer()
+    if (player.nowPlaying == ApexTrack.EMPTY) return
     val navController = rememberNavControllerProvider().current
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
-            .clickable {
-                // Navigate to Now Playing Screen when bar is clicked
-                navController.navigate(NowPlayingScreen.route)
-            }
+            .clickable { navController.navigate(NowPlayingScreen.route) }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
