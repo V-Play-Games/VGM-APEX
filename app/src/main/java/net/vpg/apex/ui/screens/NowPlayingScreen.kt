@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import net.vpg.apex.core.di.rememberPlayer
+import net.vpg.apex.core.formatDuration
 import net.vpg.apex.ui.components.common.AlbumImageWithInfoButton
 import net.vpg.apex.ui.components.player.PlayerActions
 import kotlin.math.max
@@ -20,22 +21,18 @@ object NowPlayingScreen : ApexScreen(
     route = "now_playing",
     columnModifier = Modifier.padding(16.dp),
     content = {
-        fun formatDuration(durationMs: Long): String {
-            val totalSeconds = durationMs / 1000
-            val minutes = totalSeconds / 60
-            val seconds = totalSeconds % 60
-            return "%d:%02d".format(minutes, seconds)
-        }
-
         val player = rememberPlayer()
         val nowPlaying = player.nowPlaying
         var position by remember { mutableLongStateOf(player.currentPosition) }
         val duration = max(0, player.duration)
         val progress = if (duration > 0) position.toFloat() / duration else 0f
+        var isDragging by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
             while (true) {
-                position = player.currentPosition
+                if (!isDragging) {
+                    position = player.currentPosition
+                }
                 delay(1000) // Update every 1 second
             }
         }
@@ -62,7 +59,15 @@ object NowPlayingScreen : ApexScreen(
 
         Slider(
             value = progress,
-            onValueChange = { /*player.seekTo((it * duration).toLong())*/ },
+            onValueChange = { newProgress ->
+                isDragging = true
+                position = (newProgress * duration).toLong()
+            },
+            onValueChangeFinished = {
+                // Only seek when user releases the slider to avoid too many seek operations
+                player.seekTo((progress * duration).toLong())
+                isDragging = false
+            },
             colors = SliderDefaults.colors(
                 thumbColor = MaterialTheme.colorScheme.primary,
                 activeTrackColor = MaterialTheme.colorScheme.primary,

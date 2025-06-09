@@ -2,25 +2,28 @@ package net.vpg.apex.core.player
 
 import androidx.media3.common.audio.AudioProcessor
 import androidx.media3.common.audio.AudioProcessor.AudioFormat
+import androidx.media3.common.audio.AudioProcessor.EMPTY_BUFFER
 import androidx.media3.common.util.UnstableApi
 import net.vpg.apex.core.savePcmAsWav
 import net.vpg.apex.core.subBuffer
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.logging.Logger
+import kotlin.math.max
 import kotlin.math.min
 
 @UnstableApi
-class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
+internal class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
     private var active = false
     private var ended = false
 
     private var format = AudioFormat.NOT_SET
     private var audioData = EMPTY_BUFFER
     private var currentFrame = 0
+    internal val currentPositionMs get() = currentFrame.toLong() * 1000 / format.sampleRate
+    private var recentlySeekedFrame = -1
 
     companion object {
-        private val EMPTY_BUFFER = ByteBuffer.allocateDirect(0).order(ByteOrder.nativeOrder())
         private val LOGGER = Logger.getLogger(LoopingAudioProcessor::class.java.name)
     }
 
@@ -39,6 +42,7 @@ class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
         if (!inputBuffer.hasRemaining()) return
         ensureCapacity(inputBuffer.remaining())
         audioData.put(inputBuffer)
+        println("Accumulated ${inputBuffer.position()} bytes of audio data, current position: ${audioData.position()}")
         if (audioData.position() >= player.nowPlaying.frameLength * format.bytesPerFrame) {
             player.nowPlaying.downloadedFile(player.cacheDir)
                 .takeIf { !it.exists() }
@@ -51,20 +55,27 @@ class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
     }
 
     override fun getOutput(): ByteBuffer {
+        if (recentlySeekedFrame >= 0) {
+            LOGGER.info("Seeking to frame $recentlySeekedFrame")
+            currentFrame = recentlySeekedFrame
+            recentlySeekedFrame = -1
+        }
         val startPos = currentFrame * format.bytesPerFrame
-        val limit = audioData.position().let { availableBytes ->
-            if (player.isLooping) {
-                min(player.loopEnd * format.bytesPerFrame, availableBytes)
-            } else {
-                availableBytes
-            }
-        }
+        val maxSafeLength = startPos + format.bytesPerFrame * format.sampleRate / 20
+        val absoluteEndPos = min(
+            if (player.isLooping && currentFrame <= player.loopEnd)
+                player.loopEnd * format.bytesPerFrame
+            else
+                Int.MAX_VALUE,
+            max(audioData.capacity(), player.nowPlaying.frameLength * format.bytesPerFrame)
+        )
+        val limit = minOf(absoluteEndPos, audioData.position(), maxSafeLength)
         currentFrame = limit / format.bytesPerFrame
-        ended = currentFrame == player.loopEnd && !player.isLooping
-        if (player.isLooping && currentFrame == player.loopEnd) {
-            currentFrame = player.loopStart
+        ended = currentFrame * format.bytesPerFrame >= absoluteEndPos
+        if (player.isLooping && ended) {
+            ended = false
+            currentFrame = if (currentFrame == player.loopEnd) player.loopStart else 0
         }
-
         return audioData.subBuffer(startPos, limit)
     }
 
@@ -80,6 +91,10 @@ class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
         flush()
         format = AudioFormat.NOT_SET
         active = false
+    }
+
+    fun seekTo(positionMs: Long) {
+        recentlySeekedFrame = (positionMs / 1000 * format.sampleRate).toInt()
     }
 
     private fun ensureCapacity(additional: Int) {

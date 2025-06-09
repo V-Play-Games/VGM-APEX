@@ -32,8 +32,13 @@ class ApexPlayer {
     val loopStart get() = if (nowPlaying.loopStart == -1) 0 else nowPlaying.loopStart
     val loopEnd get() = if (nowPlaying.loopEnd == -1) nowPlaying.frameLength else nowPlaying.loopEnd
     val cacheDir: File
-    val duration: Long get() = player.duration
-    val currentPosition: Long get() = player.currentPosition
+    val duration get() = player.duration
+    val currentPosition
+        @OptIn(UnstableApi::class)
+        get() = looper.currentPositionMs
+
+    @UnstableApi
+    private val looper = LoopingAudioProcessor(this)
 
     @OptIn(UnstableApi::class)
     constructor(context: Context) {
@@ -44,7 +49,7 @@ class ApexPlayer {
                 enableFloatOutput: Boolean,
                 enableAudioTrackPlaybackParams: Boolean
             ) = DefaultAudioSink.Builder(context)
-                .setAudioProcessors(arrayOf(LoopingAudioProcessor(this@ApexPlayer)))
+                .setAudioProcessors(arrayOf(looper))
                 .setEnableFloatOutput(enableFloatOutput)
                 .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
                 .build()
@@ -88,11 +93,13 @@ class ApexPlayer {
 
     @OptIn(UnstableApi::class)
     fun playCurrentTrack() {
-        player.setMediaItem(MediaItem.fromUri(
-            nowPlaying.downloadedFile(cacheDir).takeIf { it.exists() }?.toURI()?.toString()
-                ?: nowPlaying.cacheFile(cacheDir).takeIf { it.exists() }?.toURI()?.toString()
-                ?: nowPlaying.url
-        ))
+        player.setMediaItem(
+            MediaItem.fromUri(
+                nowPlaying.downloadedFile(cacheDir).takeIf { it.exists() }?.toURI()?.toString()
+                    ?: nowPlaying.cacheFile(cacheDir).takeIf { it.exists() }?.toURI()?.toString()
+                    ?: nowPlaying.url
+            )
+        )
         player.prepare()
         player.play()
         prepared = true
@@ -131,4 +138,7 @@ class ApexPlayer {
         currentIndex++
         playCurrentTrack()
     }
+
+    @OptIn(UnstableApi::class)
+    fun seekTo(positionMs: Long) = looper.seekTo(positionMs)
 }
