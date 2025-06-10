@@ -34,9 +34,7 @@ import kotlin.math.min
 
 @UnstableApi
 class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaSource(builder.mediaSource) {
-    class Builder(mediaSource: MediaSource?) {
-        internal val mediaSource: MediaSource
-
+    class Builder(internal val mediaSource: MediaSource) {
         internal var startPositionUs: Long = 0
         internal var endPositionUs: Long
         internal var enableInitialDiscontinuity = true
@@ -46,12 +44,7 @@ class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaS
         internal var buildCalled = false
 
         init {
-            this.mediaSource = Assertions.checkNotNull<MediaSource>(mediaSource)
             this.endPositionUs = C.TIME_END_OF_SOURCE
-        }
-
-        fun setStartPositionMs(startPositionMs: Long): Builder {
-            return setStartPositionUs(Util.msToUs(startPositionMs))
         }
 
         fun setStartPositionUs(startPositionUs: Long): Builder {
@@ -59,10 +52,6 @@ class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaS
             Assertions.checkState(!buildCalled)
             this.startPositionUs = startPositionUs
             return this
-        }
-
-        fun setEndPositionMs(endPositionMs: Long): Builder {
-            return setEndPositionUs(Util.msToUs(endPositionMs))
         }
 
         fun setEndPositionUs(endPositionUs: Long): Builder {
@@ -101,13 +90,10 @@ class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaS
         }
     }
 
-    class IllegalClippingException(
-        reason: @Reason Int, startUs: Long = C.TIME_UNSET, endUs: Long = C.TIME_UNSET
-    ) : IOException(
-        "Illegal clipping: " + getReasonDescription(
-            reason, startUs, endUs
-        )
-    ) {
+    class IllegalClippingException(reason: @Reason Int, startUs: Long = C.TIME_UNSET, endUs: Long = C.TIME_UNSET) :
+        IOException(
+            "Illegal clipping: " + getReasonDescription(reason, startUs, endUs)
+        ) {
         @MustBeDocumented
         @Retention(AnnotationRetention.SOURCE)
         @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPE_PARAMETER)
@@ -127,7 +113,7 @@ class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaS
                     REASON_NOT_SEEKABLE_TO_START -> return "not seekable to start"
                     REASON_START_EXCEEDS_END -> {
                         Assertions.checkState(startUs != C.TIME_UNSET && endUs != C.TIME_UNSET)
-                        return "start exceeds end. Start time: " + startUs + ", End time: " + endUs
+                        return "start exceeds end. Start time: $startUs, End time: $endUs"
                     }
 
                     else -> return "unknown"
@@ -214,7 +200,7 @@ class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaS
     private fun refreshClippedTimeline(timeline: Timeline) {
         var windowStartUs: Long
         var windowEndUs: Long
-        timeline.getWindow( /* windowIndex= */0, window)
+        timeline.getWindow(0, window)
         val windowPositionInPeriodUs = window.getPositionInFirstPeriodUs()
         if (clippingTimeline == null || mediaPeriods.isEmpty() || allowDynamicClippingUpdates) {
             windowStartUs = startUs
@@ -232,10 +218,10 @@ class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaS
                     windowPositionInPeriodUs + windowEndUs
             val count = mediaPeriods.size
             for (i in 0..<count) {
-                mediaPeriods.get(i)!!.updateClipping(periodStartUs, periodEndUs)
+                mediaPeriods[i]!!.updateClipping(periodStartUs, periodEndUs)
             }
         } else {
-            // Keep window fixed at previous period position.
+            // Keep the window fixed at the previous period position.
             windowStartUs = periodStartUs - windowPositionInPeriodUs
             windowEndUs =
                 if (endUs == C.TIME_END_OF_SOURCE)
@@ -252,7 +238,7 @@ class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaS
             // error at the MediaPeriods ensures it will be thrown as soon as possible.
             var i = 0
             while (i < mediaPeriods.size) {
-                mediaPeriods.get(i)!!.setClippingError(clippingError)
+                mediaPeriods[i]!!.setClippingError(clippingError)
                 i++
             }
             return
@@ -260,7 +246,7 @@ class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaS
         refreshSourceInfo(clippingTimeline!!)
     }
 
-    private class ClippingTimeline(timeline: Timeline, startUs: Long, endUs: Long, allowUnseekableMedia: Boolean) :
+    private class ClippingTimeline(val timeline: Timeline, startUs: Long, endUs: Long, allowUnseekableMedia: Boolean) :
         ForwardingTimeline(timeline) {
         private val startUs: Long
         private val endUs: Long
@@ -275,7 +261,7 @@ class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaS
                     IllegalClippingException.Companion.REASON_START_EXCEEDS_END, startUs, endUs
                 )
             }
-            if (timeline.getPeriodCount() != 1) {
+            if (timeline.periodCount != 1) {
                 throw IllegalClippingException(IllegalClippingException.Companion.REASON_INVALID_PERIOD_COUNT)
             }
             val window = timeline.getWindow(0, Window())
@@ -302,7 +288,7 @@ class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaS
         }
 
         override fun getWindow(windowIndex: Int, window: Window, defaultPositionProjectionUs: Long): Window {
-            timeline.getWindow( /* windowIndex= */0, window,  /* defaultPositionProjectionUs= */0)
+            timeline.getWindow(0, window, 0)
             window.positionInFirstPeriodUs += startUs
             window.durationUs = durationUs
             window.isDynamic = isDynamic
@@ -323,15 +309,13 @@ class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaS
         }
 
         override fun getPeriod(periodIndex: Int, period: Period, setIds: Boolean): Period {
-            timeline.getPeriod( /* periodIndex= */0, period, setIds)
+            timeline.getPeriod(0, period, setIds)
             val positionInClippedWindowUs = period.getPositionInWindowUs() - startUs
             val periodDurationUs =
                 if (durationUs == C.TIME_UNSET) C.TIME_UNSET else durationUs - positionInClippedWindowUs
             return period.set(
-                period.id, period.uid,  /* windowIndex= */0, periodDurationUs, positionInClippedWindowUs
+                period.id, period.uid, 0, periodDurationUs, positionInClippedWindowUs
             )
         }
-
-        val timeline: Timeline = super.timeline
     }
 }

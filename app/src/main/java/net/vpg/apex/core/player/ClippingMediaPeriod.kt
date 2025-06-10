@@ -48,7 +48,7 @@ class ClippingMediaPeriod(
     private var clippingError: ClippingMediaSource.IllegalClippingException? = null
 
     init {
-        sampleStreams = arrayOfNulls<ClippingSampleStream>(0)
+        sampleStreams = arrayOfNulls(0)
         pendingInitialDiscontinuityPositionUs = if (enableInitialDiscontinuity) startUs else C.TIME_UNSET
     }
 
@@ -79,7 +79,7 @@ class ClippingMediaPeriod(
     }
 
     override fun getTrackGroups(): TrackGroupArray {
-        return mediaPeriod.getTrackGroups()
+        return mediaPeriod.trackGroups
     }
 
     override fun selectTracks(
@@ -100,7 +100,7 @@ class ClippingMediaPeriod(
                 selections, mayRetainStreamFlags, childStreams, streamResetFlags, positionUs
             )
         val correctedEnablePositionUs: Long =
-            enforceClippingRange(realEnablePositionUs,  /* minPositionUs= */positionUs, endUs)
+            enforceClippingRange(realEnablePositionUs, positionUs, endUs)
         pendingInitialDiscontinuityPositionUs =
             if (this.isPendingInitialDiscontinuity
                 && shouldKeepInitialDiscontinuity(realEnablePositionUs, positionUs, selections)
@@ -131,7 +131,7 @@ class ClippingMediaPeriod(
         if (this.isPendingInitialDiscontinuity) {
             val initialDiscontinuityUs = pendingInitialDiscontinuityPositionUs
             pendingInitialDiscontinuityPositionUs = C.TIME_UNSET
-            // Always read an initial discontinuity from the child, and use it if set.
+            // Always read an initial discontinuity from the child and use it if set.
             val childDiscontinuityUs = readDiscontinuity()
             return if (childDiscontinuityUs != C.TIME_UNSET) childDiscontinuityUs else initialDiscontinuityUs
         }
@@ -143,7 +143,7 @@ class ClippingMediaPeriod(
     }
 
     override fun getBufferedPositionUs(): Long {
-        val bufferedPositionUs = mediaPeriod.getBufferedPositionUs()
+        val bufferedPositionUs = mediaPeriod.bufferedPositionUs
         if (bufferedPositionUs == C.TIME_END_OF_SOURCE
             || (endUs != C.TIME_END_OF_SOURCE && bufferedPositionUs >= endUs)
         ) {
@@ -155,9 +155,7 @@ class ClippingMediaPeriod(
     override fun seekToUs(positionUs: Long): Long {
         pendingInitialDiscontinuityPositionUs = C.TIME_UNSET
         for (sampleStream in sampleStreams) {
-            if (sampleStream != null) {
-                sampleStream.clearSentEos()
-            }
+            sampleStream?.clearSentEos()
         }
         return enforceClippingRange(mediaPeriod.seekToUs(positionUs), startUs, endUs)
     }
@@ -172,7 +170,7 @@ class ClippingMediaPeriod(
     }
 
     override fun getNextLoadPositionUs(): Long {
-        val nextLoadPositionUs = mediaPeriod.getNextLoadPositionUs()
+        val nextLoadPositionUs = mediaPeriod.nextLoadPositionUs
         if (nextLoadPositionUs == C.TIME_END_OF_SOURCE
             || (endUs != C.TIME_END_OF_SOURCE && nextLoadPositionUs >= endUs)
         ) {
@@ -186,7 +184,7 @@ class ClippingMediaPeriod(
     }
 
     override fun isLoading(): Boolean {
-        return mediaPeriod.isLoading()
+        return mediaPeriod.isLoading
     }
 
     // MediaPeriod.Callback implementation.
@@ -202,30 +200,28 @@ class ClippingMediaPeriod(
     }
 
     val isPendingInitialDiscontinuity: Boolean
-        /* package */
         get() = pendingInitialDiscontinuityPositionUs != C.TIME_UNSET
 
     private fun clipSeekParameters(positionUs: Long, seekParameters: SeekParameters): SeekParameters {
         val toleranceBeforeUs =
             Util.constrainValue(
-                seekParameters.toleranceBeforeUs,  /* min= */0,  /* max= */positionUs - startUs
+                seekParameters.toleranceBeforeUs, 0,  positionUs - startUs
             )
         val toleranceAfterUs =
             Util.constrainValue(
-                seekParameters.toleranceAfterUs,  /* min= */
-                0,  /* max= */
+                seekParameters.toleranceAfterUs,
+                0,
                 if (endUs == C.TIME_END_OF_SOURCE) Long.Companion.MAX_VALUE else endUs - positionUs
             )
-        if (toleranceBeforeUs == seekParameters.toleranceBeforeUs
+        return if (toleranceBeforeUs == seekParameters.toleranceBeforeUs
             && toleranceAfterUs == seekParameters.toleranceAfterUs
         ) {
-            return seekParameters
+            seekParameters
         } else {
-            return SeekParameters(toleranceBeforeUs, toleranceAfterUs)
+            SeekParameters(toleranceBeforeUs, toleranceAfterUs)
         }
     }
 
-    /** Wraps a [SampleStream] and clips its samples.  */
     private inner class ClippingSampleStream(val childStream: SampleStream) : SampleStream {
         private var sentEos = false
 
@@ -234,7 +230,7 @@ class ClippingMediaPeriod(
         }
 
         override fun isReady(): Boolean {
-            return !isPendingInitialDiscontinuity && childStream.isReady()
+            return !isPendingInitialDiscontinuity && childStream.isReady
         }
 
         @Throws(IOException::class)
@@ -301,7 +297,7 @@ class ClippingMediaPeriod(
             }
             // If the clipping start position is non-zero, the clipping sample streams will adjust
             // timestamps on buffers they read from the unclipped sample streams. These adjusted buffer
-            // timestamps can be negative, because sample streams provide buffers starting at a key-frame,
+            // timestamps can be negative because sample streams provide buffers starting at a key-frame,
             // which may be before the clipping start point. When the renderer reads a buffer with a
             // negative timestamp, its offset timestamp can jump backwards compared to the last timestamp
             // read in the previous period. Renderer implementations may not allow this, so we signal a
@@ -311,7 +307,7 @@ class ClippingMediaPeriod(
             if (startUs != 0L) {
                 for (trackSelection in selections) {
                     if (trackSelection != null) {
-                        val selectedFormat = trackSelection.getSelectedFormat()
+                        val selectedFormat = trackSelection.selectedFormat
                         if (!MimeTypes.allSamplesAreSyncSamples(
                                 selectedFormat.sampleMimeType, selectedFormat.codecs
                             )

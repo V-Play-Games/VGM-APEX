@@ -114,7 +114,7 @@ class ApexPlayer {
 
         // Wrap in ClippingMediaSource with the loop start and end positions
 //        val preLoop = createClippingMediaSource(mediaSource, 0, loopStart)
-        val loop = LoopingMediaSource(createClippingMediaSource(mediaSource, loopStart, loopEnd), 2)
+        val loop = LoopingMediaSource(createClippingMediaSource(mediaSource, loopStart, loopEnd))
 //        val postLoop = createClippingMediaSource(mediaSource, loopEnd)
 
 //        val clippingMediaSource = ConcatenatingMediaSource(preLoop, /*loop,*/ postLoop)
