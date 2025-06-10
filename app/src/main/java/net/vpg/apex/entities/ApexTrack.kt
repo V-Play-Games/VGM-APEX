@@ -13,12 +13,13 @@ data class ApexTrack(
     val frameLength: Int,
     val loopStart: Int,
     val loopEnd: Int,
+    val sampleRate: Int,
     val dateAdded: String,
     val url: String
 ) {
     companion object {
         val TRACKS_DB = mutableMapOf<String, ApexTrack>()
-        val EMPTY = ApexTrack("", "", "", "", 0, 0, 0, "", "")
+        val EMPTY = ApexTrack("", "", "", "", 0, 0, 0, 0, "", "")
     }
 
     constructor(data: JSONObject) : this(
@@ -29,6 +30,7 @@ data class ApexTrack(
         data.getInt("frameLength"),
         data.getInt("loopStart"),
         data.getInt("loopEnd"),
+        data.getInt("sampleRate"),
         data.getString("dateAdded"),
         data.getString("url")
     )

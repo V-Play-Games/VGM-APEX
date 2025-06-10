@@ -1,17 +1,20 @@
 package net.vpg.apex.core.player
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.audio.DefaultAudioSink
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.source.MediaSource
 import net.vpg.apex.entities.ApexTrack
 import java.io.File
 
@@ -25,7 +28,7 @@ class ApexPlayer {
     private var currentIndex by mutableIntStateOf(-1)
     val nowPlaying get() = if (currentIndex < 0) ApexTrack.EMPTY else queue[currentIndex]
     private var prepared = false
-    private val _isLooping = mutableStateOf(true)
+    private val _isLooping = mutableStateOf(false)
     var isLooping by _isLooping
     private val _isShuffling = mutableStateOf(false)
     var isShuffling by _isShuffling
@@ -35,29 +38,36 @@ class ApexPlayer {
     val duration get() = player.duration
     val currentPosition
         @OptIn(UnstableApi::class)
-        get() = looper.currentPositionMs
+        get() = player.currentPosition
 
-    @UnstableApi
-    private val looper = LoopingAudioProcessor(this)
+    //
+//    @UnstableApi
+//    private val looper = LoopingAudioProcessor(this)
+    private val mediaSourceFactory: DefaultMediaSourceFactory
+    val handler: Handler
 
     @OptIn(UnstableApi::class)
     constructor(context: Context) {
-        // Create a custom RenderersFactory that uses our audio processors
-        val renderersFactory = object : DefaultRenderersFactory(context) {
-            override fun buildAudioSink(
-                context: Context,
-                enableFloatOutput: Boolean,
-                enableAudioTrackPlaybackParams: Boolean
-            ) = DefaultAudioSink.Builder(context)
-                .setAudioProcessors(arrayOf(looper))
-                .setEnableFloatOutput(enableFloatOutput)
-                .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
-                .build()
-        }
-
+//        // Create a custom RenderersFactory that uses our audio processors
+//        val renderersFactory = object : DefaultRenderersFactory(context) {
+//            override fun buildAudioSink(
+//                context: Context,
+//                enableFloatOutput: Boolean,
+//                enableAudioTrackPlaybackParams: Boolean
+//            ) = DefaultAudioSink.Builder(context)
+//                .setAudioProcessors(arrayOf(looper))
+//                .setEnableFloatOutput(enableFloatOutput)
+//                .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
+//                .build()
+//        }
         cacheDir = context.cacheDir
+        mediaSourceFactory = DefaultMediaSourceFactory(context)
+        val mainLooper = Looper.getMainLooper()
+        handler = Handler(mainLooper)
         player = ExoPlayer.Builder(context)
-            .setRenderersFactory(renderersFactory)
+            .setMediaSourceFactory(mediaSourceFactory)
+//            .setRenderersFactory(renderersFactory)
+            .setLooper(mainLooper)
             .build()
         player.addListener(object : Player.Listener {
             override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
@@ -93,16 +103,38 @@ class ApexPlayer {
 
     @OptIn(UnstableApi::class)
     fun playCurrentTrack() {
-        player.setMediaItem(
-            MediaItem.fromUri(
-                nowPlaying.downloadedFile(cacheDir).takeIf { it.exists() }?.toURI()?.toString()
-                    ?: nowPlaying.cacheFile(cacheDir).takeIf { it.exists() }?.toURI()?.toString()
-                    ?: nowPlaying.url
-            )
-        )
+        val mediaUri = nowPlaying.downloadedFile(cacheDir).takeIf { it.exists() }?.toURI()?.toString()
+            ?: nowPlaying.cacheFile(cacheDir).takeIf { it.exists() }?.toURI()?.toString()
+            ?: nowPlaying.url
+
+        val mediaItem = MediaItem.fromUri(mediaUri)
+
+        // Create a base MediaSource
+        val mediaSource = mediaSourceFactory.createMediaSource(mediaItem)
+
+        // Wrap in ClippingMediaSource with the loop start and end positions
+//        val preLoop = createClippingMediaSource(mediaSource, 0, loopStart)
+        val loop = LoopingMediaSource(createClippingMediaSource(mediaSource, loopStart, loopEnd), 2)
+//        val postLoop = createClippingMediaSource(mediaSource, loopEnd)
+
+//        val clippingMediaSource = ConcatenatingMediaSource(preLoop, /*loop,*/ postLoop)
+        player.setMediaSource(loop)
+        player.repeatMode = if (isLooping) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
         player.prepare()
         player.play()
         prepared = true
+    }
+
+    @OptIn(UnstableApi::class)
+    private fun createClippingMediaSource(
+        mediaSource: MediaSource,
+        startFrame: Int,
+        endFrame: Int = -1
+    ): ClippingMediaSource {
+        return ClippingMediaSource.Builder(mediaSource)
+            .setStartPositionUs((startFrame.toFloat() / nowPlaying.sampleRate * 1000_000).toLong())
+            .setEndPositionUs(((if (endFrame == -1) C.TIME_END_OF_SOURCE else endFrame).toFloat() / nowPlaying.sampleRate * 1000_000).toLong())
+            .build()
     }
 
     fun togglePlayPause() {
@@ -140,5 +172,5 @@ class ApexPlayer {
     }
 
     @OptIn(UnstableApi::class)
-    fun seekTo(positionMs: Long) = looper.seekTo(positionMs)
+    fun seekTo(positionMs: Long) = handler.post { player.seekTo(positionMs) }
 }
