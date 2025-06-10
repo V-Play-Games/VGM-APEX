@@ -1,8 +1,6 @@
 import net.vpg.vjson.parser.JSONParser.toJSON
 import net.vpg.vjson.value.JSONArray
 import java.io.File
-import java.net.HttpURLConnection
-import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import kotlin.time.ExperimentalTime
@@ -55,6 +53,7 @@ fun main() {
                 loopStart = it.loopStart,
                 loopEnd = it.loopEnd,
                 dateAdded = date,
+                sampleRate = it.sampleRate,
                 url = "https://github.com/VGM-Apex/${it.category}/raw/main/$encodedFileName.ogg"
             )
         }.groupBy { it.id }
@@ -68,21 +67,11 @@ fun main() {
 
     val albums = tracks.groupBy { it.albumId }.map { (albumId, albumTracks) ->
         val albumUrl = "https://github.com/VGM-Apex/apex-image/raw/main/$albumId.png"
-        val responseCode = (URI.create(albumUrl).toURL().openConnection() as HttpURLConnection)
-            .also { it.requestMethod = "GET" }
-            .let {
-                try {
-                    it.responseCode
-                } finally {
-                    it.disconnect()
-                }
-            }
-        val url = if (responseCode / 100 == 2) albumUrl else null
-        println("Album $albumId: $url, ${albumTracks.size} tracks")
+        println("Album $albumId: $albumUrl, ${albumTracks.size} tracks")
         AlbumData(
             id = albumId,
             name = idToNameMap[albumId]!!,
-            albumArtUrl = url,
+            albumArtUrl = albumUrl,
             dateAdded = date,
             trackIds = albumTracks.map { it.id }
         )

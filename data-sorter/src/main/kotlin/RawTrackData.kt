@@ -6,7 +6,8 @@ data class RawTrackData(
     val category: String,
     val frameLength: Int,
     val loopStart: Int,
-    val loopEnd: Int
+    val loopEnd: Int,
+    val sampleRate: Int,
 ) {
     constructor(data: JSONObject) : this(
         data.getString("id"),
@@ -14,6 +15,7 @@ data class RawTrackData(
         data.getString("category"),
         data.getInt("frameLength"),
         data.getInt("loopStart"),
-        data.getInt("loopEnd")
+        data.getInt("loopEnd"),
+        data.getInt("sampleRate")
     )
 }

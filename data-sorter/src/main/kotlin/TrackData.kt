@@ -9,6 +9,7 @@ data class TrackData(
     val frameLength: Int,
     val loopStart: Int,
     val loopEnd: Int,
+    val sampleRate: Int,
     val dateAdded: String,
     val url: String
 ) : SerializableObject {
@@ -20,6 +21,7 @@ data class TrackData(
         .put("frameLength", frameLength)
         .put("loopStart", loopStart)
         .put("loopEnd", loopEnd)
+        .put("sampleRate", sampleRate)
         .put("dateAdded", dateAdded)
         .put("url", url)
 }

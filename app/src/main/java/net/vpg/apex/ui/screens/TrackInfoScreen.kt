@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import net.vpg.apex.core.formatDuration
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.ui.components.common.AlbumImage
 import java.text.SimpleDateFormat
@@ -115,7 +116,7 @@ fun TrackInfo(track: ApexTrack) {
         InfoRow(
             icon = Icons.Filled.AccessTime,
             label = "Duration",
-            value = formatFrameLength(track.frameLength)
+            value = formatDuration(track.frameLength * 1000L / track.sampleRate)
         )
 
         InfoRow(
@@ -186,15 +187,6 @@ private fun InfoRow(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
-}
-
-// Helper functions
-private fun formatFrameLength(frameLength: Int): String {
-    // Assuming 44100 frames per second for audio
-    val totalSeconds = frameLength / 44100
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return "$minutes:${seconds.toString().padStart(2, '0')}"
 }
 
 private fun formatDate(dateString: String): String {
