@@ -1,6 +1,5 @@
 package net.vpg.apex.ui.components.common
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +21,7 @@ import androidx.compose.ui.zIndex
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.di.rememberContext
 import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.entities.ApexAlbum
@@ -73,7 +73,7 @@ fun AlbumImageWithInfoButton(album: ApexAlbum, size: Int, apexTrack: ApexTrack) 
                 .shadow(elevation = 4.dp)
                 .align(Alignment.TopEnd)
                 .zIndex(1f)
-                .clickable { navController.navigate(apexTrack) }
+                .bounceClick { navController.navigate(apexTrack) }
         )
     }
 }

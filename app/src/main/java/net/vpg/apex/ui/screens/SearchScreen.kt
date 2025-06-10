@@ -1,6 +1,5 @@
 package net.vpg.apex.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.di.rememberSearchHistory
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.ui.components.common.TrackBar
@@ -63,7 +63,7 @@ object SearchScreen : ApexBottomBarScreen(
                 if (searchQuery.isNotEmpty()) {
                     Icon(
                         imageVector = Icons.Default.Clear,
-                        modifier = Modifier.clickable { searchQuery = "" },
+                        modifier = Modifier.bounceClick { searchQuery = "" },
                         contentDescription = "Clear Search",
                         tint = Color.Gray
                     )
@@ -107,14 +107,14 @@ object SearchScreen : ApexBottomBarScreen(
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(modifier = Modifier.height(16.dp))
-            if (searchHistory.getTracks().isEmpty()) {
+            if (searchHistory.isEmpty()) {
                 Text(
                     text = "No recent searches",
                     color = Color.Gray
                 )
             } else {
                 LazyColumn {
-                    items(searchHistory.getTracks()) { track ->
+                    searchHistory.composeToList(this@LazyColumn) { track, index ->
                         TrackBar(
                             apexTrack = track,
                             trailingComponents = {
@@ -123,7 +123,7 @@ object SearchScreen : ApexBottomBarScreen(
                                     contentDescription = "Close",
                                     modifier = Modifier
                                         .size(40.dp)
-                                        .clickable { searchHistory.removeTrack(track) },
+                                        .bounceClick { searchHistory.removeIndex(index) },
                                     tint = Color.DarkGray
                                 )
                             }

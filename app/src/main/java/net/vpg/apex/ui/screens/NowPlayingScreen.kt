@@ -1,6 +1,5 @@
 package net.vpg.apex.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Shuffle
@@ -13,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.ui.components.common.AlbumImageWithInfoButton
 import net.vpg.apex.ui.components.player.PlayerActions
@@ -66,7 +66,9 @@ object NowPlayingScreen : ApexScreenStatic(
                     MaterialTheme.colorScheme.primary
                 else
                     MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(30.dp).clickable { player.isShuffling = !player.isShuffling }
+                modifier = Modifier
+                    .size(30.dp)
+                    .bounceClick { player.isShuffling = !player.isShuffling }
             )
             PlayerActions(player, Modifier.size(30.dp))
         }

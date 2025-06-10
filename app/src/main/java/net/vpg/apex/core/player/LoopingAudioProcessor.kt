@@ -42,7 +42,6 @@ internal class LoopingAudioProcessor(val player: ApexPlayer) : AudioProcessor {
         if (!inputBuffer.hasRemaining()) return
         ensureCapacity(inputBuffer.remaining())
         audioData.put(inputBuffer)
-        println("Accumulated ${inputBuffer.position()} bytes of audio data, current position: ${audioData.position()}")
         if (audioData.position() >= player.nowPlaying.frameLength * format.bytesPerFrame) {
             player.nowPlaying.downloadedFile(player.cacheDir)
                 .takeIf { !it.exists() }
