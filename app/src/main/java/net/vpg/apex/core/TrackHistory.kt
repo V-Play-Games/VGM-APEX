@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateListOf
 import net.vpg.apex.entities.ApexTrack
 import java.io.File
 import java.util.logging.Logger
+import kotlin.math.min
 
 class SearchHistory(context: Context) : SaveableTrackHistory(context, "search-history.txt") {
     override fun addTrack(track: ApexTrack) {
@@ -103,7 +104,7 @@ open class TrackHistory() {
         limit: Int = trackHistory.size,
         content: @Composable (ApexTrack, Int) -> Unit
     ) {
-        scope.items(limit) { index ->
+        scope.items(min(limit, trackHistory.size)) { index ->
             AnimatedVisibility(appearingOnScreen[index] == DISPLAYED) {
                 content(trackHistory[index], index)
             }
