@@ -13,511 +13,326 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.vpg.apex.core.player;
+package net.vpg.apex.core.player
 
-import androidx.annotation.IntDef;
-import androidx.annotation.Nullable;
-import androidx.media3.common.C;
-import androidx.media3.common.MediaItem;
-import androidx.media3.common.Timeline;
-import androidx.media3.common.util.Assertions;
-import androidx.media3.common.util.UnstableApi;
-import androidx.media3.common.util.Util;
-import androidx.media3.exoplayer.source.ForwardingTimeline;
-import androidx.media3.exoplayer.source.MediaPeriod;
-import androidx.media3.exoplayer.source.MediaSource;
-import androidx.media3.exoplayer.source.WrappingMediaSource;
-import androidx.media3.exoplayer.upstream.Allocator;
-import org.jetbrains.annotations.NotNull;
+import androidx.annotation.IntDef
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Timeline
+import androidx.media3.common.util.Assertions
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.common.util.Util
+import androidx.media3.exoplayer.source.ForwardingTimeline
+import androidx.media3.exoplayer.source.MediaPeriod
+import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.source.MediaSource.MediaPeriodId
+import androidx.media3.exoplayer.source.WrappingMediaSource
+import androidx.media3.exoplayer.upstream.Allocator
+import java.io.IOException
+import kotlin.math.max
+import kotlin.math.min
 
-import java.io.IOException;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.ArrayList;
-
-import static androidx.media3.common.util.Assertions.*;
-import static androidx.media3.common.util.Util.msToUs;
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-import static java.lang.annotation.ElementType.TYPE_USE;
-
-/**
- * {@link MediaSource} that wraps a source and clips its timeline based on specified start/end
- * positions. The wrapped source must consist of a single period.
- */
 @UnstableApi
-public final class ClippingMediaSource extends WrappingMediaSource {
+class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaSource(builder.mediaSource) {
+    class Builder(mediaSource: MediaSource?) {
+        internal val mediaSource: MediaSource
 
-    /** A builder for {@link ClippingMediaSource}. */
-    public static final class Builder {
+        internal var startPositionUs: Long = 0
+        internal var endPositionUs: Long
+        internal var enableInitialDiscontinuity = true
+        internal var allowDynamicClippingUpdates = false
+        internal var relativeToDefaultPosition = false
+        internal var allowUnseekableMedia = false
+        internal var buildCalled = false
 
-        private final MediaSource mediaSource;
-
-        private long startPositionUs;
-        private long endPositionUs;
-        private boolean enableInitialDiscontinuity;
-        private boolean allowDynamicClippingUpdates;
-        private boolean relativeToDefaultPosition;
-        private boolean allowUnseekableMedia;
-        private boolean buildCalled;
-
-        /**
-         * Creates the builder.
-         *
-         * @param mediaSource The {@link MediaSource} to clip.
-         */
-        public Builder(MediaSource mediaSource) {
-            this.mediaSource = checkNotNull(mediaSource);
-            this.enableInitialDiscontinuity = true;
-            this.endPositionUs = C.TIME_END_OF_SOURCE;
+        init {
+            this.mediaSource = Assertions.checkNotNull<MediaSource>(mediaSource)
+            this.endPositionUs = C.TIME_END_OF_SOURCE
         }
 
-        /**
-         * Sets the clip start position.
-         *
-         * <p>The start position is relative to the wrapped source's {@link Timeline.Window}, unless
-         * {@link #setRelativeToDefaultPosition} is set to {@code true}.
-         *
-         * @param startPositionMs The clip start position in milliseconds.
-         * @return This builder.
-         */
-        public Builder setStartPositionMs(long startPositionMs) {
-            return setStartPositionUs(msToUs(startPositionMs));
+        fun setStartPositionMs(startPositionMs: Long): Builder {
+            return setStartPositionUs(Util.msToUs(startPositionMs))
         }
 
-        /**
-         * Sets the clip start position.
-         *
-         * <p>The start position is relative to the wrapped source's {@link Timeline.Window}, unless
-         * {@link #setRelativeToDefaultPosition} is set to {@code true}.
-         *
-         * @param startPositionUs The clip start position in microseconds.
-         * @return This builder.
-         */
-        public Builder setStartPositionUs(long startPositionUs) {
-            checkArgument(startPositionUs >= 0);
-            checkState(!buildCalled);
-            this.startPositionUs = startPositionUs;
-            return this;
+        fun setStartPositionUs(startPositionUs: Long): Builder {
+            Assertions.checkArgument(startPositionUs >= 0)
+            Assertions.checkState(!buildCalled)
+            this.startPositionUs = startPositionUs
+            return this
         }
 
-        /**
-         * Sets the clip end position.
-         *
-         * <p>The end position is relative to the wrapped source's {@link Timeline.Window}, unless
-         * {@link #setRelativeToDefaultPosition} is set to {@code true}.
-         *
-         * <p>Specify {@link C#TIME_END_OF_SOURCE} to provide samples up to the end of the source.
-         * Specifying a position that exceeds the wrapped source's duration will also result in the end
-         * of the source not being clipped.
-         *
-         * @param endPositionMs The clip end position in milliseconds, or {@link C#TIME_END_OF_SOURCE}.
-         * @return This builder.
-         */
-        public Builder setEndPositionMs(long endPositionMs) {
-            return setEndPositionUs(msToUs(endPositionMs));
+        fun setEndPositionMs(endPositionMs: Long): Builder {
+            return setEndPositionUs(Util.msToUs(endPositionMs))
         }
 
-        /**
-         * Sets the clip end position.
-         *
-         * <p>The end position is relative to the wrapped source's {@link Timeline.Window}, unless
-         * {@link #setRelativeToDefaultPosition} is set to {@code true}.
-         *
-         * <p>Specify {@link C#TIME_END_OF_SOURCE} to provide samples up to the end of the source.
-         * Specifying a position that exceeds the wrapped source's duration will also result in the end
-         * of the source not being clipped.
-         *
-         * @param endPositionUs The clip end position in microseconds, or {@link C#TIME_END_OF_SOURCE}.
-         * @return This builder.
-         */
-        public Builder setEndPositionUs(long endPositionUs) {
-            checkState(!buildCalled);
-            this.endPositionUs = endPositionUs;
-            return this;
+        fun setEndPositionUs(endPositionUs: Long): Builder {
+            Assertions.checkState(!buildCalled)
+            this.endPositionUs = endPositionUs
+            return this
         }
 
-        /**
-         * Sets whether to enable the initial discontinuity.
-         *
-         * <p>This discontinuity is needed to handle pre-rolling samples from a previous keyframe if the
-         * start position doesn't fall onto a keyframe.
-         *
-         * <p>When starting from the beginning of the stream or when clipping a format that is
-         * guaranteed to have keyframes only, the discontinuity won't be applied even if enabled.
-         *
-         * <p>The default value is {@code true}.
-         *
-         * @param enableInitialDiscontinuity Whether to enable the initial discontinuity.
-         * @return This builder.
-         */
-        public Builder setEnableInitialDiscontinuity(boolean enableInitialDiscontinuity) {
-            checkState(!buildCalled);
-            this.enableInitialDiscontinuity = enableInitialDiscontinuity;
-            return this;
+        fun setEnableInitialDiscontinuity(enableInitialDiscontinuity: Boolean): Builder {
+            Assertions.checkState(!buildCalled)
+            this.enableInitialDiscontinuity = enableInitialDiscontinuity
+            return this
         }
 
-        /**
-         * Sets whether the clipping of active media periods moves with a live window.
-         *
-         * <p>If {@code false}, playback ends when it reaches {@code endPositionUs} in the last reported
-         * live window at the time a media period was created.
-         *
-         * <p>The default value is {@code false}.
-         *
-         * @param allowDynamicClippingUpdates Whether to allow dynamic clipping updates.
-         * @return This builder.
-         */
-        public Builder setAllowDynamicClippingUpdates(boolean allowDynamicClippingUpdates) {
-            checkState(!buildCalled);
-            this.allowDynamicClippingUpdates = allowDynamicClippingUpdates;
-            return this;
+        fun setAllowDynamicClippingUpdates(allowDynamicClippingUpdates: Boolean): Builder {
+            Assertions.checkState(!buildCalled)
+            this.allowDynamicClippingUpdates = allowDynamicClippingUpdates
+            return this
         }
 
-        /**
-         * Sets whether the start and end position are relative to the default position of the wrapped
-         * source's {@link Timeline.Window}.
-         *
-         * <p>The default value is {@code false}.
-         *
-         * @param relativeToDefaultPosition Whether the start and end positions are relative to the
-         *                                  default position of the wrapped source's {@link Timeline.Window}.
-         * @return This builder.
-         */
-        public Builder setRelativeToDefaultPosition(boolean relativeToDefaultPosition) {
-            checkState(!buildCalled);
-            this.relativeToDefaultPosition = relativeToDefaultPosition;
-            return this;
+        fun setRelativeToDefaultPosition(relativeToDefaultPosition: Boolean): Builder {
+            Assertions.checkState(!buildCalled)
+            this.relativeToDefaultPosition = relativeToDefaultPosition
+            return this
         }
 
-        /**
-         * Sets whether clipping to a non-zero start position in unseekable media is allowed.
-         *
-         * <p>Note that this is inefficient because the player needs to read and decode all samples from
-         * the beginning of the file and it should only be used if the seek start position is small and
-         * the entire data before the start position fits into memory.
-         *
-         * <p>The default value is {@code false}.
-         *
-         * @param allowUnseekableMedia Whether a non-zero start position in unseekable media is allowed.
-         * @return This builder.
-         */
-        public Builder setAllowUnseekableMedia(boolean allowUnseekableMedia) {
-            checkState(!buildCalled);
-            this.allowUnseekableMedia = allowUnseekableMedia;
-            return this;
+        fun setAllowUnseekableMedia(allowUnseekableMedia: Boolean): Builder {
+            Assertions.checkState(!buildCalled)
+            this.allowUnseekableMedia = allowUnseekableMedia
+            return this
         }
 
-        /** Builds the {@link ClippingMediaSource}. */
-        public ClippingMediaSource build() {
-            buildCalled = true;
-            return new ClippingMediaSource(this);
+        fun build(): ClippingMediaSource {
+            buildCalled = true
+            return ClippingMediaSource(this)
         }
     }
 
-    /** Thrown when a {@link ClippingMediaSource} cannot clip its wrapped source. */
-    public static final class IllegalClippingException extends IOException {
+    class IllegalClippingException
+    @JvmOverloads constructor(
+        val reason: @Reason Int, startUs: Long = C.TIME_UNSET, endUs: Long = C.TIME_UNSET
+    ) : IOException(
+        "Illegal clipping: " + getReasonDescription(
+            reason, startUs, endUs
+        )
+    ) {
+        @MustBeDocumented
+        @Retention(AnnotationRetention.SOURCE)
+        @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE, AnnotationTarget.TYPE_PARAMETER)
+        @IntDef(REASON_INVALID_PERIOD_COUNT, REASON_NOT_SEEKABLE_TO_START, REASON_START_EXCEEDS_END)
+        annotation class Reason
 
-        /**
-         * The reason clipping failed. One of {@link #REASON_INVALID_PERIOD_COUNT}, {@link
-         * #REASON_NOT_SEEKABLE_TO_START} or {@link #REASON_START_EXCEEDS_END}.
-         */
-        @Documented
-        @Retention(RetentionPolicy.SOURCE)
-        @Target(TYPE_USE)
-        @IntDef({REASON_INVALID_PERIOD_COUNT, REASON_NOT_SEEKABLE_TO_START, REASON_START_EXCEEDS_END})
-        public @interface Reason {
-        }
+        companion object {
+            const val REASON_INVALID_PERIOD_COUNT: Int = 0
 
-        /** The wrapped source doesn't consist of a single period. */
-        public static final int REASON_INVALID_PERIOD_COUNT = 0;
+            const val REASON_NOT_SEEKABLE_TO_START: Int = 1
 
-        /** The wrapped source is not seekable and a non-zero clipping start position was specified. */
-        public static final int REASON_NOT_SEEKABLE_TO_START = 1;
+            const val REASON_START_EXCEEDS_END: Int = 2
 
-        /** The wrapped source ends before the specified clipping start position. */
-        public static final int REASON_START_EXCEEDS_END = 2;
+            private fun getReasonDescription(reason: @Reason Int, startUs: Long, endUs: Long): String {
+                when (reason) {
+                    REASON_INVALID_PERIOD_COUNT -> return "invalid period count"
+                    REASON_NOT_SEEKABLE_TO_START -> return "not seekable to start"
+                    REASON_START_EXCEEDS_END -> {
+                        Assertions.checkState(startUs != C.TIME_UNSET && endUs != C.TIME_UNSET)
+                        return "start exceeds end. Start time: " + startUs + ", End time: " + endUs
+                    }
 
-        /** The reason clipping failed. */
-        public final @Reason int reason;
-
-        /**
-         * @param reason The reason clipping failed.
-         */
-        public IllegalClippingException(@Reason int reason) {
-            this(reason, /* startUs= */ C.TIME_UNSET, /* endUs= */ C.TIME_UNSET);
-        }
-
-        public IllegalClippingException(@Reason int reason, long startUs, long endUs) {
-            super("Illegal clipping: " + getReasonDescription(reason, startUs, endUs));
-            this.reason = reason;
-        }
-
-        private static String getReasonDescription(@Reason int reason, long startUs, long endUs) {
-            switch (reason) {
-                case REASON_INVALID_PERIOD_COUNT:
-                    return "invalid period count";
-                case REASON_NOT_SEEKABLE_TO_START:
-                    return "not seekable to start";
-                case REASON_START_EXCEEDS_END:
-                    checkState(startUs != C.TIME_UNSET && endUs != C.TIME_UNSET);
-                    return "start exceeds end. Start time: " + startUs + ", End time: " + endUs;
-                default:
-                    return "unknown";
+                    else -> return "unknown"
+                }
             }
         }
     }
 
-    private final long startUs;
-    private final long endUs;
-    private final boolean enableInitialDiscontinuity;
-    private final boolean allowDynamicClippingUpdates;
-    private final boolean relativeToDefaultPosition;
-    private final boolean allowUnseekableMedia;
-    private final ArrayList<ClippingMediaPeriod> mediaPeriods;
-    private final Timeline.Window window;
+    private val startUs: Long
+    private val endUs: Long
+    private val enableInitialDiscontinuity: Boolean
+    private val allowDynamicClippingUpdates: Boolean
+    private val relativeToDefaultPosition: Boolean
+    private val allowUnseekableMedia: Boolean
+    private val mediaPeriods: ArrayList<ClippingMediaPeriod?>
+    private val window: Timeline.Window
 
-    @Nullable
-    private ClippingTimeline clippingTimeline;
-    @Nullable
-    private IllegalClippingException clippingError;
-    private long periodStartUs;
-    private long periodEndUs;
+    private var clippingTimeline: ClippingTimeline? = null
+    private var clippingError: IllegalClippingException? = null
+    private var periodStartUs: Long = 0
+    private var periodEndUs: Long = 0
 
-    /**
-     * @deprecated Use {@link Builder} instead.
-     */
-    @Deprecated
-    public ClippingMediaSource(MediaSource mediaSource, long startPositionUs, long endPositionUs) {
-        this(
-            new Builder(mediaSource)
-                .setStartPositionUs(startPositionUs)
-                .setEndPositionUs(endPositionUs));
+    init {
+        this.startUs = builder.startPositionUs
+        this.endUs = builder.endPositionUs
+        this.enableInitialDiscontinuity = builder.enableInitialDiscontinuity
+        this.allowDynamicClippingUpdates = builder.allowDynamicClippingUpdates
+        this.relativeToDefaultPosition = builder.relativeToDefaultPosition
+        this.allowUnseekableMedia = builder.allowUnseekableMedia
+        mediaPeriods = ArrayList<ClippingMediaPeriod?>()
+        window = Timeline.Window()
     }
 
-    /**
-     * @deprecated Use {@link Builder} instead.
-     */
-    @Deprecated
-    public ClippingMediaSource(MediaSource mediaSource, long durationUs) {
-        this(new Builder(mediaSource).setEndPositionUs(durationUs).setRelativeToDefaultPosition(true));
+    override fun canUpdateMediaItem(mediaItem: MediaItem): Boolean {
+        return getMediaItem().clippingConfiguration == mediaItem.clippingConfiguration
+                && mediaSource.canUpdateMediaItem(mediaItem)
     }
 
-    /**
-     * @deprecated Use {@link Builder} instead.
-     */
-    @Deprecated
-    public ClippingMediaSource(
-        MediaSource mediaSource,
-        long startPositionUs,
-        long endPositionUs,
-        boolean enableInitialDiscontinuity,
-        boolean allowDynamicClippingUpdates,
-        boolean relativeToDefaultPosition) {
-        this(
-            new Builder(mediaSource)
-                .setStartPositionUs(startPositionUs)
-                .setEndPositionUs(endPositionUs)
-                .setEnableInitialDiscontinuity(enableInitialDiscontinuity)
-                .setAllowDynamicClippingUpdates(allowDynamicClippingUpdates)
-                .setRelativeToDefaultPosition(relativeToDefaultPosition));
-    }
-
-    private ClippingMediaSource(Builder builder) {
-        super(builder.mediaSource);
-        this.startUs = builder.startPositionUs;
-        this.endUs = builder.endPositionUs;
-        this.enableInitialDiscontinuity = builder.enableInitialDiscontinuity;
-        this.allowDynamicClippingUpdates = builder.allowDynamicClippingUpdates;
-        this.relativeToDefaultPosition = builder.relativeToDefaultPosition;
-        this.allowUnseekableMedia = builder.allowUnseekableMedia;
-        mediaPeriods = new ArrayList<>();
-        window = new Timeline.Window();
-    }
-
-    @Override
-    public boolean canUpdateMediaItem(MediaItem mediaItem) {
-        return getMediaItem().clippingConfiguration.equals(mediaItem.clippingConfiguration)
-            && mediaSource.canUpdateMediaItem(mediaItem);
-    }
-
-    @Override
-    public void maybeThrowSourceInfoRefreshError() throws IOException {
+    @Throws(IOException::class)
+    override fun maybeThrowSourceInfoRefreshError() {
         if (clippingError != null) {
-            throw clippingError;
+            throw clippingError!!
         }
-        super.maybeThrowSourceInfoRefreshError();
+        super.maybeThrowSourceInfoRefreshError()
     }
 
-    @Override
-    public @NotNull MediaPeriod createPeriod(@NotNull MediaPeriodId id, @NotNull Allocator allocator, long startPositionUs) {
-        ClippingMediaPeriod mediaPeriod =
-            new ClippingMediaPeriod(
+    override fun createPeriod(id: MediaPeriodId, allocator: Allocator, startPositionUs: Long): MediaPeriod {
+        val mediaPeriod =
+            ClippingMediaPeriod(
                 mediaSource.createPeriod(id, allocator, startPositionUs),
                 enableInitialDiscontinuity,
                 periodStartUs,
-                periodEndUs);
-        mediaPeriods.add(mediaPeriod);
-        return mediaPeriod;
+                periodEndUs
+            )
+        mediaPeriods.add(mediaPeriod)
+        return mediaPeriod
     }
 
-    @Override
-    public void releasePeriod(@NotNull MediaPeriod mediaPeriod) {
-        checkState(mediaPeriods.remove(mediaPeriod));
-        mediaSource.releasePeriod(((ClippingMediaPeriod) mediaPeriod).mediaPeriod);
+    override fun releasePeriod(mediaPeriod: MediaPeriod) {
+        Assertions.checkState(mediaPeriods.remove(mediaPeriod as ClippingMediaPeriod))
+        mediaSource.releasePeriod(mediaPeriod.mediaPeriod)
         if (mediaPeriods.isEmpty() && !allowDynamicClippingUpdates) {
-            refreshClippedTimeline(Assertions.checkNotNull(clippingTimeline).getTimeline());
+            refreshClippedTimeline(
+                Assertions.checkNotNull(
+                    clippingTimeline
+                ).timeline
+            )
         }
     }
 
-    @Override
-    protected void releaseSourceInternal() {
-        super.releaseSourceInternal();
-        clippingError = null;
-        clippingTimeline = null;
+    override fun releaseSourceInternal() {
+        super.releaseSourceInternal()
+        clippingError = null
+        clippingTimeline = null
     }
 
-    @Override
-    protected void onChildSourceInfoRefreshed(@NotNull Timeline newTimeline) {
+    override fun onChildSourceInfoRefreshed(newTimeline: Timeline) {
         if (clippingError != null) {
-            return;
+            return
         }
-        refreshClippedTimeline(newTimeline);
+        refreshClippedTimeline(newTimeline)
     }
 
-    private void refreshClippedTimeline(Timeline timeline) {
-        long windowStartUs;
-        long windowEndUs;
-        timeline.getWindow(/* windowIndex= */ 0, window);
-        long windowPositionInPeriodUs = window.getPositionInFirstPeriodUs();
+    private fun refreshClippedTimeline(timeline: Timeline) {
+        var windowStartUs: Long
+        var windowEndUs: Long
+        timeline.getWindow( /* windowIndex= */0, window)
+        val windowPositionInPeriodUs = window.getPositionInFirstPeriodUs()
         if (clippingTimeline == null || mediaPeriods.isEmpty() || allowDynamicClippingUpdates) {
-            windowStartUs = startUs;
-            windowEndUs = endUs;
+            windowStartUs = startUs
+            windowEndUs = endUs
             if (relativeToDefaultPosition) {
-                long windowDefaultPositionUs = window.getDefaultPositionUs();
-                windowStartUs += windowDefaultPositionUs;
-                windowEndUs += windowDefaultPositionUs;
+                val windowDefaultPositionUs = window.getDefaultPositionUs()
+                windowStartUs += windowDefaultPositionUs
+                windowEndUs += windowDefaultPositionUs
             }
-            periodStartUs = windowPositionInPeriodUs + windowStartUs;
+            periodStartUs = windowPositionInPeriodUs + windowStartUs
             periodEndUs =
-                endUs == C.TIME_END_OF_SOURCE
-                    ? C.TIME_END_OF_SOURCE
-                    : windowPositionInPeriodUs + windowEndUs;
-            int count = mediaPeriods.size();
-            for (int i = 0; i < count; i++) {
-                mediaPeriods.get(i).updateClipping(periodStartUs, periodEndUs);
+                if (endUs == C.TIME_END_OF_SOURCE)
+                    C.TIME_END_OF_SOURCE
+                else
+                    windowPositionInPeriodUs + windowEndUs
+            val count = mediaPeriods.size
+            for (i in 0..<count) {
+                mediaPeriods.get(i)!!.updateClipping(periodStartUs, periodEndUs)
             }
         } else {
             // Keep window fixed at previous period position.
-            windowStartUs = periodStartUs - windowPositionInPeriodUs;
+            windowStartUs = periodStartUs - windowPositionInPeriodUs
             windowEndUs =
-                endUs == C.TIME_END_OF_SOURCE
-                    ? C.TIME_END_OF_SOURCE
-                    : periodEndUs - windowPositionInPeriodUs;
+                if (endUs == C.TIME_END_OF_SOURCE)
+                    C.TIME_END_OF_SOURCE
+                else
+                    periodEndUs - windowPositionInPeriodUs
         }
         try {
             clippingTimeline =
-                new ClippingTimeline(timeline, windowStartUs, windowEndUs, allowUnseekableMedia);
-        } catch (IllegalClippingException e) {
-            clippingError = e;
+                ClippingTimeline(timeline, windowStartUs, windowEndUs, allowUnseekableMedia)
+        } catch (e: IllegalClippingException) {
+            clippingError = e
             // The clipping error won't be propagated while we have existing MediaPeriods. Setting the
             // error at the MediaPeriods ensures it will be thrown as soon as possible.
-            for (int i = 0; i < mediaPeriods.size(); i++) {
-                mediaPeriods.get(i).setClippingError(clippingError);
+            var i = 0
+            while (i < mediaPeriods.size) {
+                mediaPeriods.get(i)!!.setClippingError(clippingError)
+                i++
             }
-            return;
+            return
         }
-        refreshSourceInfo(clippingTimeline);
+        refreshSourceInfo(clippingTimeline!!)
     }
 
-    /** Provides a clipped view of a specified timeline. */
-    private static final class ClippingTimeline extends ForwardingTimeline {
+    private class ClippingTimeline(timeline: Timeline, startUs: Long, endUs: Long, allowUnseekableMedia: Boolean) :
+        ForwardingTimeline(timeline) {
+        private val startUs: Long
+        private val endUs: Long
+        private val durationUs: Long
+        private val isDynamic: Boolean
 
-        private final long startUs;
-        private final long endUs;
-        private final long durationUs;
-        private final boolean isDynamic;
-
-        /**
-         * Creates a new clipping timeline that wraps the specified timeline.
-         *
-         * @param timeline             The timeline to clip.
-         * @param startUs              The number of microseconds to clip from the start of {@code timeline}.
-         * @param endUs                The end position in microseconds for the clipped timeline relative to the start
-         *                             of {@code timeline}, or {@link C#TIME_END_OF_SOURCE} to clip no samples from the end.
-         * @param allowUnseekableMedia Whether to allow non-zero start positions in unseekable media.
-         * @throws IllegalClippingException If the timeline could not be clipped.
-         */
-        public ClippingTimeline(
-            Timeline timeline, long startUs, long endUs, boolean allowUnseekableMedia)
-            throws IllegalClippingException {
-            super(timeline);
+        init {
+            var startUs = startUs
+            var endUs = endUs
             if (endUs != C.TIME_END_OF_SOURCE && endUs < startUs) {
-                throw new IllegalClippingException(
-                    IllegalClippingException.REASON_START_EXCEEDS_END, startUs, endUs);
+                throw IllegalClippingException(
+                    IllegalClippingException.Companion.REASON_START_EXCEEDS_END, startUs, endUs
+                )
             }
             if (timeline.getPeriodCount() != 1) {
-                throw new IllegalClippingException(IllegalClippingException.REASON_INVALID_PERIOD_COUNT);
+                throw IllegalClippingException(IllegalClippingException.Companion.REASON_INVALID_PERIOD_COUNT)
             }
-            Window window = timeline.getWindow(0, new Window());
-            startUs = max(0, startUs);
-            if (!allowUnseekableMedia && !window.isPlaceholder && startUs != 0 && !window.isSeekable) {
-                throw new IllegalClippingException(IllegalClippingException.REASON_NOT_SEEKABLE_TO_START);
+            val window = timeline.getWindow(0, Window())
+            startUs = max(0, startUs)
+            if (!allowUnseekableMedia && !window.isPlaceholder && startUs != 0L && !window.isSeekable) {
+                throw IllegalClippingException(IllegalClippingException.Companion.REASON_NOT_SEEKABLE_TO_START)
             }
-            endUs = endUs == C.TIME_END_OF_SOURCE ? window.durationUs : max(0, endUs);
+            endUs = if (endUs == C.TIME_END_OF_SOURCE) window.durationUs else max(0, endUs)
             if (window.durationUs != C.TIME_UNSET) {
                 if (endUs > window.durationUs) {
-                    endUs = window.durationUs;
+                    endUs = window.durationUs
                 }
                 if (startUs > endUs) {
-                    startUs = endUs;
+                    startUs = endUs
                 }
             }
-            this.startUs = startUs;
-            this.endUs = endUs;
-            durationUs = endUs == C.TIME_UNSET ? C.TIME_UNSET : (endUs - startUs);
+            this.startUs = startUs
+            this.endUs = endUs
+            durationUs = if (endUs == C.TIME_UNSET) C.TIME_UNSET else (endUs - startUs)
             isDynamic =
                 window.isDynamic
-                    && (endUs == C.TIME_UNSET
-                    || (window.durationUs != C.TIME_UNSET && endUs == window.durationUs));
+                        && (endUs == C.TIME_UNSET
+                        || (window.durationUs != C.TIME_UNSET && endUs == window.durationUs))
         }
 
-        @Override
-        public @NotNull Window getWindow(int windowIndex, @NotNull Window window, long defaultPositionProjectionUs) {
-            timeline.getWindow(/* windowIndex= */ 0, window, /* defaultPositionProjectionUs= */ 0);
-            window.positionInFirstPeriodUs += startUs;
-            window.durationUs = durationUs;
-            window.isDynamic = isDynamic;
+        override fun getWindow(windowIndex: Int, window: Window, defaultPositionProjectionUs: Long): Window {
+            timeline.getWindow( /* windowIndex= */0, window,  /* defaultPositionProjectionUs= */0)
+            window.positionInFirstPeriodUs += startUs
+            window.durationUs = durationUs
+            window.isDynamic = isDynamic
             if (window.defaultPositionUs != C.TIME_UNSET) {
-                window.defaultPositionUs = max(window.defaultPositionUs, startUs);
+                window.defaultPositionUs = max(window.defaultPositionUs, startUs)
                 window.defaultPositionUs =
-                    endUs == C.TIME_UNSET ? window.defaultPositionUs : min(window.defaultPositionUs, endUs);
-                window.defaultPositionUs -= startUs;
+                    if (endUs == C.TIME_UNSET) window.defaultPositionUs else min(window.defaultPositionUs, endUs)
+                window.defaultPositionUs -= startUs
             }
-            long startMs = Util.usToMs(startUs);
+            val startMs = Util.usToMs(startUs)
             if (window.presentationStartTimeMs != C.TIME_UNSET) {
-                window.presentationStartTimeMs += startMs;
+                window.presentationStartTimeMs += startMs
             }
             if (window.windowStartTimeMs != C.TIME_UNSET) {
-                window.windowStartTimeMs += startMs;
+                window.windowStartTimeMs += startMs
             }
-            return window;
+            return window
         }
 
-        @Override
-        public @NotNull Period getPeriod(int periodIndex, @NotNull Period period, boolean setIds) {
-            timeline.getPeriod(/* periodIndex= */ 0, period, setIds);
-            long positionInClippedWindowUs = period.getPositionInWindowUs() - startUs;
-            long periodDurationUs =
-                durationUs == C.TIME_UNSET ? C.TIME_UNSET : durationUs - positionInClippedWindowUs;
+        override fun getPeriod(periodIndex: Int, period: Period, setIds: Boolean): Period {
+            timeline.getPeriod( /* periodIndex= */0, period, setIds)
+            val positionInClippedWindowUs = period.getPositionInWindowUs() - startUs
+            val periodDurationUs =
+                if (durationUs == C.TIME_UNSET) C.TIME_UNSET else durationUs - positionInClippedWindowUs
             return period.set(
-                period.id, period.uid, /* windowIndex= */ 0, periodDurationUs, positionInClippedWindowUs);
+                period.id, period.uid,  /* windowIndex= */0, periodDurationUs, positionInClippedWindowUs
+            )
         }
 
-        public Timeline getTimeline() {
-            return timeline;
-        }
+        val timeline: Timeline = super.timeline
     }
 }

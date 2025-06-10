@@ -13,205 +13,162 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.vpg.apex.core.player;
+package net.vpg.apex.core.player
 
-import androidx.annotation.Nullable;
-import androidx.media3.common.C;
-import androidx.media3.common.Player;
-import androidx.media3.common.Timeline;
-import androidx.media3.common.util.Assertions;
-import androidx.media3.common.util.UnstableApi;
-import androidx.media3.exoplayer.AbstractConcatenatedTimeline;
-import androidx.media3.exoplayer.ExoPlayer;
-import androidx.media3.exoplayer.source.*;
-import androidx.media3.exoplayer.source.ShuffleOrder.UnshuffledShuffleOrder;
-import androidx.media3.exoplayer.upstream.Allocator;
-import org.jetbrains.annotations.NotNull;
+import androidx.media3.common.C
+import androidx.media3.common.Player
+import androidx.media3.common.Timeline
+import androidx.media3.common.util.Assertions
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.AbstractConcatenatedTimeline
+import androidx.media3.exoplayer.source.*
+import androidx.media3.exoplayer.source.MediaSource.MediaPeriodId
+import androidx.media3.exoplayer.source.ShuffleOrder.UnshuffledShuffleOrder
+import androidx.media3.exoplayer.upstream.Allocator
 
-import java.util.HashMap;
-import java.util.Map;
-
-/**
- * Loops a {@link MediaSource} a specified number of times.
- */
 @UnstableApi
-public final class LoopingMediaSource extends WrappingMediaSource {
+class LoopingMediaSource @JvmOverloads constructor(childSource: MediaSource, loopCount: Int = Int.Companion.MAX_VALUE) :
+    WrappingMediaSource(MaskingMediaSource(childSource,  /* useLazyPreparation= */false)) {
+    private val loopCount: Int
+    private val childMediaPeriodIdToMediaPeriodId: MutableMap<MediaPeriodId?, MediaPeriodId?>
+    private val mediaPeriodToChildMediaPeriodId: MutableMap<MediaPeriod?, MediaPeriodId?>
 
-    private final int loopCount;
-    private final Map<MediaPeriodId, MediaPeriodId> childMediaPeriodIdToMediaPeriodId;
-    private final Map<MediaPeriod, MediaPeriodId> mediaPeriodToChildMediaPeriodId;
-
-    /**
-     * Loops the provided source indefinitely. Note that it is usually better to use {@link
-     * ExoPlayer#setRepeatMode(int)}.
-     *
-     * @param childSource The {@link MediaSource} to loop.
-     */
-    public LoopingMediaSource(MediaSource childSource) {
-        this(childSource, Integer.MAX_VALUE);
+    init {
+        Assertions.checkArgument(loopCount > 0)
+        this.loopCount = loopCount
+        childMediaPeriodIdToMediaPeriodId = HashMap<MediaPeriodId?, MediaPeriodId?>()
+        mediaPeriodToChildMediaPeriodId = HashMap<MediaPeriod?, MediaPeriodId?>()
     }
 
-    /**
-     * Loops the provided source a specified number of times.
-     *
-     * @param childSource The {@link MediaSource} to loop.
-     * @param loopCount   The desired number of loops. Must be strictly positive.
-     */
-    public LoopingMediaSource(MediaSource childSource, int loopCount) {
-        super(new MaskingMediaSource(childSource, /* useLazyPreparation= */ false));
-        Assertions.checkArgument(loopCount > 0);
-        this.loopCount = loopCount;
-        childMediaPeriodIdToMediaPeriodId = new HashMap<>();
-        mediaPeriodToChildMediaPeriodId = new HashMap<>();
+    override fun getInitialTimeline(): Timeline {
+        val maskingMediaSource = mediaSource as MaskingMediaSource
+        return if (loopCount != Int.Companion.MAX_VALUE)
+            LoopingTimeline(maskingMediaSource.getTimeline(), loopCount)
+        else
+            InfinitelyLoopingTimeline(maskingMediaSource.getTimeline())
     }
 
-    @Override
-    public @NotNull Timeline getInitialTimeline() {
-        MaskingMediaSource maskingMediaSource = (MaskingMediaSource) mediaSource;
-        return loopCount != Integer.MAX_VALUE
-            ? new LoopingTimeline(maskingMediaSource.getTimeline(), loopCount)
-            : new InfinitelyLoopingTimeline(maskingMediaSource.getTimeline());
+    override fun isSingleWindow(): Boolean {
+        return false
     }
 
-    @Override
-    public boolean isSingleWindow() {
-        return false;
-    }
-
-    @Override
-    public @NotNull MediaPeriod createPeriod(@NotNull MediaPeriodId id, @NotNull Allocator allocator, long startPositionUs) {
-        if (loopCount == Integer.MAX_VALUE) {
-            return mediaSource.createPeriod(id, allocator, startPositionUs);
+    override fun createPeriod(id: MediaPeriodId, allocator: Allocator, startPositionUs: Long): MediaPeriod {
+        if (loopCount == Int.Companion.MAX_VALUE) {
+            return mediaSource.createPeriod(id, allocator, startPositionUs)
         }
-        Object childPeriodUid = LoopingTimeline.getChildPeriodUidFromConcatenatedUid(id.periodUid);
-        MediaPeriodId childMediaPeriodId = id.copyWithPeriodUid(childPeriodUid);
-        childMediaPeriodIdToMediaPeriodId.put(childMediaPeriodId, id);
-        MediaPeriod mediaPeriod =
-            mediaSource.createPeriod(childMediaPeriodId, allocator, startPositionUs);
-        mediaPeriodToChildMediaPeriodId.put(mediaPeriod, childMediaPeriodId);
-        return mediaPeriod;
+        val childPeriodUid = AbstractConcatenatedTimeline.getChildPeriodUidFromConcatenatedUid(id.periodUid)
+        val childMediaPeriodId = id.copyWithPeriodUid(childPeriodUid)
+        childMediaPeriodIdToMediaPeriodId.put(childMediaPeriodId, id)
+        val mediaPeriod =
+            mediaSource.createPeriod(childMediaPeriodId, allocator, startPositionUs)
+        mediaPeriodToChildMediaPeriodId.put(mediaPeriod, childMediaPeriodId)
+        return mediaPeriod
     }
 
-    @Override
-    public void releasePeriod(@NotNull MediaPeriod mediaPeriod) {
-        mediaSource.releasePeriod(mediaPeriod);
-        @Nullable
-        MediaPeriodId childMediaPeriodId = mediaPeriodToChildMediaPeriodId.remove(mediaPeriod);
+    override fun releasePeriod(mediaPeriod: MediaPeriod) {
+        mediaSource.releasePeriod(mediaPeriod)
+        val childMediaPeriodId = mediaPeriodToChildMediaPeriodId.remove(mediaPeriod)
         if (childMediaPeriodId != null) {
-            childMediaPeriodIdToMediaPeriodId.remove(childMediaPeriodId);
+            childMediaPeriodIdToMediaPeriodId.remove(childMediaPeriodId)
         }
     }
 
-    @Override
-    protected void onChildSourceInfoRefreshed(@NotNull Timeline newTimeline) {
-        Timeline loopingTimeline =
-            loopCount != Integer.MAX_VALUE
-                ? new LoopingTimeline(newTimeline, loopCount)
-                : new InfinitelyLoopingTimeline(newTimeline);
-        refreshSourceInfo(loopingTimeline);
+    override fun onChildSourceInfoRefreshed(newTimeline: Timeline) {
+        val loopingTimeline =
+            if (loopCount != Int.Companion.MAX_VALUE)
+                LoopingTimeline(newTimeline, loopCount)
+            else
+                InfinitelyLoopingTimeline(newTimeline)
+        refreshSourceInfo(loopingTimeline)
     }
 
-    @Override
-    @Nullable
-    protected MediaPeriodId getMediaPeriodIdForChildMediaPeriodId(@NotNull MediaPeriodId mediaPeriodId) {
-        return loopCount != Integer.MAX_VALUE
-            ? childMediaPeriodIdToMediaPeriodId.get(mediaPeriodId)
-            : mediaPeriodId;
+    override fun getMediaPeriodIdForChildMediaPeriodId(mediaPeriodId: MediaPeriodId): MediaPeriodId? {
+        return if (loopCount != Int.Companion.MAX_VALUE)
+            childMediaPeriodIdToMediaPeriodId.get(mediaPeriodId)
+        else
+            mediaPeriodId
     }
 
-    private static final class LoopingTimeline extends AbstractConcatenatedTimeline {
+    private class LoopingTimeline(private val childTimeline: Timeline, private val loopCount: Int) :
+        AbstractConcatenatedTimeline( /* isAtomic= */false, UnshuffledShuffleOrder(
+            loopCount
+        )
+        ) {
+        private val childPeriodCount: Int
+        private val childWindowCount: Int
 
-        private final Timeline childTimeline;
-        private final int childPeriodCount;
-        private final int childWindowCount;
-        private final int loopCount;
-
-        public LoopingTimeline(Timeline childTimeline, int loopCount) {
-            super(/* isAtomic= */ false, new UnshuffledShuffleOrder(loopCount));
-            this.childTimeline = childTimeline;
-            childPeriodCount = childTimeline.getPeriodCount();
-            childWindowCount = childTimeline.getWindowCount();
-            this.loopCount = loopCount;
+        init {
+            childPeriodCount = childTimeline.getPeriodCount()
+            childWindowCount = childTimeline.getWindowCount()
             if (childPeriodCount > 0) {
                 Assertions.checkState(
-                    loopCount <= Integer.MAX_VALUE / childPeriodCount,
-                    "LoopingMediaSource contains too many periods");
+                    loopCount <= Int.Companion.MAX_VALUE / childPeriodCount,
+                    "LoopingMediaSource contains too many periods"
+                )
             }
         }
 
-        @Override
-        public int getWindowCount() {
-            return childWindowCount * loopCount;
+        override fun getWindowCount(): Int {
+            return childWindowCount * loopCount
         }
 
-        @Override
-        public int getPeriodCount() {
-            return childPeriodCount * loopCount;
+        override fun getPeriodCount(): Int {
+            return childPeriodCount * loopCount
         }
 
-        @Override
-        protected int getChildIndexByPeriodIndex(int periodIndex) {
-            return periodIndex / childPeriodCount;
+        override fun getChildIndexByPeriodIndex(periodIndex: Int): Int {
+            return periodIndex / childPeriodCount
         }
 
-        @Override
-        protected int getChildIndexByWindowIndex(int windowIndex) {
-            return windowIndex / childWindowCount;
+        override fun getChildIndexByWindowIndex(windowIndex: Int): Int {
+            return windowIndex / childWindowCount
         }
 
-        @Override
-        protected int getChildIndexByChildUid(@NotNull Object childUid) {
-            if (!(childUid instanceof Integer)) {
-                return C.INDEX_UNSET;
+        override fun getChildIndexByChildUid(childUid: Any): Int {
+            if (childUid !is Int) {
+                return C.INDEX_UNSET
             }
-            return (Integer) childUid;
+            return childUid
         }
 
-        @Override
-        protected @NotNull Timeline getTimelineByChildIndex(int childIndex) {
-            return childTimeline;
+        override fun getTimelineByChildIndex(childIndex: Int): Timeline {
+            return childTimeline
         }
 
-        @Override
-        protected int getFirstPeriodIndexByChildIndex(int childIndex) {
-            return childIndex * childPeriodCount;
+        override fun getFirstPeriodIndexByChildIndex(childIndex: Int): Int {
+            return childIndex * childPeriodCount
         }
 
-        @Override
-        protected int getFirstWindowIndexByChildIndex(int childIndex) {
-            return childIndex * childWindowCount;
+        override fun getFirstWindowIndexByChildIndex(childIndex: Int): Int {
+            return childIndex * childWindowCount
         }
 
-        @Override
-        protected @NotNull Object getChildUidByChildIndex(int childIndex) {
-            return childIndex;
+        override fun getChildUidByChildIndex(childIndex: Int): Any {
+            return childIndex
         }
     }
 
-    private static final class InfinitelyLoopingTimeline extends ForwardingTimeline {
-
-        public InfinitelyLoopingTimeline(Timeline timeline) {
-            super(timeline);
+    private class InfinitelyLoopingTimeline(timeline: Timeline) : ForwardingTimeline(timeline) {
+        override fun getNextWindowIndex(
+            windowIndex: Int, repeatMode: @Player.RepeatMode Int, shuffleModeEnabled: Boolean
+        ): Int {
+            val childNextWindowIndex =
+                timeline.getNextWindowIndex(windowIndex, repeatMode, shuffleModeEnabled)
+            return if (childNextWindowIndex == C.INDEX_UNSET)
+                getFirstWindowIndex(shuffleModeEnabled)
+            else
+                childNextWindowIndex
         }
 
-        @Override
-        public int getNextWindowIndex(
-            int windowIndex, @Player.RepeatMode int repeatMode, boolean shuffleModeEnabled) {
-            int childNextWindowIndex =
-                timeline.getNextWindowIndex(windowIndex, repeatMode, shuffleModeEnabled);
-            return childNextWindowIndex == C.INDEX_UNSET
-                ? getFirstWindowIndex(shuffleModeEnabled)
-                : childNextWindowIndex;
-        }
-
-        @Override
-        public int getPreviousWindowIndex(
-            int windowIndex, @Player.RepeatMode int repeatMode, boolean shuffleModeEnabled) {
-            int childPreviousWindowIndex =
-                timeline.getPreviousWindowIndex(windowIndex, repeatMode, shuffleModeEnabled);
-            return childPreviousWindowIndex == C.INDEX_UNSET
-                ? getLastWindowIndex(shuffleModeEnabled)
-                : childPreviousWindowIndex;
+        override fun getPreviousWindowIndex(
+            windowIndex: Int, repeatMode: @Player.RepeatMode Int, shuffleModeEnabled: Boolean
+        ): Int {
+            val childPreviousWindowIndex =
+                timeline.getPreviousWindowIndex(windowIndex, repeatMode, shuffleModeEnabled)
+            return if (childPreviousWindowIndex == C.INDEX_UNSET)
+                getLastWindowIndex(shuffleModeEnabled)
+            else
+                childPreviousWindowIndex
         }
     }
 }
