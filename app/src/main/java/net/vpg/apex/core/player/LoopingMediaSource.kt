@@ -27,7 +27,7 @@ import androidx.media3.exoplayer.source.ShuffleOrder.UnshuffledShuffleOrder
 import androidx.media3.exoplayer.upstream.Allocator
 
 @UnstableApi
-class LoopingMediaSource @JvmOverloads constructor(childSource: MediaSource, loopCount: Int = Int.Companion.MAX_VALUE) :
+class LoopingMediaSource(childSource: MediaSource, loopCount: Int = Int.Companion.MAX_VALUE) :
     WrappingMediaSource(MaskingMediaSource(childSource,  /* useLazyPreparation= */false)) {
     private val loopCount: Int
     private val childMediaPeriodIdToMediaPeriodId: MutableMap<MediaPeriodId?, MediaPeriodId?>

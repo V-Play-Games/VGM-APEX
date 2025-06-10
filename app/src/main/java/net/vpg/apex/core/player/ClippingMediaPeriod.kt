@@ -38,8 +38,8 @@ import kotlin.math.min
 
 @UnstableApi
 class ClippingMediaPeriod(
-    @JvmField val mediaPeriod: MediaPeriod, enableInitialDiscontinuity: Boolean, /* package */
-    var startUs: Long, /* package */
+    val mediaPeriod: MediaPeriod, enableInitialDiscontinuity: Boolean,
+    var startUs: Long,
     var endUs: Long
 ) : MediaPeriod, MediaPeriod.Callback {
     private var callback: MediaPeriod.Callback? = null

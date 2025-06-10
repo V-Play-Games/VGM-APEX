@@ -101,9 +101,8 @@ class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaS
         }
     }
 
-    class IllegalClippingException
-    @JvmOverloads constructor(
-        val reason: @Reason Int, startUs: Long = C.TIME_UNSET, endUs: Long = C.TIME_UNSET
+    class IllegalClippingException(
+        reason: @Reason Int, startUs: Long = C.TIME_UNSET, endUs: Long = C.TIME_UNSET
     ) : IOException(
         "Illegal clipping: " + getReasonDescription(
             reason, startUs, endUs
