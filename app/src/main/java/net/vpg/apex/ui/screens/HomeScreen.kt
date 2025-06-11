@@ -18,11 +18,11 @@ object HomeScreen : ApexBottomBarScreen(
     title = "Home",
     content = {
         val playHistory = rememberPlayHistory()
-        val trending = remember(Unit) {
+        val random = remember(Unit) {
             TrackHistory(ApexTrack.TRACKS_DB.values.shuffled().take(5))
         }
 
-        TrackDisplaySection("Trending", trending)
+        TrackDisplaySection("Random Picks for you", random)
         Spacer(modifier = Modifier.height(32.dp))
         TrackDisplaySection("Recently Played", playHistory)
     }

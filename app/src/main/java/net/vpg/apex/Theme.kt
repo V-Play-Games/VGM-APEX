@@ -10,14 +10,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// Custom colors for app
+// Custom colours for app
 object ApexColors {
-    // Primary brand colors
+    // Primary brand colours
     val GreenPrimary = Color(0xFF1DB954)
     val GreenLight = Color(0xFF1ED760)
     val GreenDark = Color(0xFF1AA34A)
 
-    // Background colors
+    // Background colours
     val BackgroundDark = Color(0xFF121212)
     val BackgroundLight = Color(0xFFF5F5F5)
     val SurfaceDark = Color(0xFF242424)

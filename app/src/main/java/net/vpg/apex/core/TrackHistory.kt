@@ -19,7 +19,6 @@ class SearchHistory(context: Context) : SaveableTrackHistory(context, "search-hi
 
 class PlayHistory(context: Context) : SaveableTrackHistory(context, "track-history.txt") {
     override fun addTrack(track: ApexTrack) {
-        // Don't add the same track again if it's already the first one
         if (trackHistory.firstOrNull() != track)
             super.addTrack(track)
     }
@@ -32,13 +31,12 @@ sealed class SaveableTrackHistory(context: Context, val fileName: String) : Trac
 
     protected val historyFile = File(context.cacheDir, fileName)
         .also { if (!it.exists()) it.writeText("[]") }
-
-    init {
-        historyFile.readLines()
-            .mapNotNull { ApexTrack.TRACKS_DB[it] }
-            .reversed()
-            .forEach { super.addTrack(it) }
-    }
+        .also { file ->
+            file.readLines()
+                .mapNotNull { ApexTrack.TRACKS_DB[it] }
+                .reversed()
+                .forEach { super.addTrack(it) }
+        }
 
     override fun addTrack(track: ApexTrack) {
         super.addTrack(track)
@@ -63,9 +61,9 @@ sealed class SaveableTrackHistory(context: Context, val fileName: String) : Trac
 
 open class TrackHistory() {
     companion object {
-        private val NOT_DISPLAYED = 1
-        private val DISPLAYED = 2
-        private val REMOVED = 3
+        private const val NOT_DISPLAYED = 1
+        private const val DISPLAYED = 2
+        private const val REMOVED = 3
     }
 
     private val appearingOnScreen = mutableStateListOf<Int>()
@@ -93,10 +91,6 @@ open class TrackHistory() {
         appearingOnScreen[index] = REMOVED
     }
 
-    private fun forceRemoveIndex(index: Int) {
-        trackHistory[index] = ApexTrack.EMPTY
-    }
-
     fun isEmpty() = trackHistory.isEmpty()
 
     fun composeToList(
@@ -119,6 +113,6 @@ open class TrackHistory() {
                 appearingOnScreen[i] = DISPLAYED
             }
         }
-        toRemove.forEach { forceRemoveIndex(it) }
+        toRemove.forEach { trackHistory[it] = ApexTrack.EMPTY }
     }
 }
