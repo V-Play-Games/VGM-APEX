@@ -68,7 +68,7 @@ object NowPlayingScreen : ApexScreenStatic(
                     MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier
                     .size(30.dp)
-                    .bounceClick { player.isShuffling = !player.isShuffling }
+                    .bounceClick { player.toggleShuffling() }
             )
             PlayerActions(player, Modifier.size(30.dp))
         }

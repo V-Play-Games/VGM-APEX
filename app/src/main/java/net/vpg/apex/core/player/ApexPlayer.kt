@@ -4,10 +4,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.OptIn
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -21,29 +18,25 @@ import java.io.File
 class ApexPlayer {
     private val player: ExoPlayer
     private val queue = mutableListOf<ApexTrack>()
-    private val _isPlaying = mutableStateOf(false)
-    val isPlaying by _isPlaying
-    private val _isBuffering = mutableStateOf(false)
-    val isBuffering by _isBuffering
-    private var currentIndex by mutableIntStateOf(-1)
-    val nowPlaying get() = if (currentIndex < 0) ApexTrack.EMPTY else queue[currentIndex]
-    private var prepared = false
-    private val _isLooping = mutableStateOf(true)
-    val isLooping by _isLooping
-    fun stepUpLoop() {
-        _isLooping.value = !_isLooping.value
-        player.repeatMode = if (_isLooping.value && player.currentMediaItemIndex == 2)
-            Player.REPEAT_MODE_ONE
-        else
-            Player.REPEAT_MODE_OFF
-    }
 
-    private val _isShuffling = mutableStateOf(false)
-    var isShuffling by _isShuffling
-    val loopStart get() = frameToUs(if (nowPlaying.loopStart == -1) 0 else nowPlaying.loopStart)
-    val loopEnd get() = frameToUs(if (nowPlaying.loopEnd == -1) Int.MAX_VALUE else nowPlaying.loopEnd)
-    val cacheDir: File
-    var duration: Long = 0L
+    private var playingState by mutableStateOf(false)
+    private var bufferingState by mutableStateOf(false)
+    private var loopingState by mutableStateOf(true)
+    private var shuffleState by mutableStateOf(false)
+    private var currentIndex by mutableIntStateOf(-1)
+    private var durationState by mutableLongStateOf(0)
+
+    val isPlaying get() = playingState
+    val isBuffering get() = bufferingState
+    val nowPlaying get() = if (currentIndex < 0) ApexTrack.EMPTY else queue[currentIndex]
+    val isLooping get() = loopingState
+    val isShuffling get() = shuffleState
+    val duration get() = durationState
+
+    private var prepared = false
+    private val loopStart get() = frameToUs(if (nowPlaying.loopStart == -1) 0 else nowPlaying.loopStart)
+    private val loopEnd get() = frameToUs(if (nowPlaying.loopEnd == -1) Int.MAX_VALUE else nowPlaying.loopEnd)
+    private val cacheDir: File
 
     val currentPosition: Long
         get() = when (player.currentMediaItemIndex) {
@@ -67,23 +60,26 @@ class ApexPlayer {
             .setLooper(mainLooper)
             .build()
         player.addListener(object : Player.Listener {
-            override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-                _isPlaying.value = playWhenReady
+            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                playingState = playWhenReady
+            }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
                 when (playbackState) {
                     Player.STATE_BUFFERING -> {
-                        _isBuffering.value = true
+                        bufferingState = true
                     }
 
                     Player.STATE_READY -> {
-                        _isBuffering.value = false
+                        bufferingState = false
                         if (player.currentMediaItemIndex == 0) {
-                            duration = player.duration
+                            durationState = player.duration
                             player.seekTo(1, 0)
                         }
                     }
 
                     Player.STATE_ENDED -> {
-                        _isPlaying.value = false
+                        playingState = false
                         prepared = false
                     }
 
@@ -92,12 +88,7 @@ class ApexPlayer {
                 }
             }
 
-            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                player.repeatMode = if (player.currentMediaItemIndex == 2 && isLooping)
-                    Player.REPEAT_MODE_ONE
-                else
-                    Player.REPEAT_MODE_OFF
-            }
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) = updatePlayerRepeatMode()
         })
     }
 
@@ -132,7 +123,7 @@ class ApexPlayer {
         player.prepare()
         player.play()
         prepared = true
-        duration = 0
+        durationState = 0
     }
 
     @OptIn(UnstableApi::class)
@@ -179,6 +170,22 @@ class ApexPlayer {
         if (!canGoNext()) return
         currentIndex++
         playCurrentTrack()
+    }
+
+    fun toggleShuffling() {
+        shuffleState = !shuffleState
+    }
+
+    fun stepUpLoop() {
+        loopingState = !loopingState
+        updatePlayerRepeatMode()
+    }
+
+    private fun updatePlayerRepeatMode() {
+        player.repeatMode = if (loopingState && player.currentMediaItemIndex == 2)
+            Player.REPEAT_MODE_ONE
+        else
+            Player.REPEAT_MODE_OFF
     }
 
     @OptIn(UnstableApi::class)

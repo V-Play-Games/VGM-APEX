@@ -105,7 +105,7 @@ fun Modifier.bounceClick(
                 if (isPressed) {
                     waitForUpOrCancellation()
                 } else {
-                    awaitFirstDown(false)
+                    awaitFirstDown()
                 }
                 isPressed = !isPressed
             }
