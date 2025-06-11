@@ -6,9 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +20,7 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import net.vpg.apex.core.bounceClick
+import net.vpg.apex.core.customShimmer
 import net.vpg.apex.core.di.rememberContext
 import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.entities.ApexAlbum
@@ -38,10 +37,14 @@ fun AlbumImage(album: ApexAlbum, size: Int, cornerRadius: Int = 8) {
         contentDescription = "${album.name} cover",
         contentScale = ContentScale.Crop,
         loading = {
-            Box(contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size((size * 2 / 3).dp),
-                    color = MaterialTheme.colorScheme.primary
+            Box(
+                modifier = Modifier.customShimmer(durationMillis = 800, delayMillis = 200),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MusicNote,
+                    contentDescription = "App Logo",
+                    modifier = Modifier.size((size * 2 / 3).dp).alpha(0.5f)
                 )
             }
         },

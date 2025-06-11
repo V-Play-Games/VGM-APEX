@@ -4,20 +4,22 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.annotation.FloatRange
+import androidx.compose.animation.core.AnimationConstants.DefaultDurationMillis
+import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.input.pointer.pointerInput
+import com.valentinilk.shimmer.*
 
 fun Context.unwrapActivity(): Activity = when (this) {
     is Activity -> this
@@ -60,3 +62,23 @@ fun Modifier.bounceClick(
             }
         }
 }
+
+@Composable
+fun Modifier.customShimmer(
+    durationMillis: Int = DefaultDurationMillis,
+    delayMillis: Int = 0,
+    easing: Easing = LinearEasing,
+) = this.shimmer(
+    rememberShimmer(
+        shimmerBounds = ShimmerBounds.View,
+        theme = LocalShimmerTheme.current.copy(
+            animationSpec = infiniteRepeatable(
+                animation = shimmerSpec(
+                    durationMillis = durationMillis,
+                    delayMillis = delayMillis,
+                    easing = easing
+                )
+            )
+        )
+    )
+)

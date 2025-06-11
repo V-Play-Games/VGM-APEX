@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.vpg.apex.core.customShimmer
 import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexTrack
@@ -22,7 +23,7 @@ fun NowPlayingBar() {
     if (player.nowPlaying == ApexTrack.EMPTY) return
     val navController = rememberNavControllerProvider().current
     Row(
-        modifier = Modifier
+        modifier = (if (player.isBuffering) Modifier.customShimmer(durationMillis = 800) else Modifier)
             .clickable { navController.navigate(NowPlayingScreen.route) }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
