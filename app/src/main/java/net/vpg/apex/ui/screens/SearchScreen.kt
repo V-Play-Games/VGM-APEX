@@ -107,30 +107,30 @@ object SearchScreen : ApexBottomBarScreen(
                 fontWeight = FontWeight.SemiBold
             )
             Spacer(modifier = Modifier.height(16.dp))
-            if (searchHistory.isEmpty()) {
-                Text(
-                    text = "No recent searches",
-                    color = Color.Gray
-                )
-            } else {
-                LazyColumn {
-                    searchHistory.composeToList(this@LazyColumn) { track, index ->
-                        TrackBar(
-                            apexTrack = track,
-                            trailingComponents = {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Close",
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .bounceClick { searchHistory.removeIndex(index) },
-                                    tint = Color.DarkGray
-                                )
-                            }
-                        )
-                    }
-                }
-            }
+            searchHistory.ComposeToList(
+                emptyFallback = {
+                    Text(
+                        text = "No recent searches",
+                        color = Color.Gray
+                    )
+                },
+                lazyComposable = { LazyColumn(content = it) },
+                content = { track, index ->
+                    TrackBar(
+                        apexTrack = track,
+                        trailingComponents = {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close",
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .bounceClick { searchHistory.removeIndex(index) },
+                                tint = Color.DarkGray
+                            )
+                        }
+                    )
+                },
+            )
         }
     }
 )

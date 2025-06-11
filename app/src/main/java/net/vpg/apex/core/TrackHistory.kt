@@ -68,7 +68,7 @@ open class TrackHistory() {
     }
 
     private val appearingOnScreen = mutableStateListOf<Int>()
-    protected val trackHistory = mutableListOf<ApexTrack>()
+    protected val trackHistory = mutableStateListOf<ApexTrack>()
 
     constructor(tracks: List<ApexTrack>) : this() {
         tracks.reversed().forEach { addTrack(it) }
@@ -88,20 +88,28 @@ open class TrackHistory() {
             }
     }
 
-    fun removeIndex(index: Int) {
+    open fun removeIndex(index: Int) {
         appearingOnScreen[index] = REMOVED
     }
 
     fun isEmpty() = trackHistory.isEmpty()
 
-    fun composeToList(
-        scope: LazyListScope,
+    @Composable
+    fun ComposeToList(
         limit: Int = trackHistory.size,
+        emptyFallback: @Composable () -> Unit,
+        lazyComposable: @Composable (LazyListScope.() -> Unit) -> Unit,
         content: @Composable (ApexTrack, Int) -> Unit
     ) {
-        scope.items(min(limit, trackHistory.size)) { index ->
-            AnimatedVisibility(appearingOnScreen[index] == DISPLAYED) {
-                content(trackHistory[index], index)
+        if (trackHistory.none { it != ApexTrack.EMPTY }) {
+            emptyFallback()
+            return
+        }
+        lazyComposable {
+            items(min(limit, trackHistory.size)) { index ->
+                AnimatedVisibility(appearingOnScreen[index] == DISPLAYED) {
+                    content(trackHistory[index], index)
+                }
             }
         }
         val toRemove = mutableListOf<Int>()

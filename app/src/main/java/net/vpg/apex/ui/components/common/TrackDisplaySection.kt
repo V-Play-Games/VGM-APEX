@@ -25,21 +25,26 @@ fun TrackDisplaySection(sectionTitle: String, tracks: TrackHistory) {
             fontSize = 20.sp
         )
         Spacer(modifier = Modifier.height(8.dp))
-        if (tracks.isEmpty()) {
-            Text(
-                text = "Nothing to see here :(",
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 16.sp
-            )
-        } else {
-            LazyRow {
-                item {
-                    Spacer(modifier = Modifier.padding(start = 12.dp))
+        tracks.ComposeToList(
+            limit = 5,
+            emptyFallback = {
+                Text(
+                    text = "Nothing to see here :(",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 16.sp
+                )
+            },
+            lazyComposable = {
+                LazyRow {
+                    item {
+                        Spacer(modifier = Modifier.padding(start = 12.dp))
+                    }
+                    it()
                 }
-                tracks.composeToList(this@LazyRow, 5) { track, _ ->
-                    TrackCard(track)
-                }
+            },
+            content = { track, _ ->
+                TrackCard(track)
             }
-        }
+        )
     }
 }
