@@ -33,8 +33,6 @@ import androidx.media3.exoplayer.source.SampleStream.ReadFlags
 import androidx.media3.exoplayer.source.TrackGroupArray
 import androidx.media3.exoplayer.trackselection.ExoTrackSelection
 import java.io.IOException
-import kotlin.math.max
-import kotlin.math.min
 
 @UnstableApi
 class ClippingMediaPeriod(
@@ -42,15 +40,10 @@ class ClippingMediaPeriod(
     var startUs: Long,
     var endUs: Long
 ) : MediaPeriod, MediaPeriod.Callback {
-    private var callback: MediaPeriod.Callback? = null
-    private var sampleStreams: Array<ClippingSampleStream?>
-    private var pendingInitialDiscontinuityPositionUs: Long
+    private lateinit var callback: MediaPeriod.Callback
+    private lateinit var sampleStreams: Array<ClippingSampleStream?>
+    private var pendingInitialDiscontinuityPositionUs = if (enableInitialDiscontinuity) startUs else C.TIME_UNSET
     private var clippingError: ClippingMediaSource.IllegalClippingException? = null
-
-    init {
-        sampleStreams = arrayOfNulls(0)
-        pendingInitialDiscontinuityPositionUs = if (enableInitialDiscontinuity) startUs else C.TIME_UNSET
-    }
 
     fun updateClipping(startUs: Long, endUs: Long) {
         this.startUs = startUs
@@ -99,8 +92,7 @@ class ClippingMediaPeriod(
             mediaPeriod.selectTracks(
                 selections, mayRetainStreamFlags, childStreams, streamResetFlags, positionUs
             )
-        val correctedEnablePositionUs: Long =
-            enforceClippingRange(realEnablePositionUs, positionUs, endUs)
+        val correctedEnablePositionUs = coerce(realEnablePositionUs, positionUs, endUs)
         pendingInitialDiscontinuityPositionUs =
             if (this.isPendingInitialDiscontinuity
                 && shouldKeepInitialDiscontinuity(realEnablePositionUs, positionUs, selections)
@@ -139,7 +131,7 @@ class ClippingMediaPeriod(
         if (discontinuityUs == C.TIME_UNSET) {
             return C.TIME_UNSET
         }
-        return enforceClippingRange(discontinuityUs, startUs, endUs)
+        return coerce(discontinuityUs, startUs, endUs)
     }
 
     override fun getBufferedPositionUs(): Long {
@@ -157,7 +149,7 @@ class ClippingMediaPeriod(
         for (sampleStream in sampleStreams) {
             sampleStream?.clearSentEos()
         }
-        return enforceClippingRange(mediaPeriod.seekToUs(positionUs), startUs, endUs)
+        return coerce(mediaPeriod.seekToUs(positionUs), startUs, endUs)
     }
 
     override fun getAdjustedSeekPositionUs(positionUs: Long, seekParameters: SeekParameters): Long {
@@ -205,7 +197,7 @@ class ClippingMediaPeriod(
     private fun clipSeekParameters(positionUs: Long, seekParameters: SeekParameters): SeekParameters {
         val toleranceBeforeUs =
             Util.constrainValue(
-                seekParameters.toleranceBeforeUs, 0,  positionUs - startUs
+                seekParameters.toleranceBeforeUs, 0, positionUs - startUs
             )
         val toleranceAfterUs =
             Util.constrainValue(
@@ -320,15 +312,9 @@ class ClippingMediaPeriod(
             return false
         }
 
-        private fun enforceClippingRange(
-            positionUs: Long, minPositionUs: Long, maxPositionUs: Long
-        ): Long {
-            var positionUs = positionUs
-            positionUs = max(positionUs, minPositionUs)
-            if (maxPositionUs != C.TIME_END_OF_SOURCE) {
-                positionUs = min(positionUs, maxPositionUs)
-            }
-            return positionUs
-        }
+        private fun coerce(positionUs: Long, min: Long, max: Long) = positionUs.coerceIn(
+            min,
+            if (max == C.TIME_END_OF_SOURCE) Long.MAX_VALUE else max
+        )
     }
 }

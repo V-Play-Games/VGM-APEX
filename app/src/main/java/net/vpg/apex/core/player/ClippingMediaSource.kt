@@ -22,6 +22,7 @@ import androidx.media3.common.Timeline
 import androidx.media3.common.util.Assertions
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.util.Util
+import androidx.media3.exoplayer.source.ConcatenatingMediaSource
 import androidx.media3.exoplayer.source.ForwardingTimeline
 import androidx.media3.exoplayer.source.MediaPeriod
 import androidx.media3.exoplayer.source.MediaSource
@@ -37,9 +38,9 @@ class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaS
     class Builder(internal val mediaSource: MediaSource) {
         internal var startPositionUs: Long = 0
         internal var endPositionUs: Long
-        internal var enableInitialDiscontinuity = true
+        internal var enableInitialDiscontinuity = false
         internal var allowDynamicClippingUpdates = false
-        internal var relativeToDefaultPosition = false
+        internal var relativeToDefaultPosition = true
         internal var allowUnseekableMedia = false
         internal var buildCalled = false
 
@@ -198,6 +199,7 @@ class ClippingMediaSource private constructor(builder: Builder) : WrappingMediaS
     }
 
     private fun refreshClippedTimeline(timeline: Timeline) {
+        println(timeline.javaClass)
         var windowStartUs: Long
         var windowEndUs: Long
         timeline.getWindow(0, window)

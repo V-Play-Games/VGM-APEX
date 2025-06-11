@@ -26,10 +26,9 @@ import androidx.media3.exoplayer.upstream.Allocator
 @UnstableApi
 class LoopingMediaSource(childSource: MediaSource) :
     WrappingMediaSource(MaskingMediaSource(childSource, false)) {
-    private val childMediaPeriodIdToMediaPeriodId = mutableMapOf<MediaPeriodId, MediaPeriodId>()
-    private val mediaPeriodToChildMediaPeriodId = mutableMapOf<MediaPeriod, MediaPeriodId>()
 
-    override fun getInitialTimeline(): Timeline = InfinitelyLoopingTimeline((mediaSource as MaskingMediaSource).timeline)
+    override fun getInitialTimeline(): Timeline =
+        InfinitelyLoopingTimeline((mediaSource as MaskingMediaSource).timeline)
 
     override fun isSingleWindow() = false
 
@@ -38,10 +37,6 @@ class LoopingMediaSource(childSource: MediaSource) :
 
     override fun releasePeriod(mediaPeriod: MediaPeriod) {
         mediaSource.releasePeriod(mediaPeriod)
-        val childMediaPeriodId = mediaPeriodToChildMediaPeriodId.remove(mediaPeriod)
-        if (childMediaPeriodId != null) {
-            childMediaPeriodIdToMediaPeriodId.remove(childMediaPeriodId)
-        }
     }
 
     override fun onChildSourceInfoRefreshed(newTimeline: Timeline) {
