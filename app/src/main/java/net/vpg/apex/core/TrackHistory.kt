@@ -44,8 +44,9 @@ sealed class SaveableTrackHistory(context: Context, val fileName: String) : Trac
         LOGGER.info("Added ${track.title} (id=${track.id}) to $fileName")
     }
 
-    override fun removeTrack(track: ApexTrack) {
-        super.removeTrack(track)
+    override fun removeIndex(index: Int) {
+        val track = trackHistory[index]
+        super.removeIndex(index)
         writeFile()
         LOGGER.info("Removed ${track.title} (id=${track.id}) from $fileName")
     }
