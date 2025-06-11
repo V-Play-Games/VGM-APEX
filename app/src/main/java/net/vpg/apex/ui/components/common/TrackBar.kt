@@ -1,9 +1,11 @@
 package net.vpg.apex.ui.components.common
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -22,6 +24,12 @@ inline fun TrackBar(
 ) {
     val player = rememberPlayer()
     val playHistory = rememberPlayHistory()
+    val animatedColor by animateColorAsState(
+        if (player.nowPlaying == apexTrack)
+            MaterialTheme.colorScheme.primary
+        else
+            MaterialTheme.colorScheme.onPrimaryContainer
+    )
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -39,7 +47,7 @@ inline fun TrackBar(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = apexTrack.title,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                color = animatedColor,
                 fontSize = 18.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
