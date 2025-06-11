@@ -31,7 +31,7 @@ fun LoopButton(player: ApexPlayer, modifier: Modifier = Modifier) {
             MaterialTheme.colorScheme.primary
         else
             MaterialTheme.colorScheme.onPrimaryContainer,
-        modifier = modifier.bounceClick { player.isLooping = !player.isLooping }
+        modifier = modifier.bounceClick { player.stepUpLoop() }
     )
 }
 

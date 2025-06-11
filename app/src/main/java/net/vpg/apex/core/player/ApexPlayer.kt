@@ -8,11 +8,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ClippingMediaSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
 import net.vpg.apex.entities.ApexTrack
@@ -28,45 +28,42 @@ class ApexPlayer {
     private var currentIndex by mutableIntStateOf(-1)
     val nowPlaying get() = if (currentIndex < 0) ApexTrack.EMPTY else queue[currentIndex]
     private var prepared = false
-    private val _isLooping = mutableStateOf(false)
-    var isLooping by _isLooping
+    private val _isLooping = mutableStateOf(true)
+    val isLooping by _isLooping
+    fun stepUpLoop() {
+        _isLooping.value = !_isLooping.value
+        player.repeatMode = if (_isLooping.value && player.currentMediaItemIndex == 2)
+            Player.REPEAT_MODE_ONE
+        else
+            Player.REPEAT_MODE_OFF
+    }
+
     private val _isShuffling = mutableStateOf(false)
     var isShuffling by _isShuffling
-    val loopStart get() = if (nowPlaying.loopStart == -1) 0 else nowPlaying.loopStart
-    val loopEnd get() = if (nowPlaying.loopEnd == -1) nowPlaying.frameLength else nowPlaying.loopEnd
+    val loopStart get() = frameToUs(if (nowPlaying.loopStart == -1) 0 else nowPlaying.loopStart)
+    val loopEnd get() = frameToUs(if (nowPlaying.loopEnd == -1) Int.MAX_VALUE else nowPlaying.loopEnd)
     val cacheDir: File
-    val duration get() = player.duration
-    val currentPosition
-        @OptIn(UnstableApi::class)
-        get() = player.currentPosition
+    var duration: Long = 0L
 
-    //
-//    @UnstableApi
-//    private val looper = LoopingAudioProcessor(this)
+    val currentPosition: Long
+        get() = when (player.currentMediaItemIndex) {
+            1 -> player.currentPosition
+            2 -> player.currentPosition + loopStart / 1000
+            3 -> player.currentPosition + loopEnd / 1000
+            else -> 0
+        }
+
     private val mediaSourceFactory: DefaultMediaSourceFactory
     val handler: Handler
 
     @OptIn(UnstableApi::class)
     constructor(context: Context) {
-//        // Create a custom RenderersFactory that uses our audio processors
-//        val renderersFactory = object : DefaultRenderersFactory(context) {
-//            override fun buildAudioSink(
-//                context: Context,
-//                enableFloatOutput: Boolean,
-//                enableAudioTrackPlaybackParams: Boolean
-//            ) = DefaultAudioSink.Builder(context)
-//                .setAudioProcessors(arrayOf(looper))
-//                .setEnableFloatOutput(enableFloatOutput)
-//                .setEnableAudioTrackPlaybackParams(enableAudioTrackPlaybackParams)
-//                .build()
-//        }
         cacheDir = context.cacheDir
         mediaSourceFactory = DefaultMediaSourceFactory(context)
         val mainLooper = Looper.getMainLooper()
         handler = Handler(mainLooper)
         player = ExoPlayer.Builder(context)
             .setMediaSourceFactory(mediaSourceFactory)
-//            .setRenderersFactory(renderersFactory)
             .setLooper(mainLooper)
             .build()
         player.addListener(object : Player.Listener {
@@ -79,6 +76,10 @@ class ApexPlayer {
 
                     Player.STATE_READY -> {
                         _isBuffering.value = false
+                        if (player.currentMediaItemIndex == 0) {
+                            duration = player.duration
+                            player.seekTo(1, 0)
+                        }
                     }
 
                     Player.STATE_ENDED -> {
@@ -89,6 +90,13 @@ class ApexPlayer {
                     Player.STATE_IDLE -> {
                     }
                 }
+            }
+
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                player.repeatMode = if (player.currentMediaItemIndex == 2 && isLooping)
+                    Player.REPEAT_MODE_ONE
+                else
+                    Player.REPEAT_MODE_OFF
             }
         })
     }
@@ -113,29 +121,31 @@ class ApexPlayer {
         val mediaSource = mediaSourceFactory.createMediaSource(mediaItem)
 
         // Wrap in ClippingMediaSource with the loop start and end positions
-//        val preLoop = createClippingMediaSource(mediaSource, 0, loopStart)
-        val loop = LoopingMediaSource(createClippingMediaSource(mediaSource, loopStart, loopEnd))
-//        val postLoop = createClippingMediaSource(mediaSource, loopEnd)
+        val preLoop = mediaSource.clip(0, loopStart)
+        val loop = mediaSource.clip(loopStart, loopEnd)
+        val postLoop = mediaSource.clip(loopEnd)
 
-//        val clippingMediaSource = ConcatenatingMediaSource(preLoop, /*loop,*/ postLoop)
-        player.setMediaSource(loop)
-        player.repeatMode = if (isLooping) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+        player.setMediaItem(mediaItem)
+        player.addMediaSource(preLoop)
+        player.addMediaSource(loop)
+        player.addMediaSource(postLoop)
         player.prepare()
         player.play()
         prepared = true
+        duration = 0
     }
 
     @OptIn(UnstableApi::class)
-    private fun createClippingMediaSource(
-        mediaSource: MediaSource,
-        startFrame: Int,
-        endFrame: Int = -1
-    ): ClippingMediaSource {
-        return ClippingMediaSource.Builder(mediaSource)
-            .setStartPositionUs((startFrame.toFloat() / nowPlaying.sampleRate * 1000_000).toLong())
-            .setEndPositionUs(((if (endFrame == -1) C.TIME_END_OF_SOURCE else endFrame).toFloat() / nowPlaying.sampleRate * 1000_000).toLong())
-            .build()
-    }
+    private fun MediaSource.clip(
+        startFrame: Long,
+        endFrame: Long = Long.MAX_VALUE,
+    ) = ClippingMediaSource.Builder(this)
+        .setStartPositionUs(startFrame)
+        .setEndPositionUs(endFrame)
+        .setEnableInitialDiscontinuity(false)
+        .build()
+
+    private fun frameToUs(frame: Int) = (frame.toFloat() / nowPlaying.sampleRate * 1000_000).toLong()
 
     fun togglePlayPause() {
         if (player.isPlaying)
@@ -172,5 +182,14 @@ class ApexPlayer {
     }
 
     @OptIn(UnstableApi::class)
-    fun seekTo(positionMs: Long) = handler.post { player.seekTo(positionMs) }
+    fun seekTo(positionMs: Long) = handler.post {
+        val position = positionMs * 1000
+        if (position < loopStart) {
+            player.seekTo(1, position / 1000)
+        } else if (position < loopEnd) {
+            player.seekTo(2, (position - loopStart) / 1000)
+        } else {
+            player.seekTo(3, (position - loopEnd) / 1000)
+        }
+    }
 }
