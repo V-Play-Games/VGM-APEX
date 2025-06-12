@@ -14,15 +14,29 @@ import kotlin.reflect.KClass
 
 sealed class ApexScreenDynamic<T : Any>(
     val route: KClass<T>,
-    columnModifier: Modifier = Modifier,
+    columnModifierFunction: @Composable () -> Modifier = { Modifier },
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     content: @Composable ColumnScope.(T) -> Unit
 ) {
+    constructor(
+        route: KClass<T>,
+        columnModifier: Modifier = Modifier,
+        verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+        horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+        content: @Composable ColumnScope.(T) -> Unit
+    ) : this(
+        route,
+        columnModifierFunction = { columnModifier },
+        verticalArrangement = verticalArrangement,
+        horizontalAlignment = horizontalAlignment,
+        content = content
+    )
+
     private val screen: @Composable (T) -> Unit by lazy {
         @Composable { t ->
             Column(
-                modifier = columnModifier,
+                modifier = columnModifierFunction(),
                 verticalArrangement = verticalArrangement,
                 horizontalAlignment = horizontalAlignment,
                 content = { content(t) }

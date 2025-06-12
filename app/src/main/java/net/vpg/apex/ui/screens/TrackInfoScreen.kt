@@ -18,31 +18,53 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.ui.components.common.AlbumImage
-import java.text.SimpleDateFormat
-import java.util.*
+
 
 object TrackInfoScreen : ApexScreenDynamic<ApexTrack>(
     route = ApexTrack::class,
-    content = { track ->
-        TrackInfo(track)
-    }
-)
-
-@Composable
-fun TrackInfo(track: ApexTrack) {
-    val scrollState = rememberScrollState()
-
-    Column(
-        modifier = Modifier
+    columnModifierFunction = {
+        Modifier
             .padding(16.dp)
-            .verticalScroll(scrollState)
-    ) {
-        // Top section with album art and basic info
-        Row(
-            modifier = Modifier
-                .padding(bottom = 24.dp),
-            verticalAlignment = Alignment.CenterVertically
+            .verticalScroll(rememberScrollState())
+    },
+    content = { track ->
+        @Composable
+        fun InfoRow(
+            icon: ImageVector,
+            label: String,
+            value: String
         ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = "$label Icon",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.width(100.dp)
+                )
+
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        // Top section with album art and basic info
+        Row(verticalAlignment = Alignment.CenterVertically) {
             // Album art
             AlbumImage(
                 album = track.album,
@@ -122,80 +144,7 @@ fun TrackInfo(track: ApexTrack) {
         InfoRow(
             icon = Icons.Filled.CalendarToday,
             label = "Date Added",
-            value = formatDate(track.dateAdded)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "Loop Details",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(vertical = 16.dp)
-        )
-
-        InfoRow(
-            icon = null,
-            label = "Loop Start",
-            value = "${track.loopStart} frames"
-        )
-
-        InfoRow(
-            icon = null,
-            label = "Loop End",
-            value = "${track.loopEnd} frames"
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-    }
-}
-
-@Composable
-private fun InfoRow(
-    icon: ImageVector?,
-    label: String,
-    value: String
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (icon != null) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
-
-            Spacer(modifier = Modifier.width(16.dp))
-        } else {
-            Spacer(modifier = Modifier.width(40.dp))
-        }
-
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.width(100.dp)
-        )
-
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            value = track.dateAdded
         )
     }
-}
-
-private fun formatDate(dateString: String): String {
-    try {
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
-        val outputFormat = SimpleDateFormat("MMMM d, yyyy", Locale.US)
-        val date = inputFormat.parse(dateString)
-        return date?.let { outputFormat.format(it) } ?: dateString
-    } catch (_: Exception) {
-        return dateString
-    }
-}
+)
