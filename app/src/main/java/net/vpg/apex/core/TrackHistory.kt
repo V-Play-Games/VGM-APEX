@@ -92,8 +92,6 @@ open class TrackHistory() {
         appearingOnScreen[index] = REMOVED
     }
 
-    fun isEmpty() = trackHistory.isEmpty()
-
     @Composable
     fun ComposeToList(
         limit: Int = trackHistory.size,
