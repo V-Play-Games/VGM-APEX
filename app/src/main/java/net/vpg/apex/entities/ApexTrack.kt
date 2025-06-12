@@ -40,7 +40,5 @@ data class ApexTrack(
     val album by lazy { ApexAlbum.ALBUMS_DB[albumId]!! }
     val uploader by lazy { ApexUploader.UPLOADERS_DB[uploaderId]!! }
 
-    fun cacheFile(cacheDir: File) = File(cacheDir, "$id.wav")
-
     fun downloadedFile(cacheDir: File) = File(cacheDir, "$id.ogg")
 }

@@ -5,9 +5,15 @@ import android.os.Handler
 import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.compose.runtime.*
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.database.StandaloneDatabaseProvider
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.cache.CacheDataSource
+import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
+import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ClippingMediaSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
@@ -28,7 +34,7 @@ class ApexPlayer {
 
     val isPlaying get() = playingState
     val isBuffering get() = bufferingState
-    val nowPlaying get() = if (currentIndex < 0) ApexTrack.EMPTY else queue[currentIndex]
+    val nowPlaying get() = if (currentIndex < 0) ApexTrack.Companion.EMPTY else queue[currentIndex]
     val isLooping get() = loopingState
     val isShuffling get() = shuffleState
     val duration get() = durationState
@@ -46,13 +52,24 @@ class ApexPlayer {
             else -> 0
         }
 
-    private val mediaSourceFactory: DefaultMediaSourceFactory
+    private val mediaSourceFactory: MediaSource.Factory
     val handler: Handler
 
     @OptIn(UnstableApi::class)
     constructor(context: Context) {
         cacheDir = context.cacheDir
-        mediaSourceFactory = DefaultMediaSourceFactory(context)
+        // Set up a simple cache for ExoPlayer
+        val cache = SimpleCache(
+            File(context.cacheDir, "exo_cache"),
+            LeastRecentlyUsedCacheEvictor(512 * 1024 * 1024), // 512 MB
+            StandaloneDatabaseProvider(context)
+        )
+        val dataSourceFactory = DefaultDataSource.Factory(context)
+        val cacheDataSourceFactory = CacheDataSource.Factory()
+            .setCache(cache)
+            .setUpstreamDataSourceFactory(dataSourceFactory)
+            .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+        mediaSourceFactory = DefaultMediaSourceFactory(cacheDataSourceFactory)
         val mainLooper = Looper.getMainLooper()
         handler = Handler(mainLooper)
         player = ExoPlayer.Builder(context)
@@ -102,9 +119,8 @@ class ApexPlayer {
 
     @OptIn(UnstableApi::class)
     fun playCurrentTrack() {
-        val mediaUri = nowPlaying.downloadedFile(cacheDir).takeIf { it.exists() }?.toURI()?.toString()
-            ?: nowPlaying.cacheFile(cacheDir).takeIf { it.exists() }?.toURI()?.toString()
-            ?: nowPlaying.url
+        val mediaUri = nowPlaying.downloadedFile(cacheDir).takeIf { it.exists() }?.toUri()
+            ?: nowPlaying.url.toUri()
 
         val mediaItem = MediaItem.fromUri(mediaUri)
 
