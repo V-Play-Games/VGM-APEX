@@ -22,7 +22,7 @@ object HomeScreen : ApexBottomBarScreen(
             TrackHistory(ApexTrack.TRACKS_DB.values.shuffled().take(5))
         }
 
-        TrackDisplaySection("Random Picks for you", random)
+        TrackDisplaySection("Random picks for you", random)
         Spacer(modifier = Modifier.height(32.dp))
         TrackDisplaySection("Recently Played", playHistory)
     }

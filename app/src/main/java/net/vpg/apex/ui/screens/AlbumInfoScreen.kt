@@ -68,7 +68,7 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
                         text = album.name,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -76,13 +76,13 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
                     Text(
                         text = "Added on ${album.dateAdded}",
                         fontSize = 14.sp,
-                        color = Color.LightGray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     Text(
                         text = "${album.tracks.size} tracks",
                         fontSize = 14.sp,
-                        color = Color.LightGray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Box(
@@ -103,6 +103,7 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
                         Icon(
                             imageVector = Icons.Default.PlayArrow,
                             contentDescription = "Play",
+                            tint = Color.White,
                             modifier = Modifier.size(36.dp),
                         )
                     }

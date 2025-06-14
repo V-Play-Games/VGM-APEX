@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -72,6 +73,7 @@ fun AlbumImageWithInfoButton(album: ApexAlbum, size: Int, apexTrack: ApexTrack) 
         Icon(
             Icons.Outlined.Info,
             contentDescription = "Star",
+            tint = Color.White,
             modifier = Modifier
                 .shadow(elevation = 4.dp)
                 .align(Alignment.TopEnd)
