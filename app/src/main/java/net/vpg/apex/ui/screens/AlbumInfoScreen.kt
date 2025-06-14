@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
@@ -68,17 +69,15 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-
-                    Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
                         text = "Added on ${album.dateAdded}",
                         fontSize = 14.sp,
                         color = Color.LightGray
                     )
-
-                    Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
                         text = "${album.tracks.size} tracks",

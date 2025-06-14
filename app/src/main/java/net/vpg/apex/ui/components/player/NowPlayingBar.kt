@@ -1,5 +1,6 @@
 package net.vpg.apex.ui.components.player
 
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
@@ -32,15 +33,15 @@ fun NowPlayingBar() {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = player.nowPlaying.title,
+                modifier = Modifier.basicMarquee(),
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 14.sp,
-                maxLines = 1
             )
             Text(
                 text = player.nowPlaying.album.name,
+                modifier = Modifier.basicMarquee(),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
-                maxLines = 1
             )
         }
         PlayerActions(player, Modifier.padding(4.dp))
