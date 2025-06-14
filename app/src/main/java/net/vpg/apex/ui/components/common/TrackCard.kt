@@ -54,7 +54,7 @@ fun TrackCard(apexTrack: ApexTrack) {
         Text(
             text = apexTrack.album.name,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodyLarge,
+            fontSize = 16.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )

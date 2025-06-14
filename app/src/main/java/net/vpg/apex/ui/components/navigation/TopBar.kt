@@ -11,7 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import net.vpg.apex.R
 
 @Composable
@@ -33,7 +35,8 @@ fun TopBar() {
             Text(
                 "VGM APEX",
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-                style = MaterialTheme.typography.displayLarge
+                fontWeight = FontWeight.Bold,
+                fontSize = 32.sp
             )
         }
         Row {

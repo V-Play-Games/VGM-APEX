@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.ui.components.common.AlbumImage
 
@@ -51,13 +52,13 @@ object TrackInfoScreen : ApexScreenDynamic<ApexTrack>(
 
                 Text(
                     text = label,
-                    style = MaterialTheme.typography.bodyLarge,
+                    fontSize = 16.sp,
                     modifier = Modifier.width(100.dp)
                 )
 
                 Text(
                     text = value,
-                    style = MaterialTheme.typography.bodyLarge,
+                    fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -78,7 +79,7 @@ object TrackInfoScreen : ApexScreenDynamic<ApexTrack>(
             Column {
                 Text(
                     text = track.title,
-                    style = MaterialTheme.typography.headlineMedium,
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -88,7 +89,7 @@ object TrackInfoScreen : ApexScreenDynamic<ApexTrack>(
 
                 Text(
                     text = track.album.name,
-                    style = MaterialTheme.typography.bodyLarge,
+                    fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
@@ -96,7 +97,7 @@ object TrackInfoScreen : ApexScreenDynamic<ApexTrack>(
 
                 Text(
                     text = track.uploader.name,
-                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -110,7 +111,7 @@ object TrackInfoScreen : ApexScreenDynamic<ApexTrack>(
         // Detailed info section
         Text(
             text = "Track Details",
-            style = MaterialTheme.typography.titleLarge,
+            fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
         )

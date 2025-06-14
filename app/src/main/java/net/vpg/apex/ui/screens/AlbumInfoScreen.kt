@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.di.rememberPlayer
@@ -58,23 +59,22 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
                 modifier = Modifier
                     .fillMaxWidth() // don't remove
                     .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Album info
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = album.name,
-                        style = MaterialTheme.typography.headlineMedium,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
                         color = Color.White,
-                        fontWeight = FontWeight.Bold
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
                         text = "Added on ${album.dateAdded}",
-                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = 14.sp,
                         color = Color.LightGray
                     )
 
@@ -82,22 +82,23 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
 
                     Text(
                         text = "${album.tracks.size} tracks",
-                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = 14.sp,
                         color = Color.LightGray
                     )
                 }
                 Box(
-                    modifier = Modifier.bounceClick {
+                    modifier = Modifier.padding(1.dp).bounceClick {
                         if (album.tracks.isNotEmpty()) {
                             player.play(album.tracks.first())
                         }
                     }
                 ) {
                     Box(
-                        modifier = Modifier.size(54.dp).background(
-                            color = MaterialTheme.colorScheme.primary,
-                            shape = CircleShape
-                        ),
+                        modifier = Modifier.size(54.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = CircleShape
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(

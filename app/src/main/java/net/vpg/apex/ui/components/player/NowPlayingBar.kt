@@ -7,7 +7,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.customShimmer
@@ -35,15 +34,13 @@ fun NowPlayingBar() {
                 text = player.nowPlaying.title,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 14.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                maxLines = 1
             )
             Text(
                 text = player.nowPlaying.album.name,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                maxLines = 1
             )
         }
         PlayerActions(player, Modifier.padding(4.dp))
