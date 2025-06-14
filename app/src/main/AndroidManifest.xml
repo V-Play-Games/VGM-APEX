@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools">
-
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
   <uses-permission android:name="android.permission.INTERNET"/>
 
@@ -26,15 +28,6 @@
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
-    <receiver
-        android:name=".core.player.MediaControlReceiver"
-        android:exported="false">
-      <intent-filter>
-        <action android:name="net.vpg.apex.ACTION_PLAY_PAUSE"/>
-        <action android:name="net.vpg.apex.ACTION_PREVIOUS"/>
-        <action android:name="net.vpg.apex.ACTION_NEXT"/>
-      </intent-filter>
-    </receiver>
   </application>
 
 </manifest>

@@ -1,8 +1,6 @@
 package net.vpg.apex.core.player
 
-import android.app.NotificationManager
 import android.content.Context
-import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.OptIn
@@ -22,19 +20,16 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ClippingMediaSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
-import net.vpg.apex.core.NotificationMaker
-import net.vpg.apex.core.player.MediaNotificationService.Companion.NOTIFICATION_ID
+import androidx.media3.session.MediaSession
 import net.vpg.apex.entities.ApexTrack
 import java.io.File
 
 @OptIn(UnstableApi::class)
 class ApexPlayer(
     val context: Context,
-    val cacheDir: File,
     val mediaSourceFactory: MediaSource.Factory,
     playerBuilder: ExoPlayer.Builder
 ) : ForwardingPlayer(playerBuilder.setMediaSourceFactory(mediaSourceFactory).build()), Player.Listener {
-    private val notificationMaker = NotificationMaker()
     private val exoplayer = wrappedPlayer as ExoPlayer
     private val queue = mutableListOf<ApexTrack>()
 
@@ -53,8 +48,10 @@ class ApexPlayer(
     override fun getDuration() = durationState
 
     private var prepared = false
-    private val loopStart get() = frameToUs(if (nowPlaying.loopStart == -1) 0 else nowPlaying.loopStart)
-    private val loopEnd get() = frameToUs(if (nowPlaying.loopEnd == -1) Int.MAX_VALUE else nowPlaying.loopEnd)
+    private val loopStart get() = if (nowPlaying.loopStart == -1) 0L else frameToUs(nowPlaying.loopStart)
+    private val loopEnd get() = if (nowPlaying.loopEnd == -1) Long.MAX_VALUE else frameToUs(nowPlaying.loopEnd)
+    private val mediaSession = MediaSession.Builder(context, this).build()
+    private val notificationHelper = NotificationHelper(context, this, mediaSession)
 
     override fun getCurrentPosition() = when (currentMediaItemIndex) {
         1 -> exoplayer.currentPosition
@@ -68,7 +65,6 @@ class ApexPlayer(
     @OptIn(UnstableApi::class)
     constructor(context: Context) : this(
         context = context,
-        cacheDir = context.cacheDir,
         mediaSourceFactory = DefaultMediaSourceFactory(
             CacheDataSource.Factory()
                 .setCache(
@@ -91,19 +87,8 @@ class ApexPlayer(
         addListener(this)
     }
 
-    private var notificationManager: NotificationManager? = null
-
-    fun setNotificationManager(manager: NotificationManager) {
-        notificationManager = manager
-    }
-
-    fun updateNotification() {
-        notificationManager?.notify(NOTIFICATION_ID, notificationMaker.createNotification(context))
-    }
-
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
         playingState = playWhenReady
-        updateNotification()
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
@@ -122,20 +107,17 @@ class ApexPlayer(
 
             STATE_ENDED -> {
                 playingState = false
-                prepared = false
             }
 
             STATE_IDLE -> {
+                prepared = false
             }
         }
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) = updatePlayerRepeatMode()
+
     fun play(track: ApexTrack) {
-        if (nowPlaying == ApexTrack.EMPTY) {
-            val intent = Intent(context, MediaNotificationService::class.java)
-            context.startForegroundService(intent)
-        }
         for (i in queue.size - 1 downTo currentIndex + 1)
             queue.removeAt(currentIndex + 1)
         queue(track)
@@ -145,7 +127,7 @@ class ApexPlayer(
 
     @OptIn(UnstableApi::class)
     fun playCurrentTrack() {
-        val mediaUri = nowPlaying.downloadedFile(cacheDir).takeIf { it.exists() }?.toUri()
+        val mediaUri = nowPlaying.downloadedFile(context.filesDir).takeIf { it.exists() }?.toUri()
             ?: nowPlaying.url.toUri()
 
         val mediaItem = MediaItem.fromUri(mediaUri)
@@ -166,6 +148,7 @@ class ApexPlayer(
         play()
         prepared = true
         durationState = 0
+        notificationHelper.showNotification()
     }
 
     @OptIn(UnstableApi::class)
@@ -198,18 +181,20 @@ class ApexPlayer(
         queue.removeAt(index)
     }
 
-    fun canGoPrevious() = currentIndex > 0
-
-    fun previousTrack() {
-        if (!canGoPrevious()) return
-        currentIndex--
-        playCurrentTrack()
+    override fun seekToPrevious() {
+        if (nowPlaying == ApexTrack.EMPTY) return
+        if (currentIndex == 0 || currentPosition > maxSeekToPreviousPosition)
+            seekTo(0)
+        else {
+            currentIndex--
+            playCurrentTrack()
+        }
     }
 
-    fun canGoNext() = currentIndex < queue.size - 1
+    override fun hasNextMediaItem() = currentIndex < queue.size - 1
 
-    fun nextTrack() {
-        if (!canGoNext()) return
+    override fun seekToNext() {
+        if (!hasNextMediaItem()) return
         currentIndex++
         playCurrentTrack()
     }
