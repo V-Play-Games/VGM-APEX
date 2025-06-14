@@ -36,7 +36,7 @@ fun SeekBar(bottomBar: Boolean) {
             if (!isDragging) {
                 position = player.currentPosition
             }
-            delay(1000) // Update every 1 second
+            delay(100) // Update every 100 ms
         }
     }
 
