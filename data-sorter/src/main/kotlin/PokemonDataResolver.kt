@@ -49,7 +49,6 @@ fun main() {
                 title = titleRegex.find(it.name)?.groupValues[3] ?: it.name,
                 uploaderId = defaultUploaderId,
                 albumId = it.category,
-                frameLength = it.frameLength,
                 loopStart = it.loopStart,
                 loopEnd = it.loopEnd,
                 dateAdded = date,

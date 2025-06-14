@@ -10,7 +10,6 @@ data class ApexTrack(
     val title: String,
     private val uploaderId: String,
     private val albumId: String,
-    val frameLength: Int,
     val loopStart: Int,
     val loopEnd: Int,
     val sampleRate: Int,
@@ -19,7 +18,7 @@ data class ApexTrack(
 ) {
     companion object {
         val TRACKS_DB = mutableMapOf<String, ApexTrack>()
-        val EMPTY = ApexTrack("", "", "", "", 0, 0, 0, 0, "", "")
+        val EMPTY = ApexTrack("", "", "", "", 0, 0, 0, "", "")
     }
 
     constructor(data: JSONObject) : this(
@@ -27,7 +26,6 @@ data class ApexTrack(
         data.getString("title"),
         data.getString("uploaderId"),
         data.getString("albumId"),
-        data.getInt("frameLength"),
         data.getInt("loopStart"),
         data.getInt("loopEnd"),
         data.getInt("sampleRate"),
@@ -41,8 +39,6 @@ data class ApexTrack(
 
     val album by lazy { ApexAlbum.ALBUMS_DB[albumId]!! }
     val uploader by lazy { ApexUploader.UPLOADERS_DB[uploaderId]!! }
-
-    fun cacheFile(cacheDir: File) = File(cacheDir, "$id.wav")
 
     fun downloadedFile(cacheDir: File) = File(cacheDir, "$id.ogg")
 }

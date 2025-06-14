@@ -41,8 +41,8 @@ fun NextButton(player: ApexPlayer, modifier: Modifier = Modifier) {
         Icons.Default.SkipNext,
         contentDescription = "Next",
         tint = MaterialTheme.colorScheme.onPrimaryContainer,
-        modifier = if (player.canGoNext())
-            modifier.bounceClick { player.nextTrack() }
+        modifier = if (player.hasNextMediaItem())
+            modifier.bounceClick { player.seekToNext() }
         else
             modifier.alpha(0.5f)
     )
@@ -72,11 +72,6 @@ fun PreviousButton(player: ApexPlayer, modifier: Modifier = Modifier) {
         Icons.Default.SkipPrevious,
         contentDescription = "Previous",
         tint = MaterialTheme.colorScheme.onPrimaryContainer,
-        modifier = modifier.bounceClick {
-            if (player.currentPosition > 5000L || !player.canGoPrevious())
-                player.seekTo(0L)
-            else
-                player.previousTrack()
-        }
+        modifier = modifier.bounceClick { player.seekToPrevious() }
     )
 }

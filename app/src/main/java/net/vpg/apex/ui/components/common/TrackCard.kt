@@ -1,9 +1,11 @@
 package net.vpg.apex.ui.components.common
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -18,6 +20,12 @@ import net.vpg.apex.entities.ApexTrack
 fun TrackCard(apexTrack: ApexTrack) {
     val player = rememberPlayer()
     val playHistory = rememberPlayHistory()
+    val animatedColor by animateColorAsState(
+        if (player.nowPlaying == apexTrack)
+            MaterialTheme.colorScheme.primary
+        else
+            MaterialTheme.colorScheme.onPrimaryContainer
+    )
 
     Column(
         modifier = Modifier
@@ -36,7 +44,7 @@ fun TrackCard(apexTrack: ApexTrack) {
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = apexTrack.title,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            color = animatedColor,
             fontSize = 16.sp,
             fontWeight = FontWeight.SemiBold,
             maxLines = 1,

@@ -31,7 +31,7 @@ import net.vpg.apex.ui.components.player.SeekBar
 import net.vpg.apex.ui.screens.*
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class ApexActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {

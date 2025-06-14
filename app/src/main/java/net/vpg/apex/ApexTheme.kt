@@ -10,6 +10,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+@Composable
+fun ApexTheme(content: @Composable () -> Unit) = MaterialTheme(
+    colorScheme = if (isSystemInDarkTheme()) DarkColors else LightColors,
+    typography = ApexTypography,
+    shapes = ApexShapes,
+    content = content
+)
+
 // Custom colours for app
 object ApexColors {
     // Primary brand colours
@@ -172,12 +180,4 @@ private val ApexShapes = Shapes(
     small = RoundedCornerShape(4.dp),
     medium = RoundedCornerShape(8.dp),
     large = RoundedCornerShape(12.dp)
-)
-
-@Composable
-fun ApexTheme(content: @Composable () -> Unit) = MaterialTheme(
-    colorScheme = if (isSystemInDarkTheme()) DarkColors else LightColors,
-    typography = ApexTypography,
-    shapes = ApexShapes,
-    content = content
 )

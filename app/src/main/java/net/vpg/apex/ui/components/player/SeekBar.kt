@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import net.vpg.apex.core.customShimmer
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.core.formatDuration
 import net.vpg.apex.entities.ApexTrack
@@ -35,12 +36,16 @@ fun SeekBar(bottomBar: Boolean) {
             if (!isDragging) {
                 position = player.currentPosition
             }
-            delay(1000) // Update every 1 second
+            delay(100) // Update every 100 ms
         }
     }
 
     Slider(
         value = progress,
+        modifier = if (player.isBuffering)
+            Modifier.customShimmer(durationMillis = 400)
+        else
+            Modifier,
         onValueChange = { newProgress ->
             isDragging = true
             position = (newProgress * duration).toLong()

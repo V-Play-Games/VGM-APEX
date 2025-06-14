@@ -6,7 +6,6 @@ data class TrackData(
     val title: String,
     val uploaderId: String,
     val albumId: String,
-    val frameLength: Int,
     val loopStart: Int,
     val loopEnd: Int,
     val sampleRate: Int,
@@ -18,7 +17,6 @@ data class TrackData(
         .put("title", title)
         .put("uploaderId", uploaderId)
         .put("albumId", albumId)
-        .put("frameLength", frameLength)
         .put("loopStart", loopStart)
         .put("loopEnd", loopEnd)
         .put("sampleRate", sampleRate)
