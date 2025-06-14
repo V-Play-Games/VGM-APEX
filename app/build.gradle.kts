@@ -57,7 +57,8 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.material.icons.extended)
 
-    // ExoPlayer
+    // Media3
+    implementation(libs.media3.session)
     implementation(libs.media3.exoplayer)
 
     // JSON

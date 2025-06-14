@@ -1,11 +1,15 @@
 package net.vpg.apex.core.player
 
+import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.compose.runtime.*
 import androidx.core.net.toUri
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -18,11 +22,20 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ClippingMediaSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
+import net.vpg.apex.core.NotificationMaker
+import net.vpg.apex.core.player.MediaNotificationService.Companion.NOTIFICATION_ID
 import net.vpg.apex.entities.ApexTrack
 import java.io.File
 
-class ApexPlayer {
-    private val player: ExoPlayer
+@OptIn(UnstableApi::class)
+class ApexPlayer(
+    val context: Context,
+    val cacheDir: File,
+    val mediaSourceFactory: MediaSource.Factory,
+    playerBuilder: ExoPlayer.Builder
+) : ForwardingPlayer(playerBuilder.setMediaSourceFactory(mediaSourceFactory).build()), Player.Listener {
+    private val notificationMaker = NotificationMaker()
+    private val exoplayer = wrappedPlayer as ExoPlayer
     private val queue = mutableListOf<ApexTrack>()
 
     private var playingState by mutableStateOf(false)
@@ -32,84 +45,97 @@ class ApexPlayer {
     private var currentIndex by mutableIntStateOf(-1)
     private var durationState by mutableLongStateOf(0)
 
-    val isPlaying get() = playingState
+    override fun isPlaying() = playingState
     val isBuffering get() = bufferingState
     val nowPlaying get() = if (currentIndex < 0) ApexTrack.Companion.EMPTY else queue[currentIndex]
     val isLooping get() = loopingState
     val isShuffling get() = shuffleState
-    val duration get() = durationState
+    override fun getDuration() = durationState
 
     private var prepared = false
     private val loopStart get() = frameToUs(if (nowPlaying.loopStart == -1) 0 else nowPlaying.loopStart)
     private val loopEnd get() = frameToUs(if (nowPlaying.loopEnd == -1) Int.MAX_VALUE else nowPlaying.loopEnd)
-    private val cacheDir: File
 
-    val currentPosition: Long
-        get() = when (player.currentMediaItemIndex) {
-            1 -> player.currentPosition
-            2 -> player.currentPosition + loopStart / 1000
-            3 -> player.currentPosition + loopEnd / 1000
-            else -> 0
-        }
+    override fun getCurrentPosition() = when (currentMediaItemIndex) {
+        1 -> exoplayer.currentPosition
+        2 -> exoplayer.currentPosition + loopStart / 1000
+        3 -> exoplayer.currentPosition + loopEnd / 1000
+        else -> 0
+    }
 
-    private val mediaSourceFactory: MediaSource.Factory
-    val handler: Handler
+    private val handler = Handler(applicationLooper)
 
     @OptIn(UnstableApi::class)
-    constructor(context: Context) {
-        cacheDir = context.cacheDir
-        // Set up a simple cache for ExoPlayer
-        val cache = SimpleCache(
-            File(context.cacheDir, "exo_cache"),
-            LeastRecentlyUsedCacheEvictor(512 * 1024 * 1024), // 512 MB
-            StandaloneDatabaseProvider(context)
-        )
-        val dataSourceFactory = DefaultDataSource.Factory(context)
-        val cacheDataSourceFactory = CacheDataSource.Factory()
-            .setCache(cache)
-            .setUpstreamDataSourceFactory(dataSourceFactory)
-            .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
-        mediaSourceFactory = DefaultMediaSourceFactory(cacheDataSourceFactory)
-        val mainLooper = Looper.getMainLooper()
-        handler = Handler(mainLooper)
-        player = ExoPlayer.Builder(context)
-            .setMediaSourceFactory(mediaSourceFactory)
-            .setLooper(mainLooper)
-            .build()
-        player.addListener(object : Player.Listener {
-            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-                playingState = playWhenReady
+    constructor(context: Context) : this(
+        context = context,
+        cacheDir = context.cacheDir,
+        mediaSourceFactory = DefaultMediaSourceFactory(
+            CacheDataSource.Factory()
+                .setCache(
+                    SimpleCache(
+                        File(context.cacheDir, "exo_cache"),
+                        LeastRecentlyUsedCacheEvictor(512 * 1024 * 1024), // 512 MB
+                        StandaloneDatabaseProvider(context)
+                    )
+                )
+                .setUpstreamDataSourceFactory(DefaultDataSource.Factory(context))
+                .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+        ),
+        playerBuilder = ExoPlayer.Builder(context)
+            .setLooper(Looper.getMainLooper())
+            .setAudioAttributes(AudioAttributes.DEFAULT, true)
+            .setHandleAudioBecomingNoisy(true)
+    )
+
+    init {
+        addListener(this)
+    }
+
+    private var notificationManager: NotificationManager? = null
+
+    fun setNotificationManager(manager: NotificationManager) {
+        notificationManager = manager
+    }
+
+    fun updateNotification() {
+        notificationManager?.notify(NOTIFICATION_ID, notificationMaker.createNotification(context))
+    }
+
+    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+        playingState = playWhenReady
+        updateNotification()
+    }
+
+    override fun onPlaybackStateChanged(playbackState: Int) {
+        when (playbackState) {
+            STATE_BUFFERING -> {
+                bufferingState = true
             }
 
-            override fun onPlaybackStateChanged(playbackState: Int) {
-                when (playbackState) {
-                    Player.STATE_BUFFERING -> {
-                        bufferingState = true
-                    }
-
-                    Player.STATE_READY -> {
-                        bufferingState = false
-                        if (player.currentMediaItemIndex == 0) {
-                            durationState = player.duration
-                            player.seekTo(1, 0)
-                        }
-                    }
-
-                    Player.STATE_ENDED -> {
-                        playingState = false
-                        prepared = false
-                    }
-
-                    Player.STATE_IDLE -> {
-                    }
+            STATE_READY -> {
+                bufferingState = false
+                if (currentMediaItemIndex == 0) {
+                    durationState = exoplayer.duration
+                    seekTo(1, 0)
                 }
             }
 
-            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) = updatePlayerRepeatMode()
-        })
+            STATE_ENDED -> {
+                playingState = false
+                prepared = false
+            }
+
+            STATE_IDLE -> {
+            }
+        }
     }
 
+    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) = updatePlayerRepeatMode()
     fun play(track: ApexTrack) {
+        if (nowPlaying == ApexTrack.EMPTY) {
+            val intent = Intent(context, MediaNotificationService::class.java)
+            context.startForegroundService(intent)
+        }
         for (i in queue.size - 1 downTo currentIndex + 1)
             queue.removeAt(currentIndex + 1)
         queue(track)
@@ -132,12 +158,12 @@ class ApexPlayer {
         val loop = mediaSource.clip(loopStart, loopEnd)
         val postLoop = mediaSource.clip(loopEnd)
 
-        player.setMediaItem(mediaItem)
-        player.addMediaSource(preLoop)
-        player.addMediaSource(loop)
-        player.addMediaSource(postLoop)
-        player.prepare()
-        player.play()
+        setMediaItem(mediaItem)
+        exoplayer.addMediaSource(preLoop)
+        exoplayer.addMediaSource(loop)
+        exoplayer.addMediaSource(postLoop)
+        prepare()
+        play()
         prepared = true
         durationState = 0
     }
@@ -155,10 +181,10 @@ class ApexPlayer {
     private fun frameToUs(frame: Int) = (frame.toFloat() / nowPlaying.sampleRate * 1000_000).toLong()
 
     fun togglePlayPause() {
-        if (player.isPlaying)
-            player.pause()
+        if (isPlaying)
+            pause()
         else if (prepared)
-            player.play()
+            play()
         else
             playCurrentTrack()
     }
@@ -198,21 +224,23 @@ class ApexPlayer {
     }
 
     private fun updatePlayerRepeatMode() {
-        player.repeatMode = if (loopingState && player.currentMediaItemIndex == 2)
-            Player.REPEAT_MODE_ONE
+        repeatMode = if (loopingState && currentMediaItemIndex == 2)
+            REPEAT_MODE_ONE
         else
-            Player.REPEAT_MODE_OFF
+            REPEAT_MODE_OFF
     }
 
     @OptIn(UnstableApi::class)
-    fun seekTo(positionMs: Long) = handler.post {
-        val position = positionMs * 1000
-        if (position < loopStart) {
-            player.seekTo(1, position / 1000)
-        } else if (position < loopEnd) {
-            player.seekTo(2, (position - loopStart) / 1000)
-        } else {
-            player.seekTo(3, (position - loopEnd) / 1000)
+    override fun seekTo(positionMs: Long) {
+        handler.post {
+            val position = positionMs * 1000
+            if (position < loopStart) {
+                seekTo(1, position / 1000)
+            } else if (position < loopEnd) {
+                seekTo(2, (position - loopStart) / 1000)
+            } else {
+                seekTo(3, (position - loopEnd) / 1000)
+            }
         }
     }
 }
