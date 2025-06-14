@@ -32,7 +32,7 @@ class NotificationHelper(
     @OptIn(UnstableApi::class)
     fun showNotification() {
         Notification.Builder(context, NOTIFICATION_ID)
-            .setSmallIcon(R.drawable.ic_pika_chill)
+            .setSmallIcon(R.drawable.ic_app_icon)
             .setContentTitle(player.nowPlaying.title)
             .setContentText(player.nowPlaying.uploader.name)
             .setOngoing(true)

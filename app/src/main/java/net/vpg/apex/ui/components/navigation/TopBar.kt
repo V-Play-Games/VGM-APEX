@@ -25,7 +25,7 @@ fun TopBar() {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(
-                painter = painterResource(id = R.drawable.ic_pika_chill),
+                painter = painterResource(id = R.drawable.ic_app_icon),
                 contentDescription = "App Logo",
                 modifier = Modifier.size(40.dp)
             )

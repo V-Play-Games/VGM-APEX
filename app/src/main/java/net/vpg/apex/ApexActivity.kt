@@ -76,7 +76,7 @@ class ApexActivity : ComponentActivity() {
     @Composable
     fun SplashScreen() {
         Image(
-            painter = painterResource(id = R.drawable.ic_pika_chill),
+            painter = painterResource(id = R.drawable.ic_app_icon),
             contentDescription = "App Logo",
             modifier = Modifier.size(200.dp)
         )
