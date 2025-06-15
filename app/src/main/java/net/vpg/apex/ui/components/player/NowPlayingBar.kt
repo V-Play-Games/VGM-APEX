@@ -11,7 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.customShimmer
-import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.ui.components.common.AlbumImage
@@ -21,10 +20,9 @@ import net.vpg.apex.ui.screens.NowPlayingScreen
 fun NowPlayingBar() {
     val player = rememberPlayer()
     if (player.nowPlaying == ApexTrack.EMPTY) return
-    val navController = rememberNavControllerProvider().current
     Row(
         modifier = (if (player.isBuffering) Modifier.customShimmer(durationMillis = 800) else Modifier)
-            .clickable { navController.navigate(NowPlayingScreen.route) }
+            .clickable { NowPlayingScreen.navigate() }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

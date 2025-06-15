@@ -118,12 +118,12 @@ class ApexActivity : ComponentActivity() {
                     startDestination = HomeScreen.route,
                     modifier = Modifier.padding(paddingValues)
                 ) {
-                    HomeScreen.composeTo(this)
-                    SearchScreen.composeTo(this)
-                    LibraryScreen.composeTo(this)
-                    NowPlayingScreen.composeTo(this)
-                    TrackInfoScreen.composeTo(this)
-                    AlbumInfoScreen.composeTo(this)
+                    HomeScreen.composeTo(this, navController)
+                    SearchScreen.composeTo(this, navController)
+                    LibraryScreen.composeTo(this, navController)
+                    NowPlayingScreen.composeTo(this, navController)
+                    TrackInfoScreen.composeTo(this, navController)
+                    AlbumInfoScreen.composeTo(this, navController)
                 }
             }
         }

@@ -23,9 +23,9 @@ import coil3.request.crossfade
 import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.customShimmer
 import net.vpg.apex.core.di.rememberContext
-import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.entities.ApexTrack
+import net.vpg.apex.ui.screens.TrackInfoScreen
 
 @Composable
 fun AlbumImage(album: ApexAlbum, size: Int, cornerRadius: Int = 8) {
@@ -67,7 +67,6 @@ fun AlbumImage(album: ApexAlbum, size: Int, cornerRadius: Int = 8) {
 
 @Composable
 fun AlbumImageWithInfoButton(album: ApexAlbum, size: Int, apexTrack: ApexTrack) {
-    val navController = rememberNavControllerProvider().current
     Box {
         AlbumImage(album, size)
         Icon(
@@ -78,7 +77,7 @@ fun AlbumImageWithInfoButton(album: ApexAlbum, size: Int, apexTrack: ApexTrack) 
                 .shadow(elevation = 4.dp)
                 .align(Alignment.TopEnd)
                 .zIndex(1f)
-                .bounceClick { navController.navigate(apexTrack) }
+                .bounceClick { TrackInfoScreen.navigate(apexTrack) }
         )
     }
 }

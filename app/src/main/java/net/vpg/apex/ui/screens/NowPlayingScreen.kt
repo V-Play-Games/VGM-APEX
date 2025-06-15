@@ -1,6 +1,7 @@
 package net.vpg.apex.ui.screens
 
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Shuffle
@@ -13,7 +14,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.bounceClick
-import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.ui.components.common.AlbumImageWithInfoButton
 import net.vpg.apex.ui.components.player.PlayerActions
@@ -25,7 +25,6 @@ object NowPlayingScreen : ApexScreenStatic(
     columnModifier = Modifier.padding(horizontal = 12.dp),
     content = {
         val player = rememberPlayer()
-        val navController = rememberNavControllerProvider().current
         val nowPlaying = player.nowPlaying
 
         AlbumImageWithInfoButton(
@@ -47,7 +46,7 @@ object NowPlayingScreen : ApexScreenStatic(
             text = nowPlaying.album.name,
             modifier = Modifier
                 .basicMarquee()
-                .bounceClick { navController.navigate(nowPlaying.album) },
+                .clickable { AlbumInfoScreen.navigate(nowPlaying.album) },
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontSize = 16.sp,
         )

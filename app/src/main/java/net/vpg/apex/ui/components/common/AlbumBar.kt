@@ -11,19 +11,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.bounceClick
-import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.entities.ApexAlbum
+import net.vpg.apex.ui.screens.AlbumInfoScreen
 
 @Composable
 fun AlbumBar(apexAlbum: ApexAlbum) {
-    val navController = rememberNavControllerProvider().current
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth() // don't remove
             .padding(vertical = 8.dp)
-            .bounceClick { navController.navigate(apexAlbum) }
+            .bounceClick { AlbumInfoScreen.navigate(apexAlbum) }
     ) {
         AlbumImage(apexAlbum, size = 75, cornerRadius = 0)
         Spacer(modifier = Modifier.width(16.dp))

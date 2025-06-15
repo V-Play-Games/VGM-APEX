@@ -8,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import kotlin.reflect.KClass
@@ -19,6 +20,8 @@ sealed class ApexScreenDynamic<T : Any>(
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     content: @Composable ColumnScope.(T) -> Unit
 ) {
+    private lateinit var navigateFunction: (T) -> Unit
+
     constructor(
         route: KClass<T>,
         columnModifier: Modifier = Modifier,
@@ -44,11 +47,14 @@ sealed class ApexScreenDynamic<T : Any>(
         }
     }
 
-    fun composeTo(builder: NavGraphBuilder) {
+    fun composeTo(builder: NavGraphBuilder, navController: NavHostController) {
         builder.composable(route) { entry ->
             screen(entry.toRoute(route))
         }
+        navigateFunction = { t -> navController.navigate(t) }
     }
+
+    fun navigate(t: T) = navigateFunction(t)
 }
 
 sealed class ApexScreenStatic(
@@ -58,6 +64,8 @@ sealed class ApexScreenStatic(
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    private lateinit var navigateFunction: () -> Unit
+
     private val screen by lazy {
         @Composable {
             Column(
@@ -69,7 +77,14 @@ sealed class ApexScreenStatic(
         }
     }
 
-    fun composeTo(builder: NavGraphBuilder) = builder.composable(route) { screen() }
+    fun composeTo(builder: NavGraphBuilder, navController: NavHostController) {
+        builder.composable(route) {
+            screen()
+        }
+        navigateFunction = { navController.navigate(route) }
+    }
+
+    fun navigate() = navigateFunction()
 }
 
 sealed class ApexBottomBarScreen(
