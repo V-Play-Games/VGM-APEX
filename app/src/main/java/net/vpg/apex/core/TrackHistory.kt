@@ -1,13 +1,13 @@
 package net.vpg.apex.core
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import net.vpg.apex.entities.ApexTrack
 import java.io.File
-import java.util.logging.Logger
 import kotlin.math.min
 
 class SearchHistory(context: Context) : SaveableTrackHistory(context, "search-history.txt") {
@@ -26,7 +26,7 @@ class PlayHistory(context: Context) : SaveableTrackHistory(context, "track-histo
 
 sealed class SaveableTrackHistory(context: Context, val fileName: String) : TrackHistory() {
     companion object {
-        private val LOGGER = Logger.getLogger(SaveableTrackHistory::class.java.name)
+        private val tag = SaveableTrackHistory::class.java.name
     }
 
     protected val historyFile = File(context.cacheDir, fileName)
@@ -41,14 +41,14 @@ sealed class SaveableTrackHistory(context: Context, val fileName: String) : Trac
     override fun addTrack(track: ApexTrack) {
         super.addTrack(track)
         writeFile()
-        LOGGER.info("Added ${track.title} (id=${track.id}) to $fileName")
+        Log.i(tag, "Added ${track.title} (id=${track.id}) to $fileName")
     }
 
     override fun removeIndex(index: Int) {
         val track = trackHistory[index]
         super.removeIndex(index)
         writeFile()
-        LOGGER.info("Removed ${track.title} (id=${track.id}) from $fileName")
+        Log.i(tag, "Removed ${track.title} (id=${track.id}) from $fileName")
     }
 
     protected fun writeFile() {
