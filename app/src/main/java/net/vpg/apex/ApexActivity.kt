@@ -1,5 +1,6 @@
 package net.vpg.apex
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -39,6 +40,7 @@ class ApexActivity : ComponentActivity() {
                 SplashScreenWithCrossfade()
             }
         }
+        startService(Intent(this, ApexNotificationService::class.java))
     }
 
     @Composable

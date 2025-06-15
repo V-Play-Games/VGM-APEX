@@ -60,6 +60,7 @@ dependencies {
     // Media3
     implementation(libs.media3.session)
     implementation(libs.media3.exoplayer)
+    implementation(libs.media3.ui)
 
     // JSON
     implementation(libs.vjson)
@@ -67,6 +68,7 @@ dependencies {
     // Image Loading
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    implementation(libs.concurrent.futures.ktx)
 
     // Dependency Injection
     implementation(libs.hilt.android)

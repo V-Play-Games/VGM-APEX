@@ -6,10 +6,7 @@ import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.compose.runtime.*
 import androidx.core.net.toUri
-import androidx.media3.common.AudioAttributes
-import androidx.media3.common.ForwardingPlayer
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
+import androidx.media3.common.*
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DefaultDataSource
@@ -20,7 +17,6 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ClippingMediaSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
-import androidx.media3.session.MediaSession
 import net.vpg.apex.entities.ApexTrack
 import java.io.File
 
@@ -50,8 +46,6 @@ class ApexPlayer(
     private var prepared = false
     private val loopStart get() = if (nowPlaying.loopStart == -1) 0L else frameToUs(nowPlaying.loopStart)
     private val loopEnd get() = if (nowPlaying.loopEnd == -1) Long.MAX_VALUE else frameToUs(nowPlaying.loopEnd)
-    private val mediaSession = MediaSession.Builder(context, this).build()
-    private val notificationHelper = NotificationHelper(context, this, mediaSession)
 
     override fun getCurrentPosition() = when (currentMediaItemIndex) {
         1 -> exoplayer.currentPosition
@@ -130,25 +124,30 @@ class ApexPlayer(
         val mediaUri = nowPlaying.downloadedFile(context.filesDir).takeIf { it.exists() }?.toUri()
             ?: nowPlaying.url.toUri()
 
-        val mediaItem = MediaItem.fromUri(mediaUri)
-
-        // Create a base MediaSource
-        val mediaSource = mediaSourceFactory.createMediaSource(mediaItem)
-
-        // Wrap in ClippingMediaSource with the loop start and end positions
-        val preLoop = mediaSource.clip(0, loopStart)
-        val loop = mediaSource.clip(loopStart, loopEnd)
-        val postLoop = mediaSource.clip(loopEnd)
-
-        setMediaItem(mediaItem)
-        exoplayer.addMediaSource(preLoop)
-        exoplayer.addMediaSource(loop)
-        exoplayer.addMediaSource(postLoop)
+        MediaItem.Builder()
+            .setUri(mediaUri)
+            .setMediaMetadata(
+                MediaMetadata.Builder()
+                    .setTitle(nowPlaying.title)
+                    .setArtist(nowPlaying.uploader.name)
+                    .setArtworkUri(nowPlaying.album.albumArtUrl?.toUri())
+                    .build()
+            )
+            .build()
+            .let { mediaSourceFactory.createMediaSource(it) }
+            .let { mediaItem ->
+                listOf(
+                    mediaItem, // Base Track
+                    mediaItem.clip(0, loopStart), // Pre-loop/Intro
+                    mediaItem.clip(loopStart, loopEnd), // Loop Section
+                    mediaItem.clip(loopEnd) // Post-loop/Outro
+                )
+            }
+            .also { exoplayer.setMediaSources(it) }
         prepare()
         play()
         prepared = true
         durationState = 0
-        notificationHelper.showNotification()
     }
 
     @OptIn(UnstableApi::class)

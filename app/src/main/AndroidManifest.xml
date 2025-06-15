@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           xmlns:tools="http://schemas.android.com/tools">
-  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
   <uses-permission android:name="android.permission.INTERNET"/>
 
   <application
@@ -17,7 +14,8 @@
       android:roundIcon="@mipmap/ic_launcher_round"
       android:supportsRtl="true"
       android:theme="@style/Theme.Apex.NoActionBar"
-      tools:targetApi="31">
+      android:enableOnBackInvokedCallback="true"
+      tools:targetApi="35">
     <activity
         android:name=".ApexActivity"
         android:exported="true"
@@ -28,6 +26,11 @@
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
+    <service
+        android:name=".ApexNotificationService"
+        android:foregroundServiceType="mediaPlayback"
+        android:exported="false">
+    </service>
   </application>
 
 </manifest>
