@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.media3.common.util.BitmapLoader
 import android.util.Log
+import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import coil3.ImageLoader
 import coil3.request.ImageRequest
@@ -17,7 +18,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.io.IOException
 
-@UnstableApi
+@OptIn(UnstableApi::class)
 class CoilBitmapLoader(val context: Context) : BitmapLoader {
     private val imageLoader = ImageLoader.Builder(context).build()
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())

@@ -8,15 +8,18 @@ import androidx.compose.runtime.*
 import androidx.core.net.toUri
 import androidx.media3.common.*
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.offline.DownloadRequest
+import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.source.ClippingMediaSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
+import net.vpg.apex.ApexDownloadService
+import net.vpg.apex.core.di.rememberDatabaseProvider
 import net.vpg.apex.entities.ApexTrack
 import java.io.File
 
@@ -65,7 +68,7 @@ class ApexPlayer(
                     SimpleCache(
                         File(context.cacheDir, "exo_cache"),
                         LeastRecentlyUsedCacheEvictor(512 * 1024 * 1024), // 512 MB
-                        StandaloneDatabaseProvider(context)
+                        rememberDatabaseProvider(context)
                     )
                 )
                 .setUpstreamDataSourceFactory(DefaultDataSource.Factory(context))
@@ -226,5 +229,15 @@ class ApexPlayer(
                 seekTo(3, (position - loopEnd) / 1000)
             }
         }
+    }
+
+    fun downloadCurrentTrack() {
+        val downloadRequest = DownloadRequest.Builder(nowPlaying.id, nowPlaying.url.toUri()).build()
+        DownloadService.sendAddDownload(
+            context,
+            ApexDownloadService::class.java,
+            downloadRequest,
+            /* foreground= */ false
+        )
     }
 }

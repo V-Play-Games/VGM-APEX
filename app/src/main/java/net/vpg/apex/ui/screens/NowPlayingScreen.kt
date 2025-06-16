@@ -4,6 +4,7 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,22 +35,31 @@ object NowPlayingScreen : ApexScreenStatic(
         )
 
         Spacer(Modifier.height(24.dp))
-
-        Text(
-            text = nowPlaying.title,
-            modifier = Modifier.basicMarquee(),
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-        )
-        Text(
-            text = nowPlaying.album.name,
-            modifier = Modifier
-                .basicMarquee()
-                .clickable { AlbumInfoScreen.navigate(nowPlaying.album) },
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 16.sp,
-        )
+        Row {
+            Column {
+                Text(
+                    text = nowPlaying.title,
+                    modifier = Modifier.basicMarquee(),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    text = nowPlaying.album.name,
+                    modifier = Modifier
+                        .basicMarquee()
+                        .clickable { AlbumInfoScreen.navigate(nowPlaying.album) },
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 16.sp,
+                )
+            }
+            Icon(
+                Icons.Default.Download,
+                contentDescription = "Download",
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.bounceClick { player.downloadCurrentTrack() }
+            )
+        }
 
         Spacer(Modifier.height(16.dp))
 
