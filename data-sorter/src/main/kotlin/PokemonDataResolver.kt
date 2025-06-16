@@ -46,7 +46,11 @@ fun main() {
             val encodedFileName = URLEncoder.encode(it.id, StandardCharsets.UTF_8.name()).replace("+", "%20")
             TrackData(
                 id = titleRegex.find(it.name)?.groupValues[1]?.replace(" ", "") ?: it.id,
-                title = titleRegex.find(it.name)?.groupValues[3] ?: it.name,
+                title = (titleRegex.find(it.name)?.groupValues[3] ?: it.name)
+                    .replace("Magma _ Aqua", "Magma & Aqua")
+                    .replace("Dialga _ Palkia", "Dialga & Palkia")
+                    .replace(" _ ", " - ")
+                    .replace("_", "'"),
                 uploaderId = defaultUploaderId,
                 albumId = it.category,
                 loopStart = it.loopStart,
