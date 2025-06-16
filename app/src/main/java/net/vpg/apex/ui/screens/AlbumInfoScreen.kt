@@ -34,7 +34,6 @@ import net.vpg.apex.ui.components.common.TrackBar
 
 object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
     route = ApexAlbum::class,
-    columnModifier = Modifier,
     content = { album ->
         val player = rememberPlayer()
 

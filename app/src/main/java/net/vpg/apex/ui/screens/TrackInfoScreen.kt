@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -22,8 +23,8 @@ import net.vpg.apex.ui.components.common.AlbumImage
 
 object TrackInfoScreen : ApexScreenDynamic<ApexTrack>(
     route = ApexTrack::class,
-    columnModifierFunction = {
-        Modifier
+    columnModifier = Modifier.composed {
+        this
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     },
