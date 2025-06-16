@@ -13,7 +13,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object SearchHistoryProvider {
+class SearchHistoryProvider {
     @Provides
     @Singleton
     fun provideSearchHistory(@ApplicationContext context: Context) = SearchHistory(context)

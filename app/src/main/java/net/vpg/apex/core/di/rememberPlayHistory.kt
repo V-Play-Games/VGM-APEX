@@ -13,7 +13,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object PlayHistoryProvider {
+class PlayHistoryProvider {
     @Provides
     @Singleton
     fun providePlayHistory(@ApplicationContext context: Context) = PlayHistory(context)

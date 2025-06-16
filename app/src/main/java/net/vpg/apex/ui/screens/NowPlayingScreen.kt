@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.bounceClick
+import net.vpg.apex.core.di.rememberContext
 import net.vpg.apex.core.di.rememberDownloadTracker
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.ui.components.common.AlbumImageWithInfoButton
@@ -28,6 +29,7 @@ object NowPlayingScreen : ApexScreenStatic(
     content = {
         val player = rememberPlayer()
         val nowPlaying = player.nowPlaying
+        val context = rememberContext()
 
         AlbumImageWithInfoButton(
             album = nowPlaying.album,
@@ -59,7 +61,7 @@ object NowPlayingScreen : ApexScreenStatic(
                 contentDescription = "Download",
                 tint = if (rememberDownloadTracker().isDownloaded(nowPlaying))
                     MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.bounceClick { player.downloadCurrentTrack() }
+                modifier = Modifier.bounceClick { nowPlaying.download(context) }
             )
         }
 

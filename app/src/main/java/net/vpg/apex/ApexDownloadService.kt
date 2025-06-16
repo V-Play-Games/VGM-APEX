@@ -27,11 +27,8 @@ import androidx.media3.exoplayer.offline.DownloadNotificationHelper
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.scheduler.PlatformScheduler
 import androidx.media3.exoplayer.scheduler.Requirements.RequirementFlags
-import androidx.media3.exoplayer.scheduler.Scheduler
-import net.vpg.apex.util.DownloadUtil
-import net.vpg.apex.util.DownloadUtil.DOWNLOAD_NOTIFICATION_CHANNEL_ID
+import net.vpg.apex.core.di.rememberDownloadManager
 
-/** A service for downloading media.  */
 @OptIn(UnstableApi::class)
 class ApexDownloadService : DownloadService(
     FOREGROUND_NOTIFICATION_ID,
@@ -40,36 +37,29 @@ class ApexDownloadService : DownloadService(
     R.string.notification_channel_name,
     0
 ) {
-    override fun getDownloadManager(): DownloadManager {
-        // This will only happen once, because getDownloadManager is guaranteed to be called only once
-        // in the life cycle of the process.
-        val downloadManager = DownloadUtil.getDownloadManager( /* context= */this)
-        val downloadNotificationHelper = DownloadUtil.getDownloadNotificationHelper( /* context= */this)
-        downloadManager.addListener(
+    private val downloadNotificationHelper by lazy {
+        DownloadNotificationHelper(this, DOWNLOAD_NOTIFICATION_CHANNEL_ID)
+    }
+
+    override fun getDownloadManager() = rememberDownloadManager(this).also {
+        it.addListener(
             TerminalStateNotificationHelper(
                 this, downloadNotificationHelper, FOREGROUND_NOTIFICATION_ID + 1
             )
         )
-        return downloadManager
     }
 
-    override fun getScheduler(): Scheduler? {
-        return PlatformScheduler(this, JOB_ID)
-    }
+    override fun getScheduler() = PlatformScheduler(this, JOB_ID)
 
-    override fun getForegroundNotification(
-        downloads: List<Download>, notMetRequirements: @RequirementFlags Int
-    ): Notification {
-        return DownloadUtil.getDownloadNotificationHelper( /* context= */this)
-            .buildProgressNotification( /* context= */
-                this,
-                R.drawable.ic_pika_chill,  /* contentIntent= */
-                null,  /* message= */
-                null,
-                downloads,
-                notMetRequirements
-            )
-    }
+    override fun getForegroundNotification(downloads: List<Download>, notMetRequirements: @RequirementFlags Int) =
+        downloadNotificationHelper.buildProgressNotification(
+            this,
+            R.drawable.ic_pika_chill,
+            null,
+            null,
+            downloads,
+            notMetRequirements
+        )
 
     private class TerminalStateNotificationHelper(
         context: Context,
@@ -82,24 +72,30 @@ class ApexDownloadService : DownloadService(
             downloadManager: DownloadManager, download: Download, finalException: Exception?
         ) {
             val notification: Notification?
-            if (download.state == Download.STATE_COMPLETED) {
-                notification =
-                    notificationHelper.buildDownloadCompletedNotification(
-                        context,
-                        R.drawable.ic_pika_chill,  /* contentIntent= */
-                        null,
-                        Util.fromUtf8Bytes(download.request.data)
-                    )
-            } else if (download.state == Download.STATE_FAILED) {
-                notification =
-                    notificationHelper.buildDownloadFailedNotification(
-                        context,
-                        R.drawable.ic_pika_chill,  /* contentIntent= */
-                        null,
-                        Util.fromUtf8Bytes(download.request.data)
-                    )
-            } else {
-                return
+            when (download.state) {
+                Download.STATE_COMPLETED -> {
+                    notification =
+                        notificationHelper.buildDownloadCompletedNotification(
+                            context,
+                            R.drawable.ic_pika_chill,  /* contentIntent= */
+                            null,
+                            Util.fromUtf8Bytes(download.request.data)
+                        )
+                }
+
+                Download.STATE_FAILED -> {
+                    notification =
+                        notificationHelper.buildDownloadFailedNotification(
+                            context,
+                            R.drawable.ic_pika_chill,  /* contentIntent= */
+                            null,
+                            Util.fromUtf8Bytes(download.request.data)
+                        )
+                }
+
+                else -> {
+                    return
+                }
             }
             NotificationUtil.setNotification(context, nextNotificationId++, notification)
         }
@@ -108,5 +104,6 @@ class ApexDownloadService : DownloadService(
     companion object {
         private const val JOB_ID = 1
         private const val FOREGROUND_NOTIFICATION_ID = 1
+        private const val DOWNLOAD_NOTIFICATION_CHANNEL_ID: String = "download_channel"
     }
 }

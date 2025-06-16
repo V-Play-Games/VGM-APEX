@@ -1,7 +1,11 @@
 package net.vpg.apex.core.di
 
 import android.content.Context
+import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSource
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.EntryPoint
@@ -13,10 +17,14 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object PlayerProvider {
+class PlayerProvider {
+    @OptIn(UnstableApi::class)
     @Provides
     @Singleton
-    fun providePlayer(@ApplicationContext context: Context) = ApexPlayer(context)
+    fun providePlayer(
+        @ApplicationContext context: Context,
+        dataSourceFactory: DataSource.Factory
+    ) = ApexPlayer(context, DefaultMediaSourceFactory(dataSourceFactory))
 }
 
 @EntryPoint

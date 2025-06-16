@@ -2,33 +2,27 @@ package net.vpg.apex.core.player
 
 import android.content.Context
 import android.os.Handler
-import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.compose.runtime.*
 import androidx.core.net.toUri
 import androidx.media3.common.*
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DefaultDataSource
-import androidx.media3.datasource.cache.CacheDataSource
-import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
-import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.offline.DownloadRequest
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.source.ClippingMediaSource
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
-import net.vpg.apex.ApexDownloadService
-import net.vpg.apex.core.di.rememberDatabaseProvider
 import net.vpg.apex.entities.ApexTrack
-import java.io.File
 
 @OptIn(UnstableApi::class)
 class ApexPlayer(
     val context: Context,
     val mediaSourceFactory: MediaSource.Factory,
-    playerBuilder: ExoPlayer.Builder
-) : ForwardingPlayer(playerBuilder.setMediaSourceFactory(mediaSourceFactory).build()), Player.Listener {
+) : ForwardingPlayer(
+    ExoPlayer.Builder(context)
+        .setAudioAttributes(AudioAttributes.DEFAULT, true)
+        .setHandleAudioBecomingNoisy(true)
+        .setMediaSourceFactory(mediaSourceFactory)
+        .build()
+), Player.Listener {
     private val exoplayer = wrappedPlayer as ExoPlayer
     private val queue = mutableListOf<ApexTrack>()
 
@@ -58,27 +52,6 @@ class ApexPlayer(
     }
 
     private val handler = Handler(applicationLooper)
-
-    @OptIn(UnstableApi::class)
-    constructor(context: Context) : this(
-        context = context,
-        mediaSourceFactory = DefaultMediaSourceFactory(
-            CacheDataSource.Factory()
-                .setCache(
-                    SimpleCache(
-                        File(context.cacheDir, "exo_cache"),
-                        LeastRecentlyUsedCacheEvictor(512 * 1024 * 1024), // 512 MB
-                        rememberDatabaseProvider(context)
-                    )
-                )
-                .setUpstreamDataSourceFactory(DefaultDataSource.Factory(context))
-                .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
-        ),
-        playerBuilder = ExoPlayer.Builder(context)
-            .setLooper(Looper.getMainLooper())
-            .setAudioAttributes(AudioAttributes.DEFAULT, true)
-            .setHandleAudioBecomingNoisy(true)
-    )
 
     init {
         addListener(this)
@@ -124,11 +97,8 @@ class ApexPlayer(
 
     @OptIn(UnstableApi::class)
     fun playCurrentTrack() {
-        val mediaUri = nowPlaying.downloadedFile(context.filesDir).takeIf { it.exists() }?.toUri()
-            ?: nowPlaying.url.toUri()
-
         MediaItem.Builder()
-            .setUri(mediaUri)
+            .setUri(nowPlaying.url.toUri())
             .setMediaMetadata(
                 MediaMetadata.Builder()
                     .setTitle(nowPlaying.title)
@@ -229,15 +199,5 @@ class ApexPlayer(
                 seekTo(3, (position - loopEnd) / 1000)
             }
         }
-    }
-
-    fun downloadCurrentTrack() {
-        val downloadRequest = DownloadRequest.Builder(nowPlaying.id, nowPlaying.url.toUri()).build()
-        DownloadService.sendAddDownload(
-            context,
-            ApexDownloadService::class.java,
-            downloadRequest,
-            /* foreground= */ false
-        )
     }
 }

@@ -16,7 +16,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object DatabaseProviderProvider {
+class DatabaseProviderProvider {
     @OptIn(UnstableApi::class)
     @Provides
     @Singleton

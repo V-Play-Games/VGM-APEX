@@ -14,7 +14,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object NavControllerProviderProvider {
+class NavControllerProviderProvider {
     @Provides
     @Singleton
     fun provideNavControllerProvider() =
