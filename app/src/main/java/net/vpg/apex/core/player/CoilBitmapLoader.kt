@@ -3,10 +3,10 @@ package net.vpg.apex.core.player
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
-import androidx.concurrent.futures.CallbackToFutureAdapter
-import androidx.media3.common.util.BitmapLoader
 import android.util.Log
 import androidx.annotation.OptIn
+import androidx.concurrent.futures.CallbackToFutureAdapter
+import androidx.media3.common.util.BitmapLoader
 import androidx.media3.common.util.UnstableApi
 import coil3.ImageLoader
 import coil3.request.ImageRequest

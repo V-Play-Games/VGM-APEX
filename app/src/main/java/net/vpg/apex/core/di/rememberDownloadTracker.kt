@@ -9,6 +9,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import net.vpg.apex.util.DownloadTracker
 import javax.inject.Inject
@@ -21,7 +22,10 @@ class DownloadTrackerProvider {
     @Provides
     @Singleton
     @Inject
-    fun provideDownloadTracker(downloadManager: DownloadManager) = DownloadTracker(downloadManager)
+    fun provideDownloadTracker(
+        @ApplicationContext context: Context,
+        downloadManager: DownloadManager
+    ) = DownloadTracker(context, downloadManager)
 }
 
 @EntryPoint

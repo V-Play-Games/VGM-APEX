@@ -1,13 +1,6 @@
 package net.vpg.apex.entities
 
-import android.content.Context
-import androidx.annotation.OptIn
-import androidx.core.net.toUri
-import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.offline.DownloadRequest
-import androidx.media3.exoplayer.offline.DownloadService.sendAddDownload
 import kotlinx.serialization.Serializable
-import net.vpg.apex.ApexDownloadService
 import net.vpg.vjson.value.JSONObject
 
 @Serializable
@@ -45,15 +38,4 @@ data class ApexTrack(
 
     val album by lazy { ApexAlbum.ALBUMS_DB[albumId]!! }
     val uploader by lazy { ApexUploader.UPLOADERS_DB[uploaderId]!! }
-
-    @OptIn(UnstableApi::class)
-    fun download(context: Context) {
-        val downloadRequest = DownloadRequest.Builder(id, url.toUri()).build()
-        sendAddDownload(
-            context,
-            ApexDownloadService::class.java,
-            downloadRequest,
-            false
-        )
-    }
 }

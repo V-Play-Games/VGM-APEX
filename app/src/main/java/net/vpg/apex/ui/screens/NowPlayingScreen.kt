@@ -4,21 +4,20 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.bounceClick
-import net.vpg.apex.core.di.rememberContext
-import net.vpg.apex.core.di.rememberDownloadTracker
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.ui.components.common.AlbumImageWithInfoButton
+import net.vpg.apex.ui.components.common.TrackDownloadIcon
 import net.vpg.apex.ui.components.player.PlayerActions
 import net.vpg.apex.ui.components.player.SeekBar
 
@@ -29,7 +28,6 @@ object NowPlayingScreen : ApexScreenStatic(
     content = {
         val player = rememberPlayer()
         val nowPlaying = player.nowPlaying
-        val context = rememberContext()
 
         AlbumImageWithInfoButton(
             album = nowPlaying.album,
@@ -38,8 +36,8 @@ object NowPlayingScreen : ApexScreenStatic(
         )
 
         Spacer(Modifier.height(24.dp))
-        Row {
-            Column {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = nowPlaying.title,
                     modifier = Modifier.basicMarquee(),
@@ -56,13 +54,7 @@ object NowPlayingScreen : ApexScreenStatic(
                     fontSize = 16.sp,
                 )
             }
-            Icon(
-                Icons.Default.Download,
-                contentDescription = "Download",
-                tint = if (rememberDownloadTracker().isDownloaded(nowPlaying))
-                    MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.bounceClick { nowPlaying.download(context) }
-            )
+            TrackDownloadIcon(nowPlaying, 40.dp)
         }
 
         Spacer(Modifier.height(16.dp))

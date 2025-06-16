@@ -17,74 +17,79 @@ package net.vpg.apex.util
 
 import android.content.Context
 import androidx.annotation.OptIn
+import androidx.core.net.toUri
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadManager
-import androidx.media3.exoplayer.offline.DownloadService
+import androidx.media3.exoplayer.offline.DownloadRequest
+import androidx.media3.exoplayer.offline.DownloadService.sendAddDownload
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import net.vpg.apex.ApexDownloadService
+import net.vpg.apex.core.DownloadState
 import net.vpg.apex.entities.ApexTrack
 
-/** Tracks media that has been downloaded.  */
 @OptIn(UnstableApi::class)
-class DownloadTracker(downloadManager: DownloadManager) {
-    /** Listens for changes in the tracked downloads.  */
-    interface Listener {
-        /** Called when the tracked downloads changed.  */
-        fun onDownloadsChanged()
-    }
-
-    private val listeners = mutableListOf<Listener>()
-    private val downloads = mutableMapOf<String, Download>()
+class DownloadTracker(val context: Context, downloadManager: DownloadManager) {
+    private val downloads = mutableMapOf<String, DownloadState>()
+    private val ongoingDownloads = mutableMapOf<String, Download>()
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     init {
-        downloadManager.addListener(DownloadManagerListener())
+        downloadManager.addListener(object : DownloadManager.Listener {
+            override fun onDownloadChanged(
+                downloadManager: DownloadManager,
+                download: Download,
+                finalException: Exception?
+            ) {
+                when (download.state) {
+                    Download.STATE_COMPLETED, Download.STATE_FAILED -> {
+                        ongoingDownloads.remove(download.request.id)
+                    }
+
+                    Download.STATE_DOWNLOADING -> {
+                        ongoingDownloads[download.request.id] = download
+                    }
+                }
+                println("Download changed: ${download.request.id} - ${download.state}, ${download.percentDownloaded}")
+                getDownloadState(download.request.id).downloadState = download.state
+            }
+        })
         downloadManager.downloadIndex.getDownloads().use { loadedDownloads ->
             while (loadedDownloads.moveToNext()) {
                 val download = loadedDownloads.download
-                downloads.put(download.request.uri.toString(), download)
+                downloads[download.request.id] = DownloadState(
+                    id = download.request.id,
+                    initialDownloadState = download.state,
+                    downloadTracker = this
+                )
+            }
+        }
+        scope.launch {
+            while (true) {
+                ongoingDownloads.forEach { (id, download) ->
+                    downloads[id]?.progress = download.percentDownloaded
+                }
+                delay(50)
             }
         }
     }
 
-    fun addListener(listener: Listener) {
-        listeners.add(listener)
+    fun getDownloadState(id: String) = downloads.computeIfAbsent(id) {
+        DownloadState(id, downloadTracker = this)
     }
 
-    fun removeListener(listener: Listener) {
-        listeners.remove(listener)
-    }
-
-    fun isDownloaded(apexTrack: ApexTrack): Boolean {
-        val download = downloads[apexTrack.url]
-        return download != null && download.state != Download.STATE_FAILED
-    }
-
-    fun toggleDownload(context: Context, apexTrack: ApexTrack) {
-        val download = downloads[apexTrack.url]
-        if (download != null && download.state != Download.STATE_FAILED) {
-            DownloadService.sendRemoveDownload(
-                context, ApexDownloadService::class.java, download.request.id, false
-            )
-        }
-    }
-
-    private inner class DownloadManagerListener : DownloadManager.Listener {
-        override fun onDownloadChanged(
-            downloadManager: DownloadManager,
-            download: Download,
-            finalException: Exception?
-        ) {
-            downloads.put(download.request.uri.toString(), download)
-            for (listener in listeners) {
-                listener.onDownloadsChanged()
-            }
-        }
-
-        override fun onDownloadRemoved(downloadManager: DownloadManager, download: Download) {
-            downloads.remove(download.request.uri.toString())
-            for (listener in listeners) {
-                listener.onDownloadsChanged()
-            }
-        }
+    @OptIn(UnstableApi::class)
+    fun download(apexTrack: ApexTrack) {
+        val downloadRequest = DownloadRequest.Builder(apexTrack.id, apexTrack.url.toUri()).build()
+        sendAddDownload(
+            context,
+            ApexDownloadService::class.java,
+            downloadRequest,
+            false
+        )
     }
 }

@@ -30,4 +30,5 @@ private interface NavControllerProviderInjector {
 @Composable
 fun rememberNavControllerProvider() = rememberNavControllerProvider(rememberContext())
 
-fun rememberNavControllerProvider(context: Context) = rememberInjector<NavControllerProviderInjector>(context).injectNavControllerProvider()
+fun rememberNavControllerProvider(context: Context) =
+    rememberInjector<NavControllerProviderInjector>(context).injectNavControllerProvider()
