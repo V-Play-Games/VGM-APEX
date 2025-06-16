@@ -26,4 +26,6 @@ interface PlayHistoryInjector {
 }
 
 @Composable
-fun rememberPlayHistory() = rememberInjector<PlayHistoryInjector>().injectPlayHistory()
+fun rememberPlayHistory() = rememberPlayHistory(rememberContext())
+
+fun rememberPlayHistory(context: Context) = rememberInjector<PlayHistoryInjector>(context).injectPlayHistory()

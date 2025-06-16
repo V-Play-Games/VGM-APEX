@@ -26,4 +26,6 @@ private interface SearchHistoryInjector {
 }
 
 @Composable
-fun rememberSearchHistory() = rememberInjector<SearchHistoryInjector>().injectSearchHistory()
+fun rememberSearchHistory() = rememberSearchHistory(rememberContext())
+
+fun rememberSearchHistory(context: Context) = rememberInjector<SearchHistoryInjector>(context).injectSearchHistory()

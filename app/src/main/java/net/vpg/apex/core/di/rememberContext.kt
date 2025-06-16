@@ -33,5 +33,4 @@ fun rememberContext() = EntryPointAccessors.fromApplication(
     ContextInjector::class.java
 ).injectContext()
 
-@Composable
-inline fun <reified T> rememberInjector() = EntryPointAccessors.fromApplication<T>(rememberContext())
+inline fun <reified T> rememberInjector(context: Context) = EntryPointAccessors.fromApplication<T>(context)

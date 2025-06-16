@@ -10,8 +10,7 @@ import androidx.media3.session.MediaSessionService
 import androidx.media3.ui.DefaultMediaDescriptionAdapter
 import androidx.media3.ui.PlayerNotificationManager
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.EntryPointAccessors
-import net.vpg.apex.core.di.PlayerInjector
+import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.core.player.CoilBitmapLoader
 import net.vpg.apex.ui.screens.NowPlayingScreen
 
@@ -36,10 +35,7 @@ class ApexNotificationService : MediaSessionService() {
             this, 0, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        val player = EntryPointAccessors.fromApplication(
-            applicationContext,
-            PlayerInjector::class.java
-        ).injectPlayer()
+        val player = rememberPlayer(applicationContext)
         mediaSession = MediaSession.Builder(this, player)
             .setBitmapLoader(CoilBitmapLoader(this))
             .build()

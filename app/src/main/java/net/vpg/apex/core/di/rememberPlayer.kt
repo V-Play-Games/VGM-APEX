@@ -26,4 +26,6 @@ interface PlayerInjector {
 }
 
 @Composable
-fun rememberPlayer() = rememberInjector<PlayerInjector>().injectPlayer()
+fun rememberPlayer() = rememberPlayer(rememberContext())
+
+fun rememberPlayer(context: Context) = rememberInjector<PlayerInjector>(context).injectPlayer()

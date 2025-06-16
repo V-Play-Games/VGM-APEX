@@ -1,5 +1,6 @@
 package net.vpg.apex.core.di
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.compositionLocalOf
@@ -27,4 +28,6 @@ private interface NavControllerProviderInjector {
 }
 
 @Composable
-fun rememberNavControllerProvider() = rememberInjector<NavControllerProviderInjector>().injectNavControllerProvider()
+fun rememberNavControllerProvider() = rememberNavControllerProvider(rememberContext())
+
+fun rememberNavControllerProvider(context: Context) = rememberInjector<NavControllerProviderInjector>(context).injectNavControllerProvider()
