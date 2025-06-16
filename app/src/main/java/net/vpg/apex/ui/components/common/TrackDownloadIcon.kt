@@ -3,8 +3,8 @@ package net.vpg.apex.ui.components.common
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.DownloadDone
+import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,7 +27,7 @@ fun TrackDownloadIcon(
 
     if (downloadState.isDownloaded)
         Icon(
-            imageVector = Icons.Default.Download,
+            imageVector = Icons.Outlined.DownloadDone,
             contentDescription = "Download",
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(size)
@@ -46,7 +46,7 @@ fun TrackDownloadIcon(
         )
     else
         Icon(
-            imageVector = Icons.Outlined.Download,
+            imageVector = Icons.Outlined.FileDownload,
             contentDescription = "Download",
             tint = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier.size(size).bounceClick { downloadState.download() }
