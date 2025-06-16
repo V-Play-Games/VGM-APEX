@@ -16,175 +16,75 @@
 package net.vpg.apex.util
 
 import android.content.Context
-import android.content.DialogInterface
-import android.net.Uri
-import android.widget.Toast
 import androidx.annotation.OptIn
-import androidx.media3.common.*
-import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.common.util.Util
-import androidx.media3.datasource.DataSource
+import androidx.media3.exoplayer.offline.Download
+import androidx.media3.exoplayer.offline.DownloadManager
+import androidx.media3.exoplayer.offline.DownloadService
 import net.vpg.apex.ApexDownloadService
-import androidx.media3.exoplayer.RenderersFactory
-import androidx.media3.exoplayer.offline.*
-import androidx.media3.exoplayer.offline.DownloadHelper.LiveContentUnsupportedException
-import com.google.common.base.Preconditions
-import java.io.IOException
-import java.util.concurrent.CopyOnWriteArraySet
+import net.vpg.apex.entities.ApexTrack
 
 /** Tracks media that has been downloaded.  */
 @OptIn(UnstableApi::class)
-class DownloadTracker(
-    context: Context,
-    private val dataSourceFactory: DataSource.Factory,
-    downloadManager: DownloadManager
-) {
+class DownloadTracker(downloadManager: DownloadManager) {
     /** Listens for changes in the tracked downloads.  */
     interface Listener {
         /** Called when the tracked downloads changed.  */
         fun onDownloadsChanged()
     }
 
-    private val context = context.applicationContext
-    private val listeners = CopyOnWriteArraySet<Listener>()
-    private val downloads = mutableMapOf<Uri?, Download?>()
-    private val downloadIndex = downloadManager.downloadIndex
-
-    private var startDownloadDialogHelper: StartDownloadDialogHelper? = null
+    private val listeners = mutableListOf<Listener>()
+    private val downloads = mutableMapOf<String, Download>()
 
     init {
         downloadManager.addListener(DownloadManagerListener())
-        loadDownloads()
-    }
-
-    fun addListener(listener: Listener?) {
-        listeners.add(Preconditions.checkNotNull<Listener?>(listener))
-    }
-
-    fun removeListener(listener: Listener?) {
-        listeners.remove(listener)
-    }
-
-    fun isDownloaded(mediaItem: MediaItem): Boolean {
-        val download = downloads[mediaItem.localConfiguration?.uri]
-        return download != null && download.state != Download.STATE_FAILED
-    }
-
-    fun getDownloadRequest(uri: Uri?): DownloadRequest? {
-        val download = downloads[uri]
-        return if (download != null && download.state != Download.STATE_FAILED) download.request else null
-    }
-
-    fun toggleDownload(
-        mediaItem: MediaItem, renderersFactory: RenderersFactory?
-    ) {
-        val download = downloads.get(mediaItem.localConfiguration?.uri)
-        if (download != null && download.state != Download.STATE_FAILED) {
-            DownloadService.sendRemoveDownload(
-                context, ApexDownloadService::class.java, download.request.id,  /* foreground= */false
-            )
-        } else {
-            if (startDownloadDialogHelper != null) {
-                startDownloadDialogHelper!!.release()
+        downloadManager.downloadIndex.getDownloads().use { loadedDownloads ->
+            while (loadedDownloads.moveToNext()) {
+                val download = loadedDownloads.download
+                downloads.put(download.request.uri.toString(), download)
             }
-            startDownloadDialogHelper =
-                StartDownloadDialogHelper(
-                    DownloadHelper.forMediaItem(context, mediaItem, renderersFactory, dataSourceFactory),
-                    mediaItem
-                )
         }
     }
 
-    private fun loadDownloads() {
-        try {
-            downloadIndex.getDownloads().use { loadedDownloads ->
-                while (loadedDownloads.moveToNext()) {
-                    val download = loadedDownloads.download
-                    downloads.put(download.request.uri, download)
-                }
-            }
-        } catch (e: IOException) {
-            Log.w(TAG, "Failed to query downloads", e)
+    fun addListener(listener: Listener) {
+        listeners.add(listener)
+    }
+
+    fun removeListener(listener: Listener) {
+        listeners.remove(listener)
+    }
+
+    fun isDownloaded(apexTrack: ApexTrack): Boolean {
+        val download = downloads[apexTrack.url]
+        return download != null && download.state != Download.STATE_FAILED
+    }
+
+    fun toggleDownload(context: Context, apexTrack: ApexTrack) {
+        val download = downloads[apexTrack.url]
+        if (download != null && download.state != Download.STATE_FAILED) {
+            DownloadService.sendRemoveDownload(
+                context, ApexDownloadService::class.java, download.request.id, false
+            )
         }
     }
 
     private inner class DownloadManagerListener : DownloadManager.Listener {
         override fun onDownloadChanged(
-            downloadManager: DownloadManager, download: Download, finalException: Exception?
+            downloadManager: DownloadManager,
+            download: Download,
+            finalException: Exception?
         ) {
-            downloads.put(download.request.uri, download)
+            downloads.put(download.request.uri.toString(), download)
             for (listener in listeners) {
                 listener.onDownloadsChanged()
             }
         }
 
         override fun onDownloadRemoved(downloadManager: DownloadManager, download: Download) {
-            downloads.remove(download.request.uri)
+            downloads.remove(download.request.uri.toString())
             for (listener in listeners) {
                 listener.onDownloadsChanged()
             }
         }
-    }
-
-    private inner class StartDownloadDialogHelper(
-        private val downloadHelper: DownloadHelper,
-        private val mediaItem: MediaItem
-    ) : DownloadHelper.Callback, DialogInterface.OnDismissListener {
-        private var keySetId: ByteArray? = null
-
-        init {
-            downloadHelper.prepare(this)
-        }
-
-        fun release() {
-            downloadHelper.release()
-        }
-
-        // DownloadHelper.Callback implementation.
-        override fun onPrepared(helper: DownloadHelper) {
-            onDownloadPrepared()
-        }
-
-        override fun onPrepareError(helper: DownloadHelper, e: IOException) {
-            val isLiveContent = e is LiveContentUnsupportedException
-            val toastStringId =
-                if (isLiveContent) "download_live_unsupported" else "download_start_error"
-            val logMessage =
-                if (isLiveContent) "Downloading live content unsupported" else "Failed to start download"
-            Toast.makeText(context, toastStringId, Toast.LENGTH_LONG).show()
-            Log.e(TAG, logMessage, e)
-        }
-
-        // DialogInterface.OnDismissListener implementation.
-        override fun onDismiss(dialogInterface: DialogInterface?) {
-            downloadHelper.release()
-        }
-
-        // Internal methods.
-
-        fun onDownloadPrepared() {
-            startDownload()
-            downloadHelper.release()
-            return
-        }
-
-        fun startDownload(downloadRequest: DownloadRequest = buildDownloadRequest()) {
-            DownloadService.sendAddDownload(
-                context, ApexDownloadService::class.java, downloadRequest,  /* foreground= */false
-            )
-        }
-
-        fun buildDownloadRequest(): DownloadRequest {
-            return downloadHelper
-                .getDownloadRequest(
-                    Util.getUtf8Bytes(mediaItem.mediaMetadata.title.toString())
-                )
-                .copyWithKeySetId(keySetId)
-        }
-    }
-
-    companion object {
-        private const val TAG = "DownloadTracker"
     }
 }

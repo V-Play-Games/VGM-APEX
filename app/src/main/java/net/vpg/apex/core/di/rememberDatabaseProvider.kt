@@ -20,7 +20,8 @@ object DatabaseProviderProvider {
     @OptIn(UnstableApi::class)
     @Provides
     @Singleton
-    fun provideDatabaseProvider(@ApplicationContext context: Context) = StandaloneDatabaseProvider(context)
+    fun provideDatabaseProvider(@ApplicationContext context: Context): DatabaseProvider =
+        StandaloneDatabaseProvider(context)
 }
 
 @EntryPoint
@@ -33,4 +34,5 @@ private interface DatabaseProviderInjector {
 @Composable
 fun rememberDatabaseProvider() = rememberDatabaseProvider(rememberContext())
 
-fun rememberDatabaseProvider(context: Context) = rememberInjector<DatabaseProviderInjector>(context).injectDatabaseProvider()
+fun rememberDatabaseProvider(context: Context) =
+    rememberInjector<DatabaseProviderInjector>(context).injectDatabaseProvider()
