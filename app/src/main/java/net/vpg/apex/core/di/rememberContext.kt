@@ -15,7 +15,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object ContextProvider {
+class ContextProvider {
     @Provides
     @Singleton
     fun provideContext(@ApplicationContext context: Context) = context
@@ -33,5 +33,4 @@ fun rememberContext() = EntryPointAccessors.fromApplication(
     ContextInjector::class.java
 ).injectContext()
 
-@Composable
-inline fun <reified T> rememberInjector() = EntryPointAccessors.fromApplication<T>(rememberContext())
+inline fun <reified T> rememberInjector(context: Context) = EntryPointAccessors.fromApplication<T>(context)

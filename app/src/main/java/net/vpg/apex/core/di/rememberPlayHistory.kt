@@ -13,7 +13,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object PlayHistoryProvider {
+class PlayHistoryProvider {
     @Provides
     @Singleton
     fun providePlayHistory(@ApplicationContext context: Context) = PlayHistory(context)
@@ -26,4 +26,6 @@ interface PlayHistoryInjector {
 }
 
 @Composable
-fun rememberPlayHistory() = rememberInjector<PlayHistoryInjector>().injectPlayHistory()
+fun rememberPlayHistory() = rememberPlayHistory(rememberContext())
+
+fun rememberPlayHistory(context: Context) = rememberInjector<PlayHistoryInjector>(context).injectPlayHistory()

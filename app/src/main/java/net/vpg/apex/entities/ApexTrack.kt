@@ -2,7 +2,6 @@ package net.vpg.apex.entities
 
 import kotlinx.serialization.Serializable
 import net.vpg.vjson.value.JSONObject
-import java.io.File
 
 @Serializable
 data class ApexTrack(
@@ -39,6 +38,4 @@ data class ApexTrack(
 
     val album by lazy { ApexAlbum.ALBUMS_DB[albumId]!! }
     val uploader by lazy { ApexUploader.UPLOADERS_DB[uploaderId]!! }
-
-    fun downloadedFile(cacheDir: File) = File(cacheDir, "$id.ogg")
 }

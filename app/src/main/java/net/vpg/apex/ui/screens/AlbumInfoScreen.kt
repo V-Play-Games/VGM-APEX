@@ -31,10 +31,10 @@ import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.ui.components.common.AlbumImage
 import net.vpg.apex.ui.components.common.TrackBar
+import net.vpg.apex.ui.components.common.TrackDownloadIcon
 
 object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
     route = ApexAlbum::class,
-    columnModifier = Modifier,
     content = { album ->
         val player = rememberPlayer()
 
@@ -162,7 +162,9 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
             // Track list
             items(album.tracks) { track ->
                 Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    TrackBar(track)
+                    TrackBar(track) {
+                        TrackDownloadIcon(track)
+                    }
                 }
             }
         }

@@ -9,6 +9,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.ui.components.common.AlbumImageWithInfoButton
+import net.vpg.apex.ui.components.common.TrackDownloadIcon
 import net.vpg.apex.ui.components.player.PlayerActions
 import net.vpg.apex.ui.components.player.SeekBar
 
@@ -34,22 +36,26 @@ object NowPlayingScreen : ApexScreenStatic(
         )
 
         Spacer(Modifier.height(24.dp))
-
-        Text(
-            text = nowPlaying.title,
-            modifier = Modifier.basicMarquee(),
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-        )
-        Text(
-            text = nowPlaying.album.name,
-            modifier = Modifier
-                .basicMarquee()
-                .clickable { AlbumInfoScreen.navigate(nowPlaying.album) },
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 16.sp,
-        )
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = nowPlaying.title,
+                    modifier = Modifier.basicMarquee(),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    text = nowPlaying.album.name,
+                    modifier = Modifier
+                        .basicMarquee()
+                        .clickable { AlbumInfoScreen.navigate(nowPlaying.album) },
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 16.sp,
+                )
+            }
+            TrackDownloadIcon(nowPlaying, 40.dp)
+        }
 
         Spacer(Modifier.height(16.dp))
 
