@@ -16,7 +16,7 @@ import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexTrackContext
 
 @Composable
-fun ApexTrackContext.TrackCard(trackIndex: Int, ) {
+fun ApexTrackContext.TrackCard(trackIndex: Int) {
     val apexTrack = tracks[trackIndex]
     val player = rememberPlayer()
     val animatedColor by animateColorAsState(

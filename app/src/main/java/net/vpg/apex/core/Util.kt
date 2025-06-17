@@ -20,6 +20,8 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.input.pointer.pointerInput
 import com.valentinilk.shimmer.*
+import net.vpg.apex.core.di.rememberDownloadTracker
+import net.vpg.apex.entities.ApexTrack
 
 fun Context.unwrapActivity(): Activity = when (this) {
     is Activity -> this
@@ -83,3 +85,6 @@ fun Modifier.customShimmer(
         )
     )
 ) ?: this
+
+@Composable
+fun ApexTrack.rememberDownloadState() = rememberDownloadTracker().getDownloadState(id)

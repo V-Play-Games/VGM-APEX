@@ -1,15 +1,14 @@
 package net.vpg.apex.core
 
 import androidx.annotation.OptIn
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
-import net.vpg.apex.core.di.rememberDownloadTracker
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.util.DownloadTracker
-
-@Composable
-fun ApexTrack.rememberDownloadState() = rememberDownloadTracker().getDownloadState(id)
 
 @OptIn(UnstableApi::class)
 class DownloadState(

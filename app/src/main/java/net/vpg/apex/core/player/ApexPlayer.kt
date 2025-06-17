@@ -13,6 +13,7 @@ import androidx.media3.exoplayer.source.MediaSource
 import net.vpg.apex.core.PlayHistory
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.entities.ApexTrackContext
+import kotlin.math.abs
 
 @OptIn(UnstableApi::class)
 class ApexPlayer(
@@ -93,8 +94,11 @@ class ApexPlayer(
                 // So we manually handle the looping here.
                 if (currentMediaItemIndex == 3 && isLooping)
                     seekTo(1, 0) // manual looping
-                playingState = false
-                isEnded = true
+                else {
+                    playingState = false
+                    isEnded = true
+                    seekToNext()
+                }
             }
 
             STATE_IDLE -> {
@@ -104,6 +108,13 @@ class ApexPlayer(
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) = updatePlayerRepeatMode()
+
+    fun play(delta: Int) {
+        if (currentContext.tracks[currentIndex + delta] == ApexTrack.EMPTY)
+            play(delta = delta + (delta / abs(delta)))
+        else
+            play(trackIndex = currentIndex + delta, currentContext)
+    }
 
     @OptIn(UnstableApi::class)
     fun play(trackIndex: Int, context: ApexTrackContext, updateHistory: Boolean = true) {
@@ -165,17 +176,21 @@ class ApexPlayer(
 
     override fun seekToPrevious() {
         if (nowPlaying == ApexTrack.EMPTY) return
-        if (currentIndex == 0 || currentPosition > maxSeekToPreviousPosition)
+        val isFirstIndex = currentIndex == 0 ||
+                currentContext.tracks.subList(0, currentIndex).all { it == ApexTrack.EMPTY }
+        if (isFirstIndex || currentPosition > maxSeekToPreviousPosition)
             seekTo(0)
         else
-            play(currentIndex - 1, currentContext)
+            play(delta = -1)
     }
 
     override fun hasNextMediaItem() = currentIndex < currentContext.tracks.size - 1
+            && currentContext.tracks.subList(currentIndex + 1, currentContext.tracks.size)
+        .any { it != ApexTrack.EMPTY }
 
     override fun seekToNext() {
         if (!hasNextMediaItem()) return
-        play(currentIndex + 1, currentContext)
+        play(delta = +1)
     }
 
     fun toggleShuffling() {

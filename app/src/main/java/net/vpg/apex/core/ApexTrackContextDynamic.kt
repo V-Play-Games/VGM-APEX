@@ -11,10 +11,9 @@ import net.vpg.apex.entities.ApexTrackContext
 import java.io.File
 import kotlin.math.min
 
-class SearchHistory(context: Context) : SaveableTrackHistory(
+class SearchHistory(context: Context) : ApexTrackContextDynamic(
     name = "Recent Searches",
-    context = context,
-    fileName = "search-history.txt"
+    saveFile = File(context.cacheDir, "search-history.txt")
 ) {
     override fun addTrack(track: ApexTrack, trackContext: ApexTrackContext) {
         tracks.remove(track)
@@ -22,10 +21,9 @@ class SearchHistory(context: Context) : SaveableTrackHistory(
     }
 }
 
-class PlayHistory(context: Context) : SaveableTrackHistory(
+class PlayHistory(context: Context) : ApexTrackContextDynamic(
     name = "Recently Played",
-    context = context,
-    fileName = "track-history.txt"
+    saveFile = File(context.cacheDir, "play-history.txt")
 ) {
     override fun addTrack(track: ApexTrack, trackContext: ApexTrackContext) {
         if (trackContext != this && tracks.firstOrNull() != track)
@@ -33,44 +31,12 @@ class PlayHistory(context: Context) : SaveableTrackHistory(
     }
 }
 
-sealed class SaveableTrackHistory(name: String, context: Context, val fileName: String) : TrackHistory(name) {
+open class ApexTrackContextDynamic(
+    override val name: String,
+    private val saveFile: File? = null
+) : ApexTrackContext {
     companion object {
-        private val tag = SaveableTrackHistory::class.java.name
-    }
-
-    protected val historyFile = File(context.cacheDir, fileName)
-        .also { if (!it.exists()) it.writeText("[]") }
-        .also { file ->
-            file.readLines()
-                .mapNotNull { ApexTrack.TRACKS_DB[it] }
-                .reversed()
-                .forEach { super.addTrack(it, ApexTrackContext.EMPTY) }
-        }
-
-    override fun addTrack(track: ApexTrack, trackContext: ApexTrackContext) {
-        super.addTrack(track, trackContext)
-        writeFile()
-        Log.i(tag, "Added ${track.title} (id=${track.id}) to $fileName")
-    }
-
-    override fun removeIndex(index: Int) {
-        val track = tracks[index]
-        super.removeIndex(index)
-        writeFile()
-        Log.i(tag, "Removed ${track.title} (id=${track.id}) from $fileName")
-    }
-
-    protected fun writeFile() {
-        historyFile.writeText(
-            tracks
-                .filter { it != ApexTrack.EMPTY }
-                .joinToString("\n") { it.id }
-        )
-    }
-}
-
-open class TrackHistory(override val name: String) : ApexTrackContext {
-    companion object {
+        private val tag = ApexTrackContextDynamic::class.java.name
         private const val NOT_DISPLAYED = 1
         private const val DISPLAYED = 2
         private const val REMOVED = 3
@@ -79,13 +45,26 @@ open class TrackHistory(override val name: String) : ApexTrackContext {
     private val appearingOnScreen = mutableStateListOf<Int>()
     override val tracks = mutableStateListOf<ApexTrack>()
 
+    init {
+        saveFile
+            ?.also { if (!it.exists()) it.writeText("[]") }
+            ?.readLines()
+            ?.mapNotNull { ApexTrack.TRACKS_DB[it] }
+            ?.also { addAll(it, ApexTrackContext.EMPTY) }
+    }
+
     constructor(name: String, tracks: List<ApexTrack>) : this(name) {
-        tracks.reversed().forEach { addTrack(it, ApexTrackContext.EMPTY) }
+        addAll(tracks, ApexTrackContext.EMPTY)
+    }
+
+    fun addAll(tracks: List<ApexTrack>, trackContext: ApexTrackContext) {
+        tracks.reversed().forEach { addTrack(it, trackContext) }
     }
 
     open fun addTrack(track: ApexTrack, trackContext: ApexTrackContext) {
         tracks.add(0, track)
         appearingOnScreen.add(0, NOT_DISPLAYED)
+        writeFile("Added ${track.title} (id=${track.id}) to ${saveFile?.name}")
     }
 
     open fun removeTrack(track: ApexTrack) {
@@ -98,7 +77,18 @@ open class TrackHistory(override val name: String) : ApexTrackContext {
     }
 
     open fun removeIndex(index: Int) {
+        val track = tracks[index]
         appearingOnScreen[index] = REMOVED
+        writeFile("Removed ${track.title} (id=${track.id}) from ${saveFile?.name}")
+    }
+
+    private fun writeFile(log: String? = null) = saveFile?.also {
+        saveFile.writeText(
+            tracks
+                .filter { it != ApexTrack.EMPTY }
+                .joinToString("\n") { it.id }
+        )
+        log?.run { Log.i(tag, log) }
     }
 
     @Composable
@@ -120,7 +110,7 @@ open class TrackHistory(override val name: String) : ApexTrackContext {
             }
         }
         val toRemove = mutableListOf<Int>()
-        for (i in 0..appearingOnScreen.size - 1) {
+        for (i in 0..<appearingOnScreen.size) {
             if (appearingOnScreen[i] == REMOVED) {
                 toRemove.add(i)
             } else if (i >= limit) {
@@ -130,5 +120,6 @@ open class TrackHistory(override val name: String) : ApexTrackContext {
             }
         }
         toRemove.forEach { tracks[it] = ApexTrack.EMPTY }
+        writeFile()
     }
 }
