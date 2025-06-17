@@ -12,7 +12,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.bounceClick
-import net.vpg.apex.core.di.rememberPlayHistory
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexTrackContext
 
@@ -25,7 +24,6 @@ inline fun TrackBar(
 ) {
     val apexTrack = context.tracks[trackIndex]
     val player = rememberPlayer()
-    val playHistory = rememberPlayHistory()
     val animatedColor by animateColorAsState(
         if (player.nowPlaying == apexTrack)
             MaterialTheme.colorScheme.primary
@@ -40,7 +38,6 @@ inline fun TrackBar(
             .padding(vertical = 8.dp)
             .bounceClick {
                 player.play(trackIndex, context)
-                playHistory.addTrack(apexTrack, context)
                 onClick()
             }
     ) {

@@ -10,12 +10,14 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ClippingMediaSource
 import androidx.media3.exoplayer.source.MediaSource
+import net.vpg.apex.core.PlayHistory
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.entities.ApexTrackContext
 
 @OptIn(UnstableApi::class)
 class ApexPlayer(
     val context: Context,
+    val playHistory: PlayHistory,
     val mediaSourceFactory: MediaSource.Factory,
 ) : ForwardingPlayer(
     ExoPlayer.Builder(context)
@@ -103,14 +105,15 @@ class ApexPlayer(
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) = updatePlayerRepeatMode()
 
-    fun play(trackIndex: Int, context: ApexTrackContext) {
+    @OptIn(UnstableApi::class)
+    fun play(trackIndex: Int, context: ApexTrackContext, updateHistory: Boolean = true) {
         currentIndex = trackIndex
         currentContext = context
-        playCurrentTrack()
-    }
 
-    @OptIn(UnstableApi::class)
-    fun playCurrentTrack() {
+        if (updateHistory) {
+            playHistory.addTrack(nowPlaying, currentContext)
+        }
+
         MediaItem.Builder()
             .setUri(nowPlaying.url.toUri())
             .setMediaMetadata(
@@ -157,25 +160,22 @@ class ApexPlayer(
         else if (isPrepared)
             play()
         else
-            playCurrentTrack()
+            play(currentIndex, currentContext, updateHistory = false)
     }
 
     override fun seekToPrevious() {
         if (nowPlaying == ApexTrack.EMPTY) return
         if (currentIndex == 0 || currentPosition > maxSeekToPreviousPosition)
             seekTo(0)
-        else {
-            currentIndex--
-            playCurrentTrack()
-        }
+        else
+            play(currentIndex - 1, currentContext)
     }
 
     override fun hasNextMediaItem() = currentIndex < currentContext.tracks.size - 1
 
     override fun seekToNext() {
         if (!hasNextMediaItem()) return
-        currentIndex++
-        playCurrentTrack()
+        play(currentIndex + 1, currentContext)
     }
 
     fun toggleShuffling() {

@@ -12,7 +12,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.bounceClick
-import net.vpg.apex.core.di.rememberPlayHistory
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexTrackContext
 
@@ -23,7 +22,6 @@ fun TrackCard(
 ) {
     val apexTrack = context.tracks[trackIndex]
     val player = rememberPlayer()
-    val playHistory = rememberPlayHistory()
     val animatedColor by animateColorAsState(
         if (player.nowPlaying == apexTrack)
             MaterialTheme.colorScheme.primary
@@ -35,10 +33,7 @@ fun TrackCard(
         modifier = Modifier
             .padding(end = 12.dp)
             .width(150.dp)
-            .bounceClick {
-                player.play(trackIndex, context)
-                playHistory.addTrack(apexTrack, context)
-            }
+            .bounceClick { player.play(trackIndex, context) }
     ) {
         AlbumImageWithInfoButton(
             album = apexTrack.album,

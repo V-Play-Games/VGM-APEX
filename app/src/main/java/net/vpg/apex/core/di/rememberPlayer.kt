@@ -12,6 +12,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import net.vpg.apex.core.PlayHistory
 import net.vpg.apex.core.player.ApexPlayer
 import javax.inject.Singleton
 
@@ -23,8 +24,9 @@ class PlayerProvider {
     @Singleton
     fun providePlayer(
         @ApplicationContext context: Context,
+        playHistory: PlayHistory,
         dataSourceFactory: DataSource.Factory
-    ) = ApexPlayer(context, DefaultMediaSourceFactory(dataSourceFactory))
+    ) = ApexPlayer(context, playHistory, DefaultMediaSourceFactory(dataSourceFactory))
 }
 
 @EntryPoint
