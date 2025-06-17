@@ -6,11 +6,11 @@ import net.vpg.vjson.value.JSONObject
 @Serializable
 data class ApexAlbum(
     val id: String,
-    val name: String,
+    override val name: String,
     val albumArtUrl: String?,
     val dateAdded: String,
-    private val trackIds: List<String>
-) {
+    val trackIds: List<String>
+) : ApexTrackContext {
     companion object {
         val ALBUMS_DB = mutableMapOf<String, ApexAlbum>()
         val EMPTY = ApexAlbum("", "", "", "", listOf(""))
@@ -28,5 +28,5 @@ data class ApexAlbum(
         ALBUMS_DB.put(id, this)
     }
 
-    val tracks: List<ApexTrack> by lazy { trackIds.mapNotNull { ApexTrack.TRACKS_DB[it] } }
+    override val tracks: List<ApexTrack> by lazy { trackIds.mapNotNull { ApexTrack.TRACKS_DB[it] } }
 }

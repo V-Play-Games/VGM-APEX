@@ -29,6 +29,12 @@ object NowPlayingScreen : ApexScreenStatic(
         val player = rememberPlayer()
         val nowPlaying = player.nowPlaying
 
+        Text(
+            text = "Playing from ${player.currentContext.name}",
+            modifier = Modifier.padding(start = 12.dp),
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+
         AlbumImageWithInfoButton(
             album = nowPlaying.album,
             size = 360,

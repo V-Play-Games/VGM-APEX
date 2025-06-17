@@ -19,7 +19,7 @@ object HomeScreen : ApexBottomBarScreen(
     content = {
         val playHistory = rememberPlayHistory()
         val random = remember(Unit) {
-            TrackHistory(ApexTrack.TRACKS_DB.values.shuffled().take(5))
+            TrackHistory("Random Picks", ApexTrack.TRACKS_DB.values.shuffled().take(5))
         }
 
         TrackDisplaySection("Random picks for you", random)

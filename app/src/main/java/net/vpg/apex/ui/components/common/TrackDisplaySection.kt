@@ -42,8 +42,8 @@ fun TrackDisplaySection(sectionTitle: String, tracks: TrackHistory) {
                     it()
                 }
             },
-            content = { track, _ ->
-                TrackCard(track)
+            content = { trackIndex ->
+                TrackCard(trackIndex, tracks)
             }
         )
     }

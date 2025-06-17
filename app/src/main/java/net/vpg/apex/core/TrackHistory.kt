@@ -7,24 +7,33 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import net.vpg.apex.entities.ApexTrack
+import net.vpg.apex.entities.ApexTrackContext
 import java.io.File
 import kotlin.math.min
 
-class SearchHistory(context: Context) : SaveableTrackHistory(context, "search-history.txt") {
+class SearchHistory(context: Context) : SaveableTrackHistory(
+    name = "Search History",
+    context = context,
+    fileName = "search-history.txt"
+) {
     override fun addTrack(track: ApexTrack) {
-        trackHistory.remove(track)
+        tracks.remove(track)
         super.addTrack(track)
     }
 }
 
-class PlayHistory(context: Context) : SaveableTrackHistory(context, "track-history.txt") {
+class PlayHistory(context: Context) : SaveableTrackHistory(
+    name = "Playing History",
+    context = context,
+    fileName = "track-history.txt"
+) {
     override fun addTrack(track: ApexTrack) {
-        if (trackHistory.firstOrNull() != track)
+        if (tracks.firstOrNull() != track)
             super.addTrack(track)
     }
 }
 
-sealed class SaveableTrackHistory(context: Context, val fileName: String) : TrackHistory() {
+sealed class SaveableTrackHistory(name: String, context: Context, val fileName: String) : TrackHistory(name) {
     companion object {
         private val tag = SaveableTrackHistory::class.java.name
     }
@@ -45,7 +54,7 @@ sealed class SaveableTrackHistory(context: Context, val fileName: String) : Trac
     }
 
     override fun removeIndex(index: Int) {
-        val track = trackHistory[index]
+        val track = tracks[index]
         super.removeIndex(index)
         writeFile()
         Log.i(tag, "Removed ${track.title} (id=${track.id}) from $fileName")
@@ -53,14 +62,14 @@ sealed class SaveableTrackHistory(context: Context, val fileName: String) : Trac
 
     protected fun writeFile() {
         historyFile.writeText(
-            trackHistory
+            tracks
                 .filter { it != ApexTrack.EMPTY }
                 .joinToString("\n") { it.id }
         )
     }
 }
 
-open class TrackHistory() {
+open class TrackHistory(override val name: String) : ApexTrackContext {
     companion object {
         private const val NOT_DISPLAYED = 1
         private const val DISPLAYED = 2
@@ -68,19 +77,19 @@ open class TrackHistory() {
     }
 
     private val appearingOnScreen = mutableStateListOf<Int>()
-    protected val trackHistory = mutableStateListOf<ApexTrack>()
+    override val tracks = mutableStateListOf<ApexTrack>()
 
-    constructor(tracks: List<ApexTrack>) : this() {
+    constructor(name: String, tracks: List<ApexTrack>) : this(name) {
         tracks.reversed().forEach { addTrack(it) }
     }
 
     open fun addTrack(track: ApexTrack) {
-        trackHistory.add(0, track)
+        tracks.add(0, track)
         appearingOnScreen.add(0, NOT_DISPLAYED)
     }
 
     open fun removeTrack(track: ApexTrack) {
-        trackHistory.indexOf(track)
+        tracks.indexOf(track)
             .takeIf { it != -1 }
             ?.also { index ->
                 removeIndex(index)
@@ -94,19 +103,19 @@ open class TrackHistory() {
 
     @Composable
     fun ComposeToList(
-        limit: Int = trackHistory.size,
+        limit: Int = tracks.size,
         emptyFallback: @Composable () -> Unit,
         lazyComposable: @Composable (LazyListScope.() -> Unit) -> Unit,
-        content: @Composable (ApexTrack, Int) -> Unit
+        content: @Composable (Int) -> Unit
     ) {
-        if (trackHistory.none { it != ApexTrack.EMPTY }) {
+        if (tracks.none { it != ApexTrack.EMPTY }) {
             emptyFallback()
             return
         }
         lazyComposable {
-            items(min(limit, trackHistory.size)) { index ->
+            items(min(limit, tracks.size)) { index ->
                 AnimatedVisibility(appearingOnScreen[index] == DISPLAYED) {
-                    content(trackHistory[index], index)
+                    content(index)
                 }
             }
         }
@@ -120,6 +129,6 @@ open class TrackHistory() {
                 appearingOnScreen[i] = DISPLAYED
             }
         }
-        toRemove.forEach { trackHistory[it] = ApexTrack.EMPTY }
+        toRemove.forEach { tracks[it] = ApexTrack.EMPTY }
     }
 }

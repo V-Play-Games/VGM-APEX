@@ -2,7 +2,6 @@ package net.vpg.apex.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
@@ -21,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.di.rememberSearchHistory
 import net.vpg.apex.entities.ApexTrack
+import net.vpg.apex.entities.ApexTrackContext
 import net.vpg.apex.ui.components.common.TrackBar
 
 object SearchScreen : ApexBottomBarScreen(
@@ -36,9 +36,15 @@ object SearchScreen : ApexBottomBarScreen(
         // Store search results
         val searchResults = remember(searchQuery) {
             if (searchQuery.isEmpty())
-                emptyList()
+                ApexTrackContext.EMPTY
             else
-                ApexTrack.TRACKS_DB.values.filter { it.title.contains(searchQuery, ignoreCase = true) }
+                object : ApexTrackContext {
+                    override val name = "Search Results for \"$searchQuery\""
+                    override val tracks by lazy {
+                        ApexTrack.TRACKS_DB.values.filter { it.title.contains(searchQuery, ignoreCase = true) }
+                    }
+
+                }
         }
 
         OutlinedTextField(
@@ -84,17 +90,18 @@ object SearchScreen : ApexBottomBarScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (searchResults.isEmpty() && searchQuery.isNotEmpty()) {
+            if (searchResults.tracks.isEmpty() && searchQuery.isNotEmpty()) {
                 Text(
                     text = "No results found for \"$searchQuery\"",
                     color = Color.Gray
                 )
             } else {
                 LazyColumn {
-                    items(searchResults) { track ->
+                    items(searchResults.tracks.size) { trackIndex ->
                         TrackBar(
-                            apexTrack = track,
-                            onClick = { searchHistory.addTrack(track) }
+                            trackIndex = trackIndex,
+                            context = searchResults,
+                            onClick = { searchHistory.addTrack(searchResults.tracks[trackIndex]) }
                         )
                     }
                 }
@@ -115,16 +122,17 @@ object SearchScreen : ApexBottomBarScreen(
                     )
                 },
                 lazyComposable = { LazyColumn(content = it) },
-                content = { track, index ->
+                content = { trackIndex ->
                     TrackBar(
-                        apexTrack = track,
+                        trackIndex = trackIndex,
+                        context = searchHistory,
                         trailingComponents = {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Close",
                                 modifier = Modifier
                                     .size(40.dp)
-                                    .bounceClick { searchHistory.removeIndex(index) },
+                                    .bounceClick { searchHistory.removeIndex(trackIndex) },
                                 tint = Color.DarkGray
                             )
                         }

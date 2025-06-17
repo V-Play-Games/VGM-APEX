@@ -14,14 +14,16 @@ import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.di.rememberPlayHistory
 import net.vpg.apex.core.di.rememberPlayer
-import net.vpg.apex.entities.ApexTrack
+import net.vpg.apex.entities.ApexTrackContext
 
 @Composable
 inline fun TrackBar(
-    apexTrack: ApexTrack,
+    trackIndex: Int,
+    context: ApexTrackContext,
     noinline onClick: () -> Unit = {},
     trailingComponents: @Composable () -> Unit = {}
 ) {
+    val apexTrack = context.tracks[trackIndex]
     val player = rememberPlayer()
     val playHistory = rememberPlayHistory()
     val animatedColor by animateColorAsState(
@@ -37,7 +39,7 @@ inline fun TrackBar(
         modifier = Modifier
             .padding(vertical = 8.dp)
             .bounceClick {
-                player.play(apexTrack)
+                player.play(trackIndex, context)
                 playHistory.addTrack(apexTrack)
                 onClick()
             }

@@ -11,6 +11,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ClippingMediaSource
 import androidx.media3.exoplayer.source.MediaSource
 import net.vpg.apex.entities.ApexTrack
+import net.vpg.apex.entities.ApexTrackContext
 
 @OptIn(UnstableApi::class)
 class ApexPlayer(
@@ -24,7 +25,8 @@ class ApexPlayer(
         .build()
 ), Player.Listener {
     private val exoplayer = wrappedPlayer as ExoPlayer
-    private val queue = mutableListOf<ApexTrack>()
+    var currentContext = ApexTrackContext.EMPTY
+        private set
 
     private var playingState by mutableStateOf(false)
     private var bufferingState by mutableStateOf(false)
@@ -35,7 +37,7 @@ class ApexPlayer(
 
     override fun isPlaying() = playingState
     val isBuffering get() = bufferingState
-    val nowPlaying get() = if (currentIndex < 0) ApexTrack.Companion.EMPTY else queue[currentIndex]
+    val nowPlaying get() = if (currentIndex < 0) ApexTrack.Companion.EMPTY else currentContext.tracks[currentIndex]
     val isLooping get() = loopingState
     val isShuffling get() = shuffleState
     override fun getDuration() = durationState
@@ -101,11 +103,9 @@ class ApexPlayer(
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) = updatePlayerRepeatMode()
 
-    fun play(track: ApexTrack) {
-        for (i in queue.size - 1 downTo currentIndex + 1)
-            queue.removeAt(currentIndex + 1)
-        queue(track)
-        currentIndex++
+    fun play(trackIndex: Int, context: ApexTrackContext) {
+        currentIndex = trackIndex
+        currentContext = context
         playCurrentTrack()
     }
 
@@ -160,15 +160,6 @@ class ApexPlayer(
             playCurrentTrack()
     }
 
-    fun queue(track: ApexTrack) {
-        queue.add(track)
-    }
-
-    fun removeTrackAt(index: Int) {
-        if (index < 0 || index >= queue.size) throw IllegalStateException()
-        queue.removeAt(index)
-    }
-
     override fun seekToPrevious() {
         if (nowPlaying == ApexTrack.EMPTY) return
         if (currentIndex == 0 || currentPosition > maxSeekToPreviousPosition)
@@ -179,7 +170,7 @@ class ApexPlayer(
         }
     }
 
-    override fun hasNextMediaItem() = currentIndex < queue.size - 1
+    override fun hasNextMediaItem() = currentIndex < currentContext.tracks.size - 1
 
     override fun seekToNext() {
         if (!hasNextMediaItem()) return

@@ -14,10 +14,14 @@ import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.di.rememberPlayHistory
 import net.vpg.apex.core.di.rememberPlayer
-import net.vpg.apex.entities.ApexTrack
+import net.vpg.apex.entities.ApexTrackContext
 
 @Composable
-fun TrackCard(apexTrack: ApexTrack) {
+fun TrackCard(
+    trackIndex: Int,
+    context: ApexTrackContext,
+) {
+    val apexTrack = context.tracks[trackIndex]
     val player = rememberPlayer()
     val playHistory = rememberPlayHistory()
     val animatedColor by animateColorAsState(
@@ -32,7 +36,7 @@ fun TrackCard(apexTrack: ApexTrack) {
             .padding(end = 12.dp)
             .width(150.dp)
             .bounceClick {
-                player.play(apexTrack)
+                player.play(trackIndex, context)
                 playHistory.addTrack(apexTrack)
             }
     ) {

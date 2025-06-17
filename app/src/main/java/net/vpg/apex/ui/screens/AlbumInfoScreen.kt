@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -88,7 +87,7 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
                 Box(
                     modifier = Modifier.padding(1.dp).bounceClick {
                         if (album.tracks.isNotEmpty()) {
-                            player.play(album.tracks.first())
+                            player.play(0, album)
                         }
                     }
                 ) {
@@ -160,10 +159,10 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
             }
 
             // Track list
-            items(album.tracks) { track ->
+            items(album.tracks.size) { trackIndex ->
                 Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    TrackBar(track) {
-                        TrackDownloadIcon(track)
+                    TrackBar(trackIndex, album) {
+                        TrackDownloadIcon(album.tracks[trackIndex])
                     }
                 }
             }
