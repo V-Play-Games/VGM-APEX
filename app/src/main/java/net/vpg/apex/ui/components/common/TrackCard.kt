@@ -37,7 +37,7 @@ fun TrackCard(
             .width(150.dp)
             .bounceClick {
                 player.play(trackIndex, context)
-                playHistory.addTrack(apexTrack)
+                playHistory.addTrack(apexTrack, context)
             }
     ) {
         AlbumImageWithInfoButton(

@@ -16,9 +16,9 @@ class SearchHistory(context: Context) : SaveableTrackHistory(
     context = context,
     fileName = "search-history.txt"
 ) {
-    override fun addTrack(track: ApexTrack) {
+    override fun addTrack(track: ApexTrack, trackContext: ApexTrackContext) {
         tracks.remove(track)
-        super.addTrack(track)
+        super.addTrack(track, trackContext)
     }
 }
 
@@ -27,9 +27,9 @@ class PlayHistory(context: Context) : SaveableTrackHistory(
     context = context,
     fileName = "track-history.txt"
 ) {
-    override fun addTrack(track: ApexTrack) {
-        if (tracks.firstOrNull() != track)
-            super.addTrack(track)
+    override fun addTrack(track: ApexTrack, trackContext: ApexTrackContext) {
+        if (trackContext != this && tracks.firstOrNull() != track)
+            super.addTrack(track, trackContext)
     }
 }
 
@@ -44,11 +44,11 @@ sealed class SaveableTrackHistory(name: String, context: Context, val fileName: 
             file.readLines()
                 .mapNotNull { ApexTrack.TRACKS_DB[it] }
                 .reversed()
-                .forEach { super.addTrack(it) }
+                .forEach { super.addTrack(it, ApexTrackContext.EMPTY) }
         }
 
-    override fun addTrack(track: ApexTrack) {
-        super.addTrack(track)
+    override fun addTrack(track: ApexTrack, trackContext: ApexTrackContext) {
+        super.addTrack(track, trackContext)
         writeFile()
         Log.i(tag, "Added ${track.title} (id=${track.id}) to $fileName")
     }
@@ -80,10 +80,10 @@ open class TrackHistory(override val name: String) : ApexTrackContext {
     override val tracks = mutableStateListOf<ApexTrack>()
 
     constructor(name: String, tracks: List<ApexTrack>) : this(name) {
-        tracks.reversed().forEach { addTrack(it) }
+        tracks.reversed().forEach { addTrack(it, ApexTrackContext.EMPTY) }
     }
 
-    open fun addTrack(track: ApexTrack) {
+    open fun addTrack(track: ApexTrack, trackContext: ApexTrackContext) {
         tracks.add(0, track)
         appearingOnScreen.add(0, NOT_DISPLAYED)
     }

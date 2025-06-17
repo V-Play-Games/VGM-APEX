@@ -101,7 +101,7 @@ object SearchScreen : ApexBottomBarScreen(
                         TrackBar(
                             trackIndex = trackIndex,
                             context = searchResults,
-                            onClick = { searchHistory.addTrack(searchResults.tracks[trackIndex]) }
+                            onClick = { searchHistory.addTrack(searchResults.tracks[trackIndex], searchResults) }
                         )
                     }
                 }
