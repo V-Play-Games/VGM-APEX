@@ -40,7 +40,8 @@ class ApexPlayer(
     val isShuffling get() = shuffleState
     override fun getDuration() = durationState
 
-    private var prepared = false
+    private var isPrepared = false
+    private var isEnded = false
     private val loopStart get() = if (nowPlaying.loopStart == -1) 0L else frameToUs(nowPlaying.loopStart)
     private val loopEnd get() = if (nowPlaying.loopEnd == -1) Long.MAX_VALUE else frameToUs(nowPlaying.loopEnd)
 
@@ -69,6 +70,8 @@ class ApexPlayer(
 
             STATE_READY -> {
                 bufferingState = false
+                playingState = true
+                isEnded = false
                 if (currentMediaItemIndex == 0) {
                     durationState = exoplayer.duration
                     seekTo(1, 0)
@@ -76,11 +79,22 @@ class ApexPlayer(
             }
 
             STATE_ENDED -> {
+                // After many efforts, it was discovered that
+                // if you tried to loop using REPEAT_MODE_ALL after post-loop clip,
+                // Then it'll seek to MediaItem 0, which is the base track.
+                // But we want it to be MediaItem 1, which is the pre-loop clip.
+                // When we try to seek to MediaItem 1, there's a slight delay
+                // which causes the player to play a few milliseconds of the base track
+                // and then seek to MediaItem 1, which is not what we want.
+                // So we manually handle the looping here.
+                if (currentMediaItemIndex == 3 && isLooping)
+                    seekTo(1, 0) // manual looping
                 playingState = false
+                isEnded = true
             }
 
             STATE_IDLE -> {
-                prepared = false
+                isPrepared = false
             }
         }
     }
@@ -119,7 +133,7 @@ class ApexPlayer(
             .also { exoplayer.setMediaSources(it) }
         prepare()
         play()
-        prepared = true
+        isPrepared = true
         durationState = 0
     }
 
@@ -138,7 +152,9 @@ class ApexPlayer(
     fun togglePlayPause() {
         if (isPlaying)
             pause()
-        else if (prepared)
+        else if (isEnded)
+            seekTo(0)
+        else if (isPrepared)
             play()
         else
             playCurrentTrack()
