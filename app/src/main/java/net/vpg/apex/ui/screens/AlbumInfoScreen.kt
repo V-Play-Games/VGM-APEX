@@ -110,62 +110,77 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
             }
         }
 
-        LazyColumn(state = scrollState) {
-            // Album Header
-            item {
-                Box(modifier = Modifier.height(320.dp)) {
-                    // Album Art
-                    Box(modifier = Modifier.align(BiasAlignment(0f, 0.75f))) {
-                        AlbumImage(album, imageSize, 4)
-                    }
+        // Track list
+        album.ComposeToList(
+            emptyFallback = {
+                Box(
+                    modifier = Modifier.fillMaxSize(), // don't remove
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No tracks found in this album",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 16.sp
+                    )
+                }
+            },
+            lazyComposable = { list ->
+                LazyColumn(state = scrollState) {
+                    // Album Header
+                    item {
+                        Box(modifier = Modifier.height(320.dp)) {
+                            // Album Art
+                            Box(modifier = Modifier.align(BiasAlignment(0f, 0.75f))) {
+                                AlbumImage(album, imageSize, 4)
+                            }
 
-                    // Gradient overlay
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize() // don't remove
-                            .background(
-                                Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        MaterialTheme.colorScheme.background.copy(alpha = 0.75f)
+                            // Gradient overlay
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize() // don't remove
+                                    .background(
+                                        Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.Transparent,
+                                                MaterialTheme.colorScheme.background.copy(alpha = 0.75f)
+                                            )
+                                        )
+                                    )
+                            )
+
+                            // Play button row
+                            Box(modifier = Modifier.align(Alignment.BottomStart)) {
+                                titleRow()
+                            }
+                        }
+                    }
+                    stickyHeader {
+                        AnimatedVisibility(firstItemIndex != 0) {
+                            Box(
+                                modifier = Modifier.background(
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.background,
+                                            MaterialTheme.colorScheme.background.copy(alpha = 0.8f),
+                                            MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
+                                            Color.Transparent,
+                                        )
                                     )
                                 )
-                            )
-                    )
+                            ) {
+                                titleRow()
+                            }
+                        }
+                    }
+                    list()
+                }
+            },
+            content = { trackIndex ->
+                TrackBar(trackIndex) {
+                    TrackDownloadIcon(album.tracks[trackIndex])
+                }
+            }
+        )
 
-                    // Play button row
-                    Box(modifier = Modifier.align(Alignment.BottomStart)) {
-                        titleRow()
-                    }
-                }
-            }
-            stickyHeader {
-                AnimatedVisibility(firstItemIndex != 0) {
-                    Box(
-                        modifier = Modifier.background(
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.background,
-                                    MaterialTheme.colorScheme.background.copy(alpha = 0.8f),
-                                    MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
-                                    Color.Transparent,
-                                )
-                            )
-                        )
-                    ) {
-                        titleRow()
-                    }
-                }
-            }
-
-            // Track list
-            items(album.tracks.size) { trackIndex ->
-                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    TrackBar(trackIndex, album) {
-                        TrackDownloadIcon(album.tracks[trackIndex])
-                    }
-                }
-            }
-        }
     }
 )

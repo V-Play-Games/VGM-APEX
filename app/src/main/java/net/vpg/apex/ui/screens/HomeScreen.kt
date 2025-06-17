@@ -4,12 +4,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import net.vpg.apex.core.TrackHistory
 import net.vpg.apex.core.di.rememberPlayHistory
 import net.vpg.apex.entities.ApexTrack
+import net.vpg.apex.entities.ApexTrackContext
 import net.vpg.apex.ui.components.common.TrackDisplaySection
 
 object HomeScreen : ApexBottomBarScreen(
@@ -18,12 +17,13 @@ object HomeScreen : ApexBottomBarScreen(
     title = "Home",
     content = {
         val playHistory = rememberPlayHistory()
-        val random = remember(Unit) {
-            TrackHistory("Random Picks", ApexTrack.TRACKS_DB.values.shuffled().take(5))
+        val random = object : ApexTrackContext {
+            override val name = "Random Picks"
+            override val tracks = ApexTrack.TRACKS_DB.values.shuffled().take(5)
         }
 
-        TrackDisplaySection("Random picks for you", random)
+        random.TrackDisplaySection()
         Spacer(modifier = Modifier.height(32.dp))
-        TrackDisplaySection("Recently Played", playHistory)
+        playHistory.TrackDisplaySection()
     }
 )

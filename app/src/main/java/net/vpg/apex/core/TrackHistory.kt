@@ -12,7 +12,7 @@ import java.io.File
 import kotlin.math.min
 
 class SearchHistory(context: Context) : SaveableTrackHistory(
-    name = "Search History",
+    name = "Recent Searches",
     context = context,
     fileName = "search-history.txt"
 ) {
@@ -23,7 +23,7 @@ class SearchHistory(context: Context) : SaveableTrackHistory(
 }
 
 class PlayHistory(context: Context) : SaveableTrackHistory(
-    name = "Playing History",
+    name = "Recently Played",
     context = context,
     fileName = "track-history.txt"
 ) {
@@ -102,11 +102,11 @@ open class TrackHistory(override val name: String) : ApexTrackContext {
     }
 
     @Composable
-    fun ComposeToList(
-        limit: Int = tracks.size,
+    override fun ComposeToList(
+        limit: Int,
         emptyFallback: @Composable () -> Unit,
         lazyComposable: @Composable (LazyListScope.() -> Unit) -> Unit,
-        content: @Composable (Int) -> Unit
+        content: @Composable ApexTrackContext.(Int) -> Unit
     ) {
         if (tracks.none { it != ApexTrack.EMPTY }) {
             emptyFallback()

@@ -16,11 +16,8 @@ import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexTrackContext
 
 @Composable
-fun TrackCard(
-    trackIndex: Int,
-    context: ApexTrackContext,
-) {
-    val apexTrack = context.tracks[trackIndex]
+fun ApexTrackContext.TrackCard(trackIndex: Int, ) {
+    val apexTrack = tracks[trackIndex]
     val player = rememberPlayer()
     val animatedColor by animateColorAsState(
         if (player.nowPlaying == apexTrack)
@@ -33,7 +30,7 @@ fun TrackCard(
         modifier = Modifier
             .padding(end = 12.dp)
             .width(150.dp)
-            .bounceClick { player.play(trackIndex, context) }
+            .bounceClick { player.play(trackIndex, context = this) }
     ) {
         AlbumImageWithInfoButton(
             album = apexTrack.album,

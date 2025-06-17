@@ -16,13 +16,12 @@ import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexTrackContext
 
 @Composable
-inline fun TrackBar(
+inline fun ApexTrackContext.TrackBar(
     trackIndex: Int,
-    context: ApexTrackContext,
     noinline onClick: () -> Unit = {},
     trailingComponents: @Composable () -> Unit = {}
 ) {
-    val apexTrack = context.tracks[trackIndex]
+    val apexTrack = tracks[trackIndex]
     val player = rememberPlayer()
     val animatedColor by animateColorAsState(
         if (player.nowPlaying == apexTrack)
@@ -37,7 +36,7 @@ inline fun TrackBar(
         modifier = Modifier
             .padding(vertical = 8.dp)
             .bounceClick {
-                player.play(trackIndex, context)
+                player.play(trackIndex, context = this)
                 onClick()
             }
     ) {

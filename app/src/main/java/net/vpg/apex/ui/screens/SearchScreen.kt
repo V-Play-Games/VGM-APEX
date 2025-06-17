@@ -90,22 +90,21 @@ object SearchScreen : ApexBottomBarScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (searchResults.tracks.isEmpty() && searchQuery.isNotEmpty()) {
-                Text(
-                    text = "No results found for \"$searchQuery\"",
-                    color = Color.Gray
-                )
-            } else {
-                LazyColumn {
-                    items(searchResults.tracks.size) { trackIndex ->
-                        TrackBar(
-                            trackIndex = trackIndex,
-                            context = searchResults,
-                            onClick = { searchHistory.addTrack(searchResults.tracks[trackIndex], searchResults) }
-                        )
-                    }
+            searchResults.ComposeToList(
+                emptyFallback = {
+                    Text(
+                        text = "No results found for \"$searchQuery\"",
+                        color = Color.Gray
+                    )
+                },
+                lazyComposable = { LazyColumn(content = it) },
+                content = { trackIndex ->
+                    TrackBar(
+                        trackIndex = trackIndex,
+                        onClick = { searchHistory.addTrack(searchResults.tracks[trackIndex], searchResults) }
+                    )
                 }
-            }
+            )
         } else {
             Text(
                 text = "Recent searches",
@@ -123,20 +122,16 @@ object SearchScreen : ApexBottomBarScreen(
                 },
                 lazyComposable = { LazyColumn(content = it) },
                 content = { trackIndex ->
-                    TrackBar(
-                        trackIndex = trackIndex,
-                        context = searchHistory,
-                        trailingComponents = {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Close",
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .bounceClick { searchHistory.removeIndex(trackIndex) },
-                                tint = Color.DarkGray
-                            )
-                        }
-                    )
+                    TrackBar(trackIndex) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            modifier = Modifier
+                                .size(40.dp)
+                                .bounceClick { searchHistory.removeIndex(trackIndex) },
+                            tint = Color.DarkGray
+                        )
+                    }
                 },
             )
         }

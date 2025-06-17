@@ -12,20 +12,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.vpg.apex.core.TrackHistory
+import net.vpg.apex.entities.ApexTrackContext
 
 @Composable
-fun TrackDisplaySection(sectionTitle: String, tracks: TrackHistory) {
+fun ApexTrackContext.TrackDisplaySection() {
     Column {
         Text(
-            text = sectionTitle,
+            text = name,
             modifier = Modifier.padding(start = 12.dp),
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp
         )
         Spacer(modifier = Modifier.height(8.dp))
-        tracks.ComposeToList(
+        ComposeToList(
             limit = 5,
             emptyFallback = {
                 Text(
@@ -43,7 +43,7 @@ fun TrackDisplaySection(sectionTitle: String, tracks: TrackHistory) {
                 }
             },
             content = { trackIndex ->
-                TrackCard(trackIndex, tracks)
+                TrackCard(trackIndex)
             }
         )
     }
