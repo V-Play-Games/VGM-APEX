@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.bounceClick
@@ -37,11 +38,13 @@ object NowPlayingScreen : ApexScreenStatic(
 
         Text(
             text = "Playing from ${player.currentContext.name}",
-            modifier = (if (player.isPlaying) Modifier.customShimmer(durationMillis = 800) else Modifier)
+            modifier = Modifier.customShimmer(condition = player.isPlaying, durationMillis = 800)
                 .align(Alignment.CenterHorizontally)
                 .padding(6.dp)
                 .bounceClick { showBottomSheet = true },
             color = MaterialTheme.colorScheme.onPrimaryContainer,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
 
         AlbumImageWithInfoButton(

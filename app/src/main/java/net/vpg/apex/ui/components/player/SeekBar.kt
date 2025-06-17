@@ -42,10 +42,7 @@ fun SeekBar(bottomBar: Boolean) {
 
     Slider(
         value = progress,
-        modifier = if (player.isBuffering)
-            Modifier.customShimmer(durationMillis = 400)
-        else
-            Modifier,
+        modifier = Modifier.customShimmer(condition = player.isBuffering, durationMillis = 400),
         onValueChange = { newProgress ->
             isDragging = true
             position = (newProgress * duration).toLong()

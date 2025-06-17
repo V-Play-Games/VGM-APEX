@@ -65,10 +65,11 @@ fun Modifier.bounceClick(
 
 @Composable
 fun Modifier.customShimmer(
+    condition: Boolean = true,
     durationMillis: Int = DefaultDurationMillis,
     delayMillis: Int = 0,
     easing: Easing = LinearEasing,
-) = this.shimmer(
+) = this.takeIf { condition }?.shimmer(
     rememberShimmer(
         shimmerBounds = ShimmerBounds.View,
         theme = LocalShimmerTheme.current.copy(
@@ -81,4 +82,4 @@ fun Modifier.customShimmer(
             )
         )
     )
-)
+) ?: this

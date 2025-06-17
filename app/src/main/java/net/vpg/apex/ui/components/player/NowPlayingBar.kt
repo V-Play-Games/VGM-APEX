@@ -21,7 +21,7 @@ fun NowPlayingBar() {
     val player = rememberPlayer()
     if (player.nowPlaying == ApexTrack.EMPTY) return
     Row(
-        modifier = (if (player.isBuffering) Modifier.customShimmer(durationMillis = 800) else Modifier)
+        modifier = Modifier.customShimmer(condition = player.isBuffering, durationMillis = 800)
             .clickable { NowPlayingScreen.navigate() }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
