@@ -1,5 +1,6 @@
 package net.vpg.apex.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -89,6 +90,7 @@ object TrackInfoScreen : ApexScreenDynamic<ApexTrack>(
 
                 Text(
                     text = track.album.name,
+                    modifier = Modifier.clickable { AlbumInfoScreen.navigate(track.album) },
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

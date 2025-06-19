@@ -146,7 +146,7 @@ class ApexPlayer(
             .let { mediaSourceFactory.createMediaSource(it) }
             .let { mediaItem ->
                 listOf(
-                    mediaItem, // Base Track
+                    mediaItem.clip(0, enableInitialDiscontinuity = true), // Base Track
                     mediaItem.clip(0, loopStart), // Pre-loop/Intro
                     mediaItem.clip(loopStart, loopEnd), // Loop Section
                     mediaItem.clip(loopEnd) // Post-loop/Outro
@@ -163,10 +163,11 @@ class ApexPlayer(
     private fun MediaSource.clip(
         startFrame: Long,
         endFrame: Long = Long.MAX_VALUE,
+        enableInitialDiscontinuity: Boolean = false,
     ) = ClippingMediaSource.Builder(this)
         .setStartPositionUs(startFrame)
         .setEndPositionUs(endFrame)
-        .setEnableInitialDiscontinuity(false)
+        .setEnableInitialDiscontinuity(enableInitialDiscontinuity)
         .build()
 
     private fun frameToUs(frame: Int) = (frame.toFloat() / nowPlaying.sampleRate * 1000_000).toLong()

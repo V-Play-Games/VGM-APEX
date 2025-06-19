@@ -110,7 +110,8 @@ object NowPlayingScreen : ApexScreenStatic(
                         }
                     },
                     content = { trackIndex ->
-                        TrackBar(trackIndex)
+                        if (trackIndex >= player.currentIndex)
+                            TrackBar(trackIndex)
                     }
                 )
             }
