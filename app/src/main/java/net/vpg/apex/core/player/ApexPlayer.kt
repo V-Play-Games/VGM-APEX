@@ -207,6 +207,7 @@ class ApexPlayer(
     }
 
     fun updateShuffleOrder() {
+        if (currentIndex == -1) return
         if (shuffleState) {
             if (shuffleOrder?.wrappedContext != originalContextState)
                 shuffleOrder = ShuffleOrderContext(originalContextState)

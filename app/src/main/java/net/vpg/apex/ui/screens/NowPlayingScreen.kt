@@ -5,9 +5,10 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Shuffle
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -84,17 +85,6 @@ object NowPlayingScreen : ApexScreenStatic(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth() // don't remove
         ) {
-            Icon(
-                Icons.Default.Shuffle,
-                contentDescription = "Previous",
-                tint = if (player.isShuffling)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier
-                    .size(30.dp)
-                    .bounceClick { player.toggleShuffling() }
-            )
             PlayerActions(player, Modifier.size(30.dp))
         }
 

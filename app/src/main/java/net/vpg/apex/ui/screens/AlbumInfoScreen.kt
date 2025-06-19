@@ -32,6 +32,7 @@ import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.ui.components.common.AlbumImage
 import net.vpg.apex.ui.components.common.TrackBar
 import net.vpg.apex.ui.components.common.TrackDownloadIcon
+import net.vpg.apex.ui.components.player.ShuffleButton
 
 object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
     route = ApexAlbum::class,
@@ -87,34 +88,44 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
                 }
                 if (album.tracks.isEmpty())
                     return@Row
-                Box(
-                    modifier = Modifier
-                        .padding(1.dp)
-                        .bounceClick {
-                            if (player.currentContext != album)
-                                player.play(0, album)
-                            else
-                                player.togglePlayPause()
-                        }
-                ) {
+
+                Row {
+                    ShuffleButton(player, Modifier.size(54.dp))
                     Box(
                         modifier = Modifier
-                            .size(54.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
+                            .padding(1.dp)
+                            .bounceClick {
+                                if (player.currentContext != album) {
+                                    player.play(
+                                        trackIndex = if (player.isShuffling)
+                                            (0..album.tracks.size).random()
+                                        else
+                                            0,
+                                        context = album
+                                    )
+                                } else
+                                    player.togglePlayPause()
+                            }
                     ) {
-                        Icon(
-                            imageVector = if (player.isPlaying && player.currentContext == album)
-                                Icons.Default.Pause
-                            else
-                                Icons.Default.PlayArrow,
-                            contentDescription = "Play",
-                            tint = Color.White,
-                            modifier = Modifier.size(36.dp),
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(54.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (player.isPlaying && player.currentContext == album)
+                                    Icons.Default.Pause
+                                else
+                                    Icons.Default.PlayArrow,
+                                contentDescription = "Play",
+                                tint = Color.White,
+                                modifier = Modifier.size(36.dp),
+                            )
+                        }
                     }
                 }
             }

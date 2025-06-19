@@ -3,6 +3,7 @@ package net.vpg.apex.ui.components.player
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -16,10 +17,24 @@ import net.vpg.apex.entities.ApexTrack
 
 @Composable
 fun PlayerActions(player: ApexPlayer, modifier: Modifier = Modifier) {
+    ShuffleButton(player, modifier)
     PreviousButton(player, modifier)
     PlayPauseButton(player, modifier)
     NextButton(player, modifier)
     LoopButton(player, modifier)
+}
+
+@Composable
+fun ShuffleButton(player: ApexPlayer, modifier: Modifier = Modifier) {
+    Icon(
+        imageVector = Icons.Rounded.Shuffle,
+        contentDescription = "Shuffle",
+        tint = if (player.isShuffling)
+            MaterialTheme.colorScheme.primary
+        else
+            MaterialTheme.colorScheme.onPrimaryContainer,
+        modifier = modifier.bounceClick { player.toggleShuffling() }
+    )
 }
 
 @Composable
