@@ -30,10 +30,10 @@ class ApexPlayer(
 ), Player.Listener {
     private val exoplayer = wrappedPlayer as ExoPlayer
     private var shuffleOrder: ShuffleOrderContext? = null
-    private var contextState by mutableStateOf(ApexTrackContext.EMPTY)
+    private var originalContextState by mutableStateOf(ApexTrackContext.EMPTY)
     var currentContext
-        set(value) = run { contextState = value }
-        get() = shuffleOrder ?: contextState
+        set(value) = run { originalContextState = value }
+        get() = shuffleOrder ?: originalContextState
 
     private var playingState by mutableStateOf(false)
     private var bufferingState by mutableStateOf(false)
@@ -208,8 +208,8 @@ class ApexPlayer(
 
     fun updateShuffleOrder() {
         if (shuffleState) {
-            if (shuffleOrder == null)
-                shuffleOrder = ShuffleOrderContext(currentContext)
+            if (shuffleOrder?.wrappedContext != originalContextState)
+                shuffleOrder = ShuffleOrderContext(originalContextState)
             currentIndex = shuffleOrder!!.tracks.indexOf(shuffleOrder!!.wrappedContext.tracks[currentIndex])
         } else {
             currentIndex = shuffleOrder!!.wrappedContext.tracks.indexOf(nowPlaying)
