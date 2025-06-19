@@ -11,11 +11,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.bounceClick
+import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.ui.screens.AlbumInfoScreen
 
 @Composable
 fun AlbumBar(apexAlbum: ApexAlbum) {
+    val player = rememberPlayer()
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -29,7 +32,10 @@ fun AlbumBar(apexAlbum: ApexAlbum) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = apexAlbum.name,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                color = if (player.currentContext == apexAlbum)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium,
                 maxLines = 1,

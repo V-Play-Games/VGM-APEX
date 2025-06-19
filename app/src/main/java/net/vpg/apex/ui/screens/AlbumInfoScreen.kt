@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -84,15 +85,21 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                if (album.tracks.isEmpty())
+                    return@Row
                 Box(
-                    modifier = Modifier.padding(1.dp).bounceClick {
-                        if (album.tracks.isNotEmpty()) {
-                            player.play(0, album)
+                    modifier = Modifier
+                        .padding(1.dp)
+                        .bounceClick {
+                            if (player.currentContext != album)
+                                player.play(0, album)
+                            else
+                                player.togglePlayPause()
                         }
-                    }
                 ) {
                     Box(
-                        modifier = Modifier.size(54.dp)
+                        modifier = Modifier
+                            .size(54.dp)
                             .background(
                                 color = MaterialTheme.colorScheme.primary,
                                 shape = CircleShape
@@ -100,7 +107,10 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.PlayArrow,
+                            imageVector = if (player.isPlaying && player.currentContext == album)
+                                Icons.Default.Pause
+                            else
+                                Icons.Default.PlayArrow,
                             contentDescription = "Play",
                             tint = Color.White,
                             modifier = Modifier.size(36.dp),
