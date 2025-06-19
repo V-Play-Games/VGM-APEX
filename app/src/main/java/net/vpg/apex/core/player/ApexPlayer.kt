@@ -10,6 +10,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ClippingMediaSource
 import androidx.media3.exoplayer.source.MediaSource
+import net.vpg.apex.core.ApexTrackContextDynamic
 import net.vpg.apex.core.PlayHistory
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.entities.ApexTrackContext
@@ -17,7 +18,7 @@ import kotlin.math.abs
 
 @OptIn(UnstableApi::class)
 class ApexPlayer(
-    val context: Context,
+    context: Context,
     val playHistory: PlayHistory,
     val mediaSourceFactory: MediaSource.Factory,
 ) : ForwardingPlayer(
@@ -28,14 +29,18 @@ class ApexPlayer(
         .build()
 ), Player.Listener {
     private val exoplayer = wrappedPlayer as ExoPlayer
-    var currentContext = ApexTrackContext.EMPTY
-        private set
+    private var shuffleOrder: ShuffleOrderContext? = null
+    private var contextState by mutableStateOf(ApexTrackContext.EMPTY)
+    var currentContext
+        set(value) = run { contextState = value }
+        get() = shuffleOrder ?: contextState
 
     private var playingState by mutableStateOf(false)
     private var bufferingState by mutableStateOf(false)
     private var loopingState by mutableStateOf(true)
     private var shuffleState by mutableStateOf(false)
-    private var currentIndex by mutableIntStateOf(-1)
+    var currentIndex by mutableIntStateOf(-1)
+        private set
     private var durationState by mutableLongStateOf(0)
 
     override fun isPlaying() = playingState
@@ -120,6 +125,9 @@ class ApexPlayer(
     fun play(trackIndex: Int, context: ApexTrackContext, updateHistory: Boolean = true) {
         currentIndex = trackIndex
         currentContext = context
+        if (shuffleState) {
+            updateShuffleOrder()
+        }
 
         if (updateHistory) {
             playHistory.addTrack(nowPlaying, currentContext)
@@ -195,6 +203,18 @@ class ApexPlayer(
 
     fun toggleShuffling() {
         shuffleState = !shuffleState
+        updateShuffleOrder()
+    }
+
+    fun updateShuffleOrder() {
+        if (shuffleState) {
+            if (shuffleOrder == null)
+                shuffleOrder = ShuffleOrderContext(currentContext)
+            currentIndex = shuffleOrder!!.tracks.indexOf(shuffleOrder!!.wrappedContext.tracks[currentIndex])
+        } else {
+            currentIndex = shuffleOrder!!.wrappedContext.tracks.indexOf(nowPlaying)
+            shuffleOrder = null
+        }
     }
 
     fun stepUpLoop() {
@@ -221,5 +241,14 @@ class ApexPlayer(
                 seekTo(3, (position - loopEnd) / 1000)
             }
         }
+    }
+
+    private inner class ShuffleOrderContext(val wrappedContext: ApexTrackContext) :
+        ApexTrackContextDynamic(
+            name = wrappedContext.name,
+            tracks = wrappedContext.tracks.shuffled()
+        ) {
+        override operator fun equals(other: Any?) = wrappedContext == other
+        override fun hashCode() = wrappedContext.hashCode()
     }
 }

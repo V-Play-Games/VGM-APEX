@@ -20,8 +20,10 @@ fun ApexTrackContext.TrackCard(trackIndex: Int) {
     val apexTrack = tracks[trackIndex]
     val player = rememberPlayer()
     val animatedColor by animateColorAsState(
-        if (player.nowPlaying == apexTrack)
+        if (player.currentContext == this && player.currentIndex == trackIndex)
             MaterialTheme.colorScheme.primary
+        else if (player.nowPlaying == apexTrack)
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
         else
             MaterialTheme.colorScheme.onPrimaryContainer
     )
