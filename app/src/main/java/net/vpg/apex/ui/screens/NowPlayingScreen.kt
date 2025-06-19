@@ -38,7 +38,7 @@ object NowPlayingScreen : ApexScreenStatic(
         var showBottomSheet by remember { mutableStateOf(false) }
 
         Text(
-            text = "Playing from ${player.currentContext.name}",
+            text = "Playing from ${player.nowPlayingContext.name}",
             modifier = Modifier.customShimmer(condition = player.isPlaying, durationMillis = 800)
                 .align(Alignment.CenterHorizontally)
                 .padding(6.dp)
@@ -96,7 +96,7 @@ object NowPlayingScreen : ApexScreenStatic(
                     modifier = Modifier.padding(16.dp)
                 )
                 // Add your queue list here
-                player.currentContext.ComposeToList(
+                player.queueContext.ComposeToList(
                     emptyFallback = {
                         Text(
                             text = "Nothing in the queue",
@@ -110,7 +110,7 @@ object NowPlayingScreen : ApexScreenStatic(
                         }
                     },
                     content = { trackIndex ->
-                        if (trackIndex >= player.currentIndex)
+                        if (trackIndex >= player.nowPlayingIndex)
                             TrackBar(trackIndex)
                     }
                 )

@@ -95,7 +95,7 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
                         modifier = Modifier
                             .padding(1.dp)
                             .bounceClick {
-                                if (player.currentContext != album) {
+                                if (player.nowPlayingContext != album) {
                                     player.play(
                                         trackIndex = if (player.isShuffling)
                                             (0..album.tracks.size).random()
@@ -117,7 +117,7 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = if (player.isPlaying && player.currentContext == album)
+                                imageVector = if (player.isPlaying && player.nowPlayingContext == album)
                                     Icons.Default.Pause
                                 else
                                     Icons.Default.PlayArrow,

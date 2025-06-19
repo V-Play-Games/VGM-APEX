@@ -20,7 +20,7 @@ import net.vpg.apex.ui.screens.AlbumInfoScreen
 @Composable
 fun AlbumBar(apexAlbum: ApexAlbum) {
     val player = rememberPlayer()
-    val color by animateColorAsState(if (player.currentContext == apexAlbum)
+    val color by animateColorAsState(if (player.nowPlayingContext == apexAlbum)
         MaterialTheme.colorScheme.primary
     else if (player.nowPlaying.album == apexAlbum)
         MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)

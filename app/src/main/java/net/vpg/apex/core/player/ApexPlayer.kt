@@ -4,6 +4,8 @@ import android.content.Context
 import android.os.Handler
 import androidx.annotation.OptIn
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import androidx.media3.common.*
 import androidx.media3.common.util.UnstableApi
@@ -30,17 +32,13 @@ class ApexPlayer(
 ), Player.Listener {
     private val exoplayer = wrappedPlayer as ExoPlayer
     private var shuffleOrder: ShuffleOrderContext? = null
-    private var originalContextState by mutableStateOf(ApexTrackContext.EMPTY)
-    var currentContext
-        set(value) = run { originalContextState = value }
-        get() = shuffleOrder ?: originalContextState
+    private var currentContext by mutableStateOf(ApexTrackContext.EMPTY)
 
     private var playingState by mutableStateOf(false)
     private var bufferingState by mutableStateOf(false)
     private var loopingState by mutableStateOf(true)
     private var shuffleState by mutableStateOf(false)
-    var currentIndex by mutableIntStateOf(-1)
-        private set
+    private var currentIndex by mutableIntStateOf(-1)
     private var durationState by mutableLongStateOf(0)
 
     override fun isPlaying() = playingState
@@ -49,6 +47,9 @@ class ApexPlayer(
     val isLooping get() = loopingState
     val isShuffling get() = shuffleState
     override fun getDuration() = durationState
+    val nowPlayingContext get() = shuffleOrder?.wrappedContext ?: currentContext
+    val queueContext get() = currentContext
+    val nowPlayingIndex get() = currentIndex
 
     private var isPrepared = false
     private var isEnded = false
@@ -123,14 +124,24 @@ class ApexPlayer(
 
     @OptIn(UnstableApi::class)
     fun play(trackIndex: Int, context: ApexTrackContext, updateHistory: Boolean = true) {
+        println("Current State: trackIndex=$currentIndex, context=$currentContext")
+        println("New State: trackIndex=$trackIndex, context=$context")
         currentIndex = trackIndex
-        currentContext = context
-        if (shuffleState) {
-            updateShuffleOrder()
+        println("currentIndex->$currentIndex")
+        if (context != currentContext) {
+            if (!shuffleState) {
+                currentContext = context
+            } else if (context == shuffleOrder!!.wrappedContext) {
+                currentIndex = shuffleOrder!!.shuffledToOgMapping[currentIndex]!!
+            } else {
+                currentContext = context
+                updateShuffleOrder()
+            }
+            println("currentContext->$currentContext")
         }
 
         if (updateHistory) {
-            playHistory.addTrack(nowPlaying, currentContext)
+            playHistory.addTrack(nowPlaying, nowPlayingContext)
         }
 
         MediaItem.Builder()
@@ -210,11 +221,18 @@ class ApexPlayer(
     fun updateShuffleOrder() {
         if (currentIndex == -1) return
         if (shuffleState) {
-            if (shuffleOrder?.wrappedContext != originalContextState)
-                shuffleOrder = ShuffleOrderContext(originalContextState)
-            currentIndex = shuffleOrder!!.tracks.indexOf(shuffleOrder!!.wrappedContext.tracks[currentIndex])
+            println("nowPlaying: ${nowPlaying.title}")
+            shuffleOrder = ShuffleOrderContext(currentContext)
+            println("Shuffle Order Updated")
+            currentIndex = shuffleOrder!!.shuffledToOgMapping[currentIndex]!!
+            currentContext = shuffleOrder!!
+            println(shuffleOrder!!.ogToShuffledMapping)
+            println("currentIndex translated to shuffled index: $currentIndex")
+            println("nowPlaying: ${nowPlaying.title}")
         } else {
-            currentIndex = shuffleOrder!!.wrappedContext.tracks.indexOf(nowPlaying)
+            println("Removing Shuffle Order")
+            currentIndex = shuffleOrder!!.ogToShuffledMapping[currentIndex]!!
+            currentContext = shuffleOrder!!.wrappedContext
             shuffleOrder = null
         }
     }
@@ -245,12 +263,19 @@ class ApexPlayer(
         }
     }
 
-    private inner class ShuffleOrderContext(val wrappedContext: ApexTrackContext) :
+    private inner class ShuffleOrderContext(
+        val wrappedContext: ApexTrackContext,
+        val ogToShuffledMapping: Map<Int, Int> = wrappedContext.tracks
+            .mapIndexed { index, track -> index }
+            .shuffled()
+            .mapIndexed { shuffledIndex, originalIndex -> originalIndex to shuffledIndex }
+            .toMap()
+    ) :
         ApexTrackContextDynamic(
             name = wrappedContext.name,
-            tracks = wrappedContext.tracks.shuffled()
+            tracks = wrappedContext.tracks
+                .mapIndexed { index, track -> wrappedContext.tracks[ogToShuffledMapping[index]!!] }
         ) {
-        override operator fun equals(other: Any?) = wrappedContext == other
-        override fun hashCode() = wrappedContext.hashCode()
+        val shuffledToOgMapping = ogToShuffledMapping.entries.associate { (k, v) -> v to k }
     }
 }
