@@ -4,8 +4,6 @@ import android.content.Context
 import android.os.Handler
 import androidx.annotation.OptIn
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 import androidx.media3.common.*
 import androidx.media3.common.util.UnstableApi
@@ -32,7 +30,10 @@ class ApexPlayer(
 ), Player.Listener {
     private val exoplayer = wrappedPlayer as ExoPlayer
     private var shuffleOrder: ShuffleOrderContext? = null
-    private var currentContext by mutableStateOf(ApexTrackContext.EMPTY)
+    private var currentContext by mutableStateOf(
+        value = ApexTrackContext.EMPTY,
+        policy = referentialEqualityPolicy()
+    )
 
     private var playingState by mutableStateOf(false)
     private var bufferingState by mutableStateOf(false)
@@ -47,8 +48,7 @@ class ApexPlayer(
     val isLooping get() = loopingState
     val isShuffling get() = shuffleState
     override fun getDuration() = durationState
-    val nowPlayingContext get() = shuffleOrder?.wrappedContext ?: currentContext
-    val queueContext get() = currentContext
+    val nowPlayingContext get() = currentContext
     val nowPlayingIndex get() = currentIndex
 
     private var isPrepared = false
@@ -124,11 +124,8 @@ class ApexPlayer(
 
     @OptIn(UnstableApi::class)
     fun play(trackIndex: Int, context: ApexTrackContext, updateHistory: Boolean = true) {
-        println("Current State: trackIndex=$currentIndex, context=$currentContext")
-        println("New State: trackIndex=$trackIndex, context=$context")
         currentIndex = trackIndex
-        println("currentIndex->$currentIndex")
-        if (context != currentContext) {
+        if (context !is ShuffleOrderContext) {
             if (!shuffleState) {
                 currentContext = context
             } else if (context == shuffleOrder!!.wrappedContext) {
@@ -137,11 +134,10 @@ class ApexPlayer(
                 currentContext = context
                 updateShuffleOrder()
             }
-            println("currentContext->$currentContext")
         }
 
         if (updateHistory) {
-            playHistory.addTrack(nowPlaying, nowPlayingContext)
+            playHistory.addTrack(nowPlaying, currentContext)
         }
 
         MediaItem.Builder()
@@ -221,16 +217,10 @@ class ApexPlayer(
     fun updateShuffleOrder() {
         if (currentIndex == -1) return
         if (shuffleState) {
-            println("nowPlaying: ${nowPlaying.title}")
             shuffleOrder = ShuffleOrderContext(currentContext)
-            println("Shuffle Order Updated")
             currentIndex = shuffleOrder!!.shuffledToOgMapping[currentIndex]!!
             currentContext = shuffleOrder!!
-            println(shuffleOrder!!.ogToShuffledMapping)
-            println("currentIndex translated to shuffled index: $currentIndex")
-            println("nowPlaying: ${nowPlaying.title}")
         } else {
-            println("Removing Shuffle Order")
             currentIndex = shuffleOrder!!.ogToShuffledMapping[currentIndex]!!
             currentContext = shuffleOrder!!.wrappedContext
             shuffleOrder = null
@@ -268,7 +258,7 @@ class ApexPlayer(
         val ogToShuffledMapping: Map<Int, Int> = wrappedContext.tracks
             .mapIndexed { index, track -> index }
             .shuffled()
-            .mapIndexed { shuffledIndex, originalIndex -> originalIndex to shuffledIndex }
+            .mapIndexed { originalIndex, shuffledIndex -> originalIndex to shuffledIndex }
             .toMap()
     ) :
         ApexTrackContextDynamic(
@@ -276,6 +266,14 @@ class ApexPlayer(
             tracks = wrappedContext.tracks
                 .mapIndexed { index, track -> wrappedContext.tracks[ogToShuffledMapping[index]!!] }
         ) {
+        override operator fun equals(other: Any?): Boolean {
+            return wrappedContext == other
+        }
+
         val shuffledToOgMapping = ogToShuffledMapping.entries.associate { (k, v) -> v to k }
+
+        override fun hashCode(): Int {
+            return wrappedContext.hashCode()
+        }
     }
 }

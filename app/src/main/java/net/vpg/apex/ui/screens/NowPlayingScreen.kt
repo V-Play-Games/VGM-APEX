@@ -96,7 +96,7 @@ object NowPlayingScreen : ApexScreenStatic(
                     modifier = Modifier.padding(16.dp)
                 )
                 // Add your queue list here
-                player.queueContext.ComposeToList(
+                player.nowPlayingContext.ComposeToList(
                     emptyFallback = {
                         Text(
                             text = "Nothing in the queue",
