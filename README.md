@@ -1,6 +1,6 @@
 <div align="center" style="width: 150px; margin: 0 auto;">
-  <h1>VGM APEX - Video Game Music Audio Player EX</h1>
-  <img src="assets/ic_pika_chill.png" alt="VGM APEX Logo">
+  <img src="assets/banner.png" alt="VGM APEX Logo">
+  <h1>Video Game Music Audio Player EX</h1>
 </div>
 
 ## 🎮 A Spotify-like Experience for Video Game Music Enthusiasts
