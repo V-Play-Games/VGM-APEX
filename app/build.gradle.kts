@@ -9,13 +9,12 @@ plugins {
 
 android {
     namespace = "net.vpg.apex"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "net.vpg.apex"
         minSdk = 29
-        //noinspection OldTargetApi
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 5
         versionName = "0.1.3"
     }
