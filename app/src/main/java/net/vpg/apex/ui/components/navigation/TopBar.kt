@@ -15,6 +15,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.R
+import net.vpg.apex.core.bounceClick
+import net.vpg.apex.ui.screens.SettingsScreen
 
 @Composable
 fun TopBar() {
@@ -42,6 +44,7 @@ fun TopBar() {
         Row {
             Icon(
                 Icons.Default.Settings,
+                modifier = Modifier.bounceClick(onClick = { SettingsScreen.navigate() }),
                 contentDescription = "Settings",
                 tint = MaterialTheme.colorScheme.onPrimaryContainer
             )

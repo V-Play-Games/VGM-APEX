@@ -29,9 +29,6 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1" // Use the compatible version with Kotlin 2.0
-    }
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -45,6 +42,9 @@ dependencies {
     // Jetpack Compose
     implementation(libs.activity.compose)
     implementation(libs.compose.ui)
+
+    // Preferences
+    implementation(libs.datastore.preferences)
 
     // Navigation
     implementation(libs.navigation.compose)
