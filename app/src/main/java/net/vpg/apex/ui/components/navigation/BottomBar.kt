@@ -30,14 +30,7 @@ fun BottomBar() {
                 icon = { Icon(screen.icon, contentDescription = screen.title) },
                 label = { Text(screen.title) },
                 selected = currentRoute == screen.route,
-                onClick = {
-                    if (currentRoute != screen.route) {
-                        // Simplify navigation to reduce potential issues
-                        navController.navigate(screen.route) {
-                            launchSingleTop = true
-                        }
-                    }
-                },
+                onClick = { screen.navigate() },
                 colors = colors
             )
         }
