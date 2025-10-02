@@ -17,7 +17,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import net.vpg.apex.core.*
-import net.vpg.apex.core.ApexSettings.PreferenceKeys
 import net.vpg.apex.core.di.rememberSettings
 
 object SettingsScreen : ApexScreenStatic(
@@ -41,7 +40,7 @@ fun SettingsContent() {
             title = "Theme",
             subtitle = "Choose your app appearance",
             icon = Icons.Default.Brightness6,
-            currentChoice = settings.theme,
+            currentChoice = settings.theme.collectAsState(ThemeMode.AUTO).value,
             choices = ThemeMode.entries,
             onChoiceSelected = { settings.updateTheme(it) }
         )
@@ -50,7 +49,7 @@ fun SettingsContent() {
             title = "Accent Color",
             subtitle = "Customize app color scheme",
             icon = Icons.Default.Palette,
-            currentChoice = settings.accentColor,
+            currentChoice = settings.accentColor.collectAsState(AccentColor.GREEN).value,
             choices = AccentColor.entries,
             onChoiceSelected = { settings.updateAccentColor(it) }
         )
@@ -59,7 +58,7 @@ fun SettingsContent() {
             title = "Animation Speed",
             subtitle = "Control shimmer and transition speeds",
             icon = Icons.Default.Speed,
-            currentSpeed = settings.animationSpeed,
+            currentSpeed = settings.animationSpeed.collectAsState(1.0f).value,
             valueRange = 0.5f..2.0f,
             steps = 2,
             onSpeedChange = { settings.updateAnimationSpeed(it) }
@@ -69,7 +68,7 @@ fun SettingsContent() {
             title = "Marquee Speed",
             subtitle = "Text scrolling speed for long titles",
             icon = Icons.Default.TextFields,
-            currentSpeed = settings.marqueeSpeed,
+            currentSpeed = settings.marqueeSpeed.collectAsState(1.0f).value,
             valueRange = 0.5f..3.0f,
             steps = 4,
             onSpeedChange = { settings.updateMarqueeSpeed(it) }
@@ -79,7 +78,7 @@ fun SettingsContent() {
             title = "Grid Size",
             subtitle = "Album and track grid density",
             icon = Icons.Default.GridView,
-            currentChoice = settings.gridSize,
+            currentChoice = settings.gridSize.collectAsState(GridSize.MEDIUM).value,
             choices = GridSize.entries,
             onChoiceSelected = { settings.updateGridSize(it) }
         )
@@ -88,7 +87,7 @@ fun SettingsContent() {
             title = "History Retention",
             subtitle = "How long to keep search and play history",
             icon = Icons.Default.History,
-            currentChoice = settings.historyRetention,
+            currentChoice = settings.historyRetention.collectAsState(HistoryRetention.THIRTY_DAYS).value,
             choices = HistoryRetention.entries,
             onChoiceSelected = { settings.updateHistoryRetention(it) }
         )

@@ -1,16 +1,13 @@
 package net.vpg.apex.core
 
 import android.content.Context
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "apex_settings")
@@ -18,49 +15,38 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "ap
 class ApexSettings(context: Context) {
     private val dataStore = context.dataStore
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    var theme: ThemeMode by mutableStateOf(ThemeMode.AUTO)
-        private set
-    var accentColor: AccentColor by mutableStateOf(AccentColor.GREEN)
-        private set
-    var animationSpeed: Float by mutableFloatStateOf(1.0f)
-        private set
-    var marqueeSpeed: Float by mutableFloatStateOf(1.0f)
-        private set
-    var gridSize: GridSize by mutableStateOf(GridSize.MEDIUM)
-        private set
-    var historyRetention: HistoryRetention by mutableStateOf(HistoryRetention.THIRTY_DAYS)
-        private set
-
-    init {
-        scope.launch {
-            dataStore.data.collect { preferences ->
-                theme = try {
-                    ThemeMode.valueOf(preferences[PreferenceKeys.THEME]!!)
-                } catch (_: Exception) {
-                    ThemeMode.AUTO
-                }
-
-                accentColor = try {
-                    AccentColor.valueOf(preferences[PreferenceKeys.ACCENT_COLOR]!!)
-                } catch (_: Exception) {
-                    AccentColor.GREEN
-                }
-
-                animationSpeed = preferences[PreferenceKeys.ANIMATION_SPEED] ?: 1.0f
-                marqueeSpeed = preferences[PreferenceKeys.MARQUEE_SPEED] ?: 1.0f
-
-                gridSize = try {
-                    GridSize.valueOf(preferences[PreferenceKeys.GRID_SIZE]!!)
-                } catch (_: Exception) {
-                    GridSize.MEDIUM
-                }
-
-                historyRetention = try {
-                    HistoryRetention.valueOf(preferences[PreferenceKeys.HISTORY_RETENTION]!!)
-                } catch (_: Exception) {
-                    HistoryRetention.THIRTY_DAYS
-                }
-            }
+    val theme = dataStore.data.map { preferences ->
+        try {
+            ThemeMode.valueOf(preferences[PreferenceKeys.THEME]!!)
+        } catch (_: Exception) {
+            ThemeMode.AUTO
+        }
+    }
+    val accentColor = dataStore.data.map { preferences ->
+        try {
+            AccentColor.valueOf(preferences[PreferenceKeys.ACCENT_COLOR]!!)
+        } catch (_: Exception) {
+            AccentColor.GREEN
+        }
+    }
+    val animationSpeed = dataStore.data.map { preferences ->
+        preferences[PreferenceKeys.ANIMATION_SPEED] ?: 1.0f
+    }
+    val marqueeSpeed = dataStore.data.map { preferences ->
+        preferences[PreferenceKeys.MARQUEE_SPEED] ?: 1.0f
+    }
+    val gridSize = dataStore.data.map { preferences ->
+        try {
+            GridSize.valueOf(preferences[PreferenceKeys.GRID_SIZE]!!)
+        } catch (_: Exception) {
+            GridSize.MEDIUM
+        }
+    }
+    val historyRetention = dataStore.data.map { preferences ->
+        try {
+            HistoryRetention.valueOf(preferences[PreferenceKeys.HISTORY_RETENTION]!!)
+        } catch (_: Exception) {
+            HistoryRetention.THIRTY_DAYS
         }
     }
 
@@ -71,7 +57,6 @@ class ApexSettings(context: Context) {
         val MARQUEE_SPEED = floatPreferencesKey("marquee_speed")
         val GRID_SIZE = stringPreferencesKey("grid_size")
         val HISTORY_RETENTION = stringPreferencesKey("history_retention")
-        val UPDATE_KEY = booleanPreferencesKey("update_key")
     }
 
     fun updateTheme(theme: ThemeMode) = updatePreference(PreferenceKeys.THEME, theme.name)
