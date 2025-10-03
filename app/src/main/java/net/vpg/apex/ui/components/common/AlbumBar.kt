@@ -13,6 +13,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.bounceClick
+import net.vpg.apex.core.rememberAnimationProvider
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.ui.screens.AlbumInfoScreen
@@ -20,12 +21,17 @@ import net.vpg.apex.ui.screens.AlbumInfoScreen
 @Composable
 fun AlbumBar(apexAlbum: ApexAlbum) {
     val player = rememberPlayer()
-    val color by animateColorAsState(if (player.nowPlayingContext == apexAlbum)
-        MaterialTheme.colorScheme.primary
-    else if (player.nowPlaying.album == apexAlbum)
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-    else
-        MaterialTheme.colorScheme.onPrimaryContainer)
+    val animationProvider = rememberAnimationProvider()
+
+    val color by animateColorAsState(
+        targetValue = if (player.nowPlayingContext == apexAlbum)
+            MaterialTheme.colorScheme.primary
+        else if (player.nowPlaying.album == apexAlbum)
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+        else
+            MaterialTheme.colorScheme.onPrimaryContainer,
+        animationSpec = animationProvider.mediumSpec()
+    )
 
     Row(
         verticalAlignment = Alignment.CenterVertically,

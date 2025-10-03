@@ -1,14 +1,25 @@
 package net.vpg.apex.core
 
 import android.content.Context
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.*
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+
+// Generic extension function for collecting enum settings with first value as default
+@Composable
+inline fun <reified T> Flow<T>.asStateValue() where T : Enum<T>, T : ApexSetting =
+    collectAsState(initial = enumValues<T>().first()).value
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "apex_settings")
 
@@ -19,7 +30,7 @@ class ApexSettings(context: Context) {
         try {
             ThemeMode.valueOf(preferences[PreferenceKeys.THEME]!!)
         } catch (_: Exception) {
-            ThemeMode.AUTO
+            ThemeMode.SYSTEM
         }
     }
     val accentColor = dataStore.data.map { preferences ->
@@ -81,27 +92,36 @@ class ApexSettings(context: Context) {
     }
 }
 
-enum class ThemeMode(val displayName: String) {
-    AUTO("Auto"),
+interface ApexSetting {
+    val displayName: String
+}
+
+enum class ThemeMode(override val displayName: String) : ApexSetting {
+    SYSTEM("System"),
     LIGHT("Light"),
     DARK("Dark")
 }
 
-enum class AccentColor(val displayName: String) {
-    GREEN("Green"),
-    BLUE("Blue"),
-    PURPLE("Purple"),
-    ORANGE("Orange"),
-    RED("Red")
+enum class AccentColor(
+    override val displayName: String,
+    val primary: Long,
+    val light: Long,
+    val dark: Long
+) : ApexSetting {
+    GREEN("Green", 0xFF1DB954, 0xFF1ED760, 0xFF1AA34A),
+    BLUE("Blue", 0xFF1976D2, 0xFF42A5F5, 0xFF0D47A1),
+    PURPLE("Purple", 0xFF7B1FA2, 0xFFAB47BC, 0xFF4A148C),
+    ORANGE("Orange", 0xFFFF9800, 0xFFFFB74D, 0xFFE65100),
+    RED("Red", 0xFFD32F2F, 0xFFEF5350, 0xFFB71C1C)
 }
 
-enum class GridSize(val displayName: String) {
+enum class GridSize(override val displayName: String) : ApexSetting {
     COMPACT("Compact"),
     MEDIUM("Medium"),
     LARGE("Large")
 }
 
-enum class HistoryRetention(val displayName: String) {
+enum class HistoryRetention(override val displayName: String) : ApexSetting {
     SEVEN_DAYS("7 days"),
     THIRTY_DAYS("30 days"),
     NINETY_DAYS("90 days"),
@@ -109,7 +129,7 @@ enum class HistoryRetention(val displayName: String) {
     FOREVER("Forever")
 }
 
-enum class NowPlayingStyle(val displayName: String) {
+enum class NowPlayingStyle(override val displayName: String) : ApexSetting {
     COMPACT("Compact"),
     EXPANDED("Expanded")
 }

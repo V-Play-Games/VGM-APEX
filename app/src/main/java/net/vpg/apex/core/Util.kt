@@ -42,8 +42,16 @@ fun Modifier.bounceClick(
     onClick: () -> Unit
 ) = composed {
     var isPressed by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(if (isPressed) scaleModifier else 1f)
-    val alpha by animateFloatAsState(if (isPressed) alphaModifier else 1f)
+    val animationProvider = rememberAnimationProvider()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) scaleModifier else 1f,
+        animationSpec = animationProvider.fastSpec()
+    )
+    val alpha by animateFloatAsState(
+        targetValue = if (isPressed) alphaModifier else 1f,
+        animationSpec = animationProvider.fastSpec()
+    )
 
     this
         .scale(scale)
@@ -77,7 +85,7 @@ fun Modifier.customShimmer(
         theme = LocalShimmerTheme.current.copy(
             animationSpec = infiniteRepeatable(
                 animation = shimmerSpec(
-                    durationMillis = durationMillis,
+                    durationMillis = (durationMillis / rememberAnimationProvider().speedMultiplier).toInt(),
                     delayMillis = delayMillis,
                     easing = easing
                 )

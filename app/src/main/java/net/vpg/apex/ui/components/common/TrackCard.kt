@@ -12,6 +12,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.core.bounceClick
+import net.vpg.apex.core.rememberAnimationProvider
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexTrackContext
 
@@ -19,14 +20,17 @@ import net.vpg.apex.entities.ApexTrackContext
 fun ApexTrackContext.TrackCard(trackIndex: Int) {
     val apexTrack = tracks[trackIndex]
     val player = rememberPlayer()
+    val animationProvider = rememberAnimationProvider()
+
     val animatedColor by animateColorAsState(
-        if (player.nowPlaying == apexTrack) {
+        targetValue = if (player.nowPlaying == apexTrack) {
             if (player.nowPlayingContext == this)
                 MaterialTheme.colorScheme.primary
             else // probably a duplicate track in the same context
                 MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
         } else
-            MaterialTheme.colorScheme.onPrimaryContainer
+            MaterialTheme.colorScheme.onPrimaryContainer,
+        animationSpec = animationProvider.mediumSpec()
     )
 
     Column(

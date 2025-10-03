@@ -40,7 +40,7 @@ fun SettingsContent() {
             title = "Theme",
             subtitle = "Choose your app appearance",
             icon = Icons.Default.Brightness6,
-            currentChoice = settings.theme.collectAsState(ThemeMode.AUTO).value,
+            currentChoice = settings.theme.asStateValue(),
             choices = ThemeMode.entries,
             onChoiceSelected = { settings.updateTheme(it) }
         )
@@ -49,7 +49,7 @@ fun SettingsContent() {
             title = "Accent Color",
             subtitle = "Customize app color scheme",
             icon = Icons.Default.Palette,
-            currentChoice = settings.accentColor.collectAsState(AccentColor.GREEN).value,
+            currentChoice = settings.accentColor.asStateValue(),
             choices = AccentColor.entries,
             onChoiceSelected = { settings.updateAccentColor(it) }
         )
@@ -78,7 +78,7 @@ fun SettingsContent() {
             title = "Grid Size",
             subtitle = "Album and track grid density",
             icon = Icons.Default.GridView,
-            currentChoice = settings.gridSize.collectAsState(GridSize.MEDIUM).value,
+            currentChoice = settings.gridSize.asStateValue(),
             choices = GridSize.entries,
             onChoiceSelected = { settings.updateGridSize(it) }
         )
@@ -87,7 +87,7 @@ fun SettingsContent() {
             title = "History Retention",
             subtitle = "How long to keep search and play history",
             icon = Icons.Default.History,
-            currentChoice = settings.historyRetention.collectAsState(HistoryRetention.THIRTY_DAYS).value,
+            currentChoice = settings.historyRetention.asStateValue(),
             choices = HistoryRetention.entries,
             onChoiceSelected = { settings.updateHistoryRetention(it) }
         )
@@ -96,20 +96,19 @@ fun SettingsContent() {
 
 // Helper Composable Functions
 @Composable
-private fun <T : Enum<T>> ChoiceSettingItem(
+private fun <T> ChoiceSettingItem(
     title: String,
     subtitle: String,
     icon: ImageVector,
     currentChoice: T,
     choices: List<T>,
     onChoiceSelected: (T) -> Unit
-) {
+) where T : ApexSetting, T : Enum<T> {
     SettingItem(
         title = title,
         subtitle = subtitle,
         icon = icon
     ) {
-        println("$title: $currentChoice")
         Column(modifier = Modifier.selectableGroup()) {
             choices.forEach { choice ->
                 Row(
@@ -128,14 +127,7 @@ private fun <T : Enum<T>> ChoiceSettingItem(
                         onClick = null
                     )
                     Text(
-                        text = when (choice) {
-                            is ThemeMode -> choice.displayName
-                            is AccentColor -> choice.displayName
-                            is GridSize -> choice.displayName
-                            is HistoryRetention -> choice.displayName
-                            is NowPlayingStyle -> choice.displayName
-                            else -> choice.name
-                        },
+                        text = choice.displayName,
                         modifier = Modifier.padding(start = 8.dp)
                     )
                 }
