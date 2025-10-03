@@ -82,15 +82,6 @@ fun SettingsContent() {
             choices = GridSize.entries,
             onChoiceSelected = { settings.updateGridSize(it) }
         )
-
-        ChoiceSettingItem(
-            title = "History Retention",
-            subtitle = "How long to keep search and play history",
-            icon = Icons.Default.History,
-            currentChoice = settings.historyRetention.asStateValue(),
-            choices = HistoryRetention.entries,
-            onChoiceSelected = { settings.updateHistoryRetention(it) }
-        )
     }
 }
 

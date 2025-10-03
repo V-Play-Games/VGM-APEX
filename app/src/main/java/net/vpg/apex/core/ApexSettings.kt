@@ -16,7 +16,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-// Generic extension function for collecting enum settings with first value as default
 @Composable
 inline fun <reified T> Flow<T>.asStateValue() where T : Enum<T>, T : ApexSetting =
     collectAsState(initial = enumValues<T>().first()).value
@@ -53,13 +52,6 @@ class ApexSettings(context: Context) {
             GridSize.MEDIUM
         }
     }
-    val historyRetention = dataStore.data.map { preferences ->
-        try {
-            HistoryRetention.valueOf(preferences[PreferenceKeys.HISTORY_RETENTION]!!)
-        } catch (_: Exception) {
-            HistoryRetention.THIRTY_DAYS
-        }
-    }
 
     object PreferenceKeys {
         val THEME = stringPreferencesKey("theme")
@@ -67,7 +59,6 @@ class ApexSettings(context: Context) {
         val ANIMATION_SPEED = floatPreferencesKey("animation_speed")
         val MARQUEE_SPEED = floatPreferencesKey("marquee_speed")
         val GRID_SIZE = stringPreferencesKey("grid_size")
-        val HISTORY_RETENTION = stringPreferencesKey("history_retention")
     }
 
     fun updateTheme(theme: ThemeMode) = updatePreference(PreferenceKeys.THEME, theme.name)
@@ -79,9 +70,6 @@ class ApexSettings(context: Context) {
     fun updateMarqueeSpeed(speed: Float) = updatePreference(PreferenceKeys.MARQUEE_SPEED, speed)
 
     fun updateGridSize(size: GridSize) = updatePreference(PreferenceKeys.GRID_SIZE, size.name)
-
-    fun updateHistoryRetention(retention: HistoryRetention) =
-        updatePreference(PreferenceKeys.HISTORY_RETENTION, retention.name)
 
     fun <T> updatePreference(key: Preferences.Key<T>, value: T) {
         scope.launch {
@@ -119,14 +107,6 @@ enum class GridSize(override val displayName: String) : ApexSetting {
     COMPACT("Compact"),
     MEDIUM("Medium"),
     LARGE("Large")
-}
-
-enum class HistoryRetention(override val displayName: String) : ApexSetting {
-    SEVEN_DAYS("7 days"),
-    THIRTY_DAYS("30 days"),
-    NINETY_DAYS("90 days"),
-    ONE_YEAR("1 year"),
-    FOREVER("Forever")
 }
 
 enum class NowPlayingStyle(override val displayName: String) : ApexSetting {
