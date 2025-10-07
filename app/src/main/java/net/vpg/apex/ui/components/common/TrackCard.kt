@@ -11,37 +11,37 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.vpg.apex.core.asStateValue
 import net.vpg.apex.core.bounceClick
-import net.vpg.apex.core.rememberAnimationProvider
 import net.vpg.apex.core.di.rememberPlayer
+import net.vpg.apex.core.di.rememberSettings
+import net.vpg.apex.core.rememberAnimationProvider
 import net.vpg.apex.entities.ApexTrackContext
 
 @Composable
 fun ApexTrackContext.TrackCard(trackIndex: Int) {
     val apexTrack = tracks[trackIndex]
     val player = rememberPlayer()
-    val animationProvider = rememberAnimationProvider()
-
+    val gridSize = rememberSettings().gridSize.asStateValue()
     val animatedColor by animateColorAsState(
-        targetValue = if (player.nowPlaying == apexTrack) {
-            if (player.nowPlayingContext == this)
-                MaterialTheme.colorScheme.primary
-            else // probably a duplicate track in the same context
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-        } else
-            MaterialTheme.colorScheme.onPrimaryContainer,
-        animationSpec = animationProvider.mediumSpec()
+        targetValue = if (player.nowPlaying != apexTrack)
+            MaterialTheme.colorScheme.onPrimaryContainer
+        else if (player.nowPlayingContext == this)
+            MaterialTheme.colorScheme.primary
+        else // probably a duplicate track in the same context
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+        animationSpec = rememberAnimationProvider().mediumSpec()
     )
 
     Column(
         modifier = Modifier
             .padding(end = 12.dp)
-            .width(150.dp)
+            .width(gridSize.trackCardWidth.dp)
             .bounceClick { player.play(trackIndex, context = this) }
     ) {
         AlbumImageWithInfoButton(
             album = apexTrack.album,
-            size = 150,
+            size = gridSize.albumImageSize,
             apexTrack = apexTrack
         )
         Spacer(modifier = Modifier.height(4.dp))

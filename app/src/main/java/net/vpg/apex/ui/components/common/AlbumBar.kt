@@ -12,9 +12,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.vpg.apex.core.asStateValue
 import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.rememberAnimationProvider
 import net.vpg.apex.core.di.rememberPlayer
+import net.vpg.apex.core.di.rememberSettings
 import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.ui.screens.AlbumInfoScreen
 
@@ -22,6 +24,8 @@ import net.vpg.apex.ui.screens.AlbumInfoScreen
 fun AlbumBar(apexAlbum: ApexAlbum) {
     val player = rememberPlayer()
     val animationProvider = rememberAnimationProvider()
+    val settings = rememberSettings()
+    val gridSize = settings.gridSize.asStateValue()
 
     val color by animateColorAsState(
         targetValue = if (player.nowPlayingContext == apexAlbum)
@@ -41,7 +45,7 @@ fun AlbumBar(apexAlbum: ApexAlbum) {
             .padding(vertical = 8.dp)
             .bounceClick { AlbumInfoScreen.navigate(apexAlbum) }
     ) {
-        AlbumImage(apexAlbum, size = 75, cornerRadius = 0)
+        AlbumImage(apexAlbum, size = gridSize.albumBarImageSize, cornerRadius = 0)
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(

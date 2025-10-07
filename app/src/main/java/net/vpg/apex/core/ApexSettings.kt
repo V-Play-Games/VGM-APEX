@@ -103,10 +103,15 @@ enum class AccentColor(
     RED("Red", 0xFFD32F2F, 0xFFEF5350, 0xFFB71C1C)
 }
 
-enum class GridSize(override val displayName: String) : ApexSetting {
-    COMPACT("Compact"),
-    MEDIUM("Medium"),
-    LARGE("Large")
+enum class GridSize(
+    override val displayName: String,
+    val trackCardWidth: Int,
+    val albumImageSize: Int,
+    val albumBarImageSize: Int
+) : ApexSetting {
+    COMPACT("Compact", trackCardWidth = 120, albumImageSize = 120, albumBarImageSize = 60),
+    MEDIUM("Medium", trackCardWidth = 150, albumImageSize = 150, albumBarImageSize = 75),
+    LARGE("Large", trackCardWidth = 180, albumImageSize = 180, albumBarImageSize = 90)
 }
 
 enum class NowPlayingStyle(override val displayName: String) : ApexSetting {

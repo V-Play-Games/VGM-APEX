@@ -11,9 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.vpg.apex.core.asStateValue
 import net.vpg.apex.core.bounceClick
-import net.vpg.apex.core.rememberAnimationProvider
 import net.vpg.apex.core.di.rememberPlayer
+import net.vpg.apex.core.di.rememberSettings
+import net.vpg.apex.core.rememberAnimationProvider
 import net.vpg.apex.entities.ApexTrackContext
 
 @Composable
@@ -24,17 +26,15 @@ inline fun ApexTrackContext.TrackBar(
 ) {
     val apexTrack = tracks[trackIndex]
     val player = rememberPlayer()
-    val animationProvider = rememberAnimationProvider()
-
+    val gridSize = rememberSettings().gridSize.asStateValue()
     val animatedColor by animateColorAsState(
-        targetValue = if (player.nowPlaying == apexTrack) {
-            if (player.nowPlayingContext == this)
-                MaterialTheme.colorScheme.primary
-            else // probably a duplicate track in the same context
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-        } else
-            MaterialTheme.colorScheme.onPrimaryContainer,
-        animationSpec = animationProvider.mediumSpec()
+        targetValue = if (player.nowPlaying != apexTrack)
+            MaterialTheme.colorScheme.onPrimaryContainer
+        else if (player.nowPlayingContext == this)
+            MaterialTheme.colorScheme.primary
+        else // probably a duplicate track in the same context
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+        animationSpec = rememberAnimationProvider().mediumSpec()
     )
 
     Row(
@@ -47,7 +47,7 @@ inline fun ApexTrackContext.TrackBar(
                 onClick()
             }
     ) {
-        AlbumImage(apexTrack.album, 50)
+        AlbumImage(apexTrack.album, gridSize.albumBarImageSize)
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
