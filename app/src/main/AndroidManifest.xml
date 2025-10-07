@@ -19,15 +19,13 @@
       android:supportsRtl="true"
       android:theme="@style/Theme.Apex.NoActionBar"
       android:enableOnBackInvokedCallback="true"
-      tools:targetApi="35">
-
+      tools:targetApi="36">
     <activity
         android:name=".ApexActivity"
         android:exported="true"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
-
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
