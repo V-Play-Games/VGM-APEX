@@ -9,6 +9,8 @@ import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.foundation.MarqueeDefaults
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -21,6 +23,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.input.pointer.pointerInput
 import com.valentinilk.shimmer.*
 import net.vpg.apex.core.di.rememberDownloadTracker
+import net.vpg.apex.core.di.rememberSettings
 import net.vpg.apex.entities.ApexTrack
 
 fun Context.unwrapActivity(): Activity = when (this) {
@@ -93,6 +96,11 @@ fun Modifier.customShimmer(
         )
     )
 ) ?: this
+
+@Composable
+fun Modifier.apexMarquee() = this.basicMarquee(
+    velocity = MarqueeDefaults.Velocity * rememberSettings().marqueeSpeed.collectAsState(1.0F).value
+)
 
 @Composable
 fun ApexTrack.rememberDownloadState() = rememberDownloadTracker().getDownloadState(id)

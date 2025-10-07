@@ -1,6 +1,5 @@
 package net.vpg.apex.ui.components.player
 
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
@@ -10,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.vpg.apex.core.apexMarquee
 import net.vpg.apex.core.customShimmer
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexTrack
@@ -21,7 +21,8 @@ fun NowPlayingBar() {
     val player = rememberPlayer()
     if (player.nowPlaying == ApexTrack.EMPTY) return
     Row(
-        modifier = Modifier.customShimmer(condition = player.isBuffering, durationMillis = 800)
+        modifier = Modifier
+            .customShimmer(condition = player.isBuffering, durationMillis = 800)
             .clickable { NowPlayingScreen.navigate() }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -31,13 +32,13 @@ fun NowPlayingBar() {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = player.nowPlaying.title,
-                modifier = Modifier.basicMarquee(),
+                modifier = Modifier.apexMarquee(),
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = 14.sp,
             )
             Text(
                 text = player.nowPlaying.album.name,
-                modifier = Modifier.basicMarquee(),
+                modifier = Modifier.apexMarquee(),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 12.sp,
             )

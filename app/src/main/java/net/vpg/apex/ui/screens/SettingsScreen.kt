@@ -23,67 +23,62 @@ object SettingsScreen : ApexScreenStatic(
     route = "settings",
     columnModifier = Modifier.fillMaxSize(),
     content = {
-        SettingsContent()
+        val settings = rememberSettings()
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
+            ChoiceSettingItem(
+                title = "Theme",
+                subtitle = "Choose your app appearance",
+                icon = Icons.Default.Brightness6,
+                currentChoice = settings.theme.asStateValue(),
+                choices = ThemeMode.entries,
+                onChoiceSelected = { settings.updateTheme(it) }
+            )
+
+            ChoiceSettingItem(
+                title = "Accent Color",
+                subtitle = "Customize app color scheme",
+                icon = Icons.Default.Palette,
+                currentChoice = settings.accentColor.asStateValue(),
+                choices = AccentColor.entries,
+                onChoiceSelected = { settings.updateAccentColor(it) }
+            )
+
+            SpeedSettingItem(
+                title = "Animation Speed",
+                subtitle = "Control shimmer and transition speeds",
+                icon = Icons.Default.Speed,
+                currentSpeed = settings.animationSpeed.collectAsState(1.0f).value,
+                valueRange = 0.5f..2.0f,
+                steps = 2,
+                onSpeedChange = { settings.updateAnimationSpeed(it) }
+            )
+
+            SpeedSettingItem(
+                title = "Marquee Speed",
+                subtitle = "Text scrolling speed for long titles",
+                icon = Icons.Default.TextFields,
+                currentSpeed = settings.marqueeSpeed.collectAsState(1.0f).value,
+                valueRange = 0.5f..3.0f,
+                steps = 4,
+                onSpeedChange = { settings.updateMarqueeSpeed(it) }
+            )
+
+            ChoiceSettingItem(
+                title = "Grid Size",
+                subtitle = "Album and track grid density",
+                icon = Icons.Default.GridView,
+                currentChoice = settings.gridSize.asStateValue(),
+                choices = GridSize.entries,
+                onChoiceSelected = { settings.updateGridSize(it) }
+            )
+        }
     }
 )
-
-@Composable
-fun SettingsContent() {
-    val settings = rememberSettings()
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-    ) {
-        ChoiceSettingItem(
-            title = "Theme",
-            subtitle = "Choose your app appearance",
-            icon = Icons.Default.Brightness6,
-            currentChoice = settings.theme.asStateValue(),
-            choices = ThemeMode.entries,
-            onChoiceSelected = { settings.updateTheme(it) }
-        )
-
-        ChoiceSettingItem(
-            title = "Accent Color",
-            subtitle = "Customize app color scheme",
-            icon = Icons.Default.Palette,
-            currentChoice = settings.accentColor.asStateValue(),
-            choices = AccentColor.entries,
-            onChoiceSelected = { settings.updateAccentColor(it) }
-        )
-
-        SpeedSettingItem(
-            title = "Animation Speed",
-            subtitle = "Control shimmer and transition speeds",
-            icon = Icons.Default.Speed,
-            currentSpeed = settings.animationSpeed.collectAsState(1.0f).value,
-            valueRange = 0.5f..2.0f,
-            steps = 2,
-            onSpeedChange = { settings.updateAnimationSpeed(it) }
-        )
-
-        SpeedSettingItem(
-            title = "Marquee Speed",
-            subtitle = "Text scrolling speed for long titles",
-            icon = Icons.Default.TextFields,
-            currentSpeed = settings.marqueeSpeed.collectAsState(1.0f).value,
-            valueRange = 0.5f..3.0f,
-            steps = 4,
-            onSpeedChange = { settings.updateMarqueeSpeed(it) }
-        )
-
-        ChoiceSettingItem(
-            title = "Grid Size",
-            subtitle = "Album and track grid density",
-            icon = Icons.Default.GridView,
-            currentChoice = settings.gridSize.asStateValue(),
-            choices = GridSize.entries,
-            onChoiceSelected = { settings.updateGridSize(it) }
-        )
-    }
-}
 
 // Helper Composable Functions
 @Composable

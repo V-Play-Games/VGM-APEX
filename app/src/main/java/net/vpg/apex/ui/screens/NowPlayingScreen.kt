@@ -1,7 +1,6 @@
 package net.vpg.apex.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import net.vpg.apex.core.apexMarquee
 import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.customShimmer
 import net.vpg.apex.core.di.rememberPlayer
@@ -39,7 +39,8 @@ object NowPlayingScreen : ApexScreenStatic(
 
         Text(
             text = "Playing from ${player.nowPlayingContext.name}",
-            modifier = Modifier.customShimmer(condition = player.isPlaying, durationMillis = 800)
+            modifier = Modifier
+                .customShimmer(condition = player.isPlaying, durationMillis = 800)
                 .align(Alignment.CenterHorizontally)
                 .padding(6.dp)
                 .bounceClick { showBottomSheet = true },
@@ -59,7 +60,7 @@ object NowPlayingScreen : ApexScreenStatic(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = nowPlaying.title,
-                    modifier = Modifier.basicMarquee(),
+                    modifier = Modifier.apexMarquee(),
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
@@ -67,7 +68,7 @@ object NowPlayingScreen : ApexScreenStatic(
                 Text(
                     text = nowPlaying.album.name,
                     modifier = Modifier
-                        .basicMarquee()
+                        .apexMarquee()
                         .clickable { AlbumInfoScreen.navigate(nowPlaying.album) },
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 16.sp,
