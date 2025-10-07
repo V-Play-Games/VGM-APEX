@@ -28,7 +28,7 @@ class ApexDownloadService : DownloadService(
     override fun getForegroundNotification(downloads: List<Download>, notMetRequirements: @RequirementFlags Int) =
         downloadNotificationHelper.buildProgressNotification(
             this,
-            R.drawable.ic_pika_chill,
+            R.drawable.ic_giratina_chill,
             null,
             null,
             downloads,

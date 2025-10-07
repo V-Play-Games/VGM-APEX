@@ -15,14 +15,14 @@
       android:fullBackupContent="@xml/backup_rules"
       android:icon="@mipmap/ic_launcher"
       android:label="@string/app_name"
-      android:roundIcon="@mipmap/ic_launcher_round"
       android:supportsRtl="true"
-      android:theme="@style/Theme.Apex.NoActionBar"
+      android:theme="@style/android:Theme.Material.NoActionBar"
       android:enableOnBackInvokedCallback="true"
       tools:targetApi="36">
     <activity
         android:name=".ApexActivity"
         android:exported="true"
+        android:theme="@style/Theme.App.Starting"
         android:windowSoftInputMode="adjustResize">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>

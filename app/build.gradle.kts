@@ -48,6 +48,9 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.compose.ui)
 
+    // Splash Screen
+    implementation(libs.splash.screen)
+
     // Preferences
     implementation(libs.datastore.preferences)
 

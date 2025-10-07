@@ -33,7 +33,7 @@ class ApexNotificationService : MediaSessionService() {
 //        )
         PlayerNotificationManager.Builder(this, notificationId, notificationChannelId)
             .setChannelNameResourceId(R.string.notification_channel_name)
-            .setSmallIconResourceId(R.drawable.ic_pika_chill)
+            .setSmallIconResourceId(R.drawable.ic_giratina_chill)
             .setChannelImportance(NotificationManager.IMPORTANCE_LOW)
 //            .setMediaDescriptionAdapter(DefaultMediaDescriptionAdapter(pendingIntent))
             .build()
