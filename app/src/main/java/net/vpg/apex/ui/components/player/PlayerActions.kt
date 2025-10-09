@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
-import net.vpg.apex.core.bounceClick
+import net.vpg.apex.util.bounceClick
 import net.vpg.apex.core.player.ApexPlayer
 import net.vpg.apex.entities.ApexTrack
 

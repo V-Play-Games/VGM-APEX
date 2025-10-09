@@ -1,8 +1,6 @@
 package net.vpg.apex.core
 
 import android.content.Context
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -12,46 +10,29 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-
-@Composable
-inline fun <reified T> Flow<T>.asStateValue() where T : Enum<T>, T : ApexSetting =
-    collectAsState(initial = enumValues<T>().first()).value
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "apex_settings")
 
 class ApexSettings(context: Context) {
     private val dataStore = context.dataStore
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    val theme = dataStore.data.map { preferences ->
-        try {
-            ThemeMode.valueOf(preferences[PreferenceKeys.THEME]!!)
-        } catch (_: Exception) {
-            ThemeMode.SYSTEM
+    val theme = evaluateFlow(PreferenceKeys.THEME, ThemeMode.SYSTEM)
+    val accentColor = evaluateFlow(PreferenceKeys.ACCENT_COLOR, AccentColor.GREEN)
+    val animationSpeed = dataStore.data.map { it[PreferenceKeys.ANIMATION_SPEED] ?: 1.0f }
+    val marqueeSpeed = dataStore.data.map { it[PreferenceKeys.MARQUEE_SPEED] ?: 1.0f }
+    val gridSize = evaluateFlow(PreferenceKeys.GRID_SIZE, GridSize.MEDIUM)
+
+    private inline fun <reified T> evaluateFlow(key: Preferences.Key<String>, default: T)
+            where T : Enum<T>, T : ApexSetting =
+        dataStore.data.map { preferences ->
+            try {
+                enumValueOf(preferences[key]!!)
+            } catch (_: Exception) {
+                default
+            }
         }
-    }
-    val accentColor = dataStore.data.map { preferences ->
-        try {
-            AccentColor.valueOf(preferences[PreferenceKeys.ACCENT_COLOR]!!)
-        } catch (_: Exception) {
-            AccentColor.GREEN
-        }
-    }
-    val animationSpeed = dataStore.data.map { preferences ->
-        preferences[PreferenceKeys.ANIMATION_SPEED] ?: 1.0f
-    }
-    val marqueeSpeed = dataStore.data.map { preferences ->
-        preferences[PreferenceKeys.MARQUEE_SPEED] ?: 1.0f
-    }
-    val gridSize = dataStore.data.map { preferences ->
-        try {
-            GridSize.valueOf(preferences[PreferenceKeys.GRID_SIZE]!!)
-        } catch (_: Exception) {
-            GridSize.MEDIUM
-        }
-    }
 
     object PreferenceKeys {
         val THEME = stringPreferencesKey("theme")
@@ -73,9 +54,7 @@ class ApexSettings(context: Context) {
 
     fun <T> updatePreference(key: Preferences.Key<T>, value: T) {
         scope.launch {
-            dataStore.edit { preferences ->
-                preferences[key] = value
-            }
+            dataStore.edit { it[key] = value }
         }
     }
 }
@@ -105,16 +84,10 @@ enum class AccentColor(
 
 enum class GridSize(
     override val displayName: String,
-    val trackCardWidth: Int,
-    val albumImageSize: Int,
-    val albumBarImageSize: Int
+    val cardSize: Int,
+    val barSize: Int = cardSize / 2
 ) : ApexSetting {
-    COMPACT("Compact", trackCardWidth = 120, albumImageSize = 120, albumBarImageSize = 60),
-    MEDIUM("Medium", trackCardWidth = 150, albumImageSize = 150, albumBarImageSize = 75),
-    LARGE("Large", trackCardWidth = 180, albumImageSize = 180, albumBarImageSize = 90)
-}
-
-enum class NowPlayingStyle(override val displayName: String) : ApexSetting {
-    COMPACT("Compact"),
-    EXPANDED("Expanded")
+    COMPACT("Compact", 120),
+    MEDIUM("Medium", 150),
+    LARGE("Large", 180)
 }

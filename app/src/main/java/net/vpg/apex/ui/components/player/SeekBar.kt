@@ -9,9 +9,9 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
-import net.vpg.apex.core.customShimmer
+import net.vpg.apex.util.customShimmer
 import net.vpg.apex.core.di.rememberPlayer
-import net.vpg.apex.core.formatDuration
+import net.vpg.apex.util.formatDuration
 import net.vpg.apex.entities.ApexTrack
 import kotlin.math.max
 
@@ -71,22 +71,21 @@ fun SeekBar(bottomBar: Boolean) {
             )
         }
     )
-    if (!bottomBar) {
-        Spacer(Modifier.height(4.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(), // don't remove
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = formatDuration(position),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 12.sp
-            )
-            Text(
-                text = formatDuration(duration),
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 12.sp
-            )
-        }
+    if (bottomBar) return
+    Spacer(Modifier.height(4.dp))
+    Row(
+        modifier = Modifier.fillMaxWidth(), // don't remove
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = formatDuration(position),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 12.sp
+        )
+        Text(
+            text = formatDuration(duration),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 12.sp
+        )
     }
 }

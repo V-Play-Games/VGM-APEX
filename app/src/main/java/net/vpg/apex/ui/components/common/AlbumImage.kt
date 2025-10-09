@@ -20,8 +20,8 @@ import androidx.compose.ui.zIndex
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import net.vpg.apex.core.bounceClick
-import net.vpg.apex.core.customShimmer
+import net.vpg.apex.util.bounceClick
+import net.vpg.apex.util.customShimmer
 import net.vpg.apex.core.di.rememberContext
 import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.entities.ApexTrack

@@ -11,10 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.vpg.apex.core.asStateValue
-import net.vpg.apex.core.bounceClick
+import net.vpg.apex.util.bounceClick
 import net.vpg.apex.core.di.rememberPlayer
-import net.vpg.apex.core.di.rememberSettings
+import net.vpg.apex.core.di.rememberSetting
 import net.vpg.apex.core.rememberAnimationProvider
 import net.vpg.apex.entities.ApexTrackContext
 
@@ -26,7 +25,7 @@ inline fun ApexTrackContext.TrackBar(
 ) {
     val apexTrack = tracks[trackIndex]
     val player = rememberPlayer()
-    val gridSize = rememberSettings().gridSize.asStateValue()
+    val gridSize = rememberSetting { gridSize }
     val animatedColor by animateColorAsState(
         targetValue = if (player.nowPlaying != apexTrack)
             MaterialTheme.colorScheme.onPrimaryContainer
@@ -47,7 +46,7 @@ inline fun ApexTrackContext.TrackBar(
                 onClick()
             }
     ) {
-        AlbumImage(apexTrack.album, gridSize.albumBarImageSize)
+        AlbumImage(apexTrack.album, gridSize.barSize, cornerRadius = 0)
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(

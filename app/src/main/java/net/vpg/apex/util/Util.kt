@@ -1,4 +1,4 @@
-package net.vpg.apex.core
+package net.vpg.apex.util
 
 import android.app.Activity
 import android.content.Context
@@ -23,7 +23,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.input.pointer.pointerInput
 import com.valentinilk.shimmer.*
 import net.vpg.apex.core.di.rememberDownloadTracker
-import net.vpg.apex.core.di.rememberSettings
+import net.vpg.apex.core.di.rememberFloatSetting
+import net.vpg.apex.core.rememberAnimationProvider
 import net.vpg.apex.entities.ApexTrack
 
 fun Context.unwrapActivity(): Activity = when (this) {
@@ -99,7 +100,7 @@ fun Modifier.customShimmer(
 
 @Composable
 fun Modifier.apexMarquee() = this.basicMarquee(
-    velocity = MarqueeDefaults.Velocity * rememberSettings().marqueeSpeed.collectAsState(1.0F).value
+    velocity = MarqueeDefaults.Velocity * rememberFloatSetting { marqueeSpeed }
 )
 
 @Composable

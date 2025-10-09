@@ -2,9 +2,8 @@ package net.vpg.apex.core
 
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
-import net.vpg.apex.core.di.rememberSettings
+import net.vpg.apex.core.di.rememberFloatSetting
 
 class AnimationProvider(val speedMultiplier: Float) {
     private val fastDuration get() = (150 / speedMultiplier).toInt()
@@ -17,7 +16,7 @@ class AnimationProvider(val speedMultiplier: Float) {
 }
 
 @Composable
-fun rememberAnimationProvider() =
-    rememberSettings().animationSpeed.collectAsState(1.0f).value.let { animationSpeed ->
+fun rememberAnimationProvider() = rememberFloatSetting { animationSpeed }
+    .let { animationSpeed ->
         remember(animationSpeed) { AnimationProvider(animationSpeed) }
     }

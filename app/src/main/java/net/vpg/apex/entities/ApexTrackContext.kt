@@ -1,10 +1,10 @@
 package net.vpg.apex.entities
 
-import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import kotlin.math.min
+import androidx.compose.ui.Modifier
 
 // All possible contexts are:
 // - Album Info
@@ -20,6 +20,7 @@ interface ApexTrackContext {
 
     @Composable
     fun ComposeToList(
+        modifier: Modifier = Modifier,
         limit: Int = tracks.size,
         emptyFallback: @Composable () -> Unit = {
             Text(
@@ -27,18 +28,25 @@ interface ApexTrackContext {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
-        lazyComposable: @Composable (LazyListScope.() -> Unit) -> Unit,
+        state: LazyListState = rememberLazyListState(),
+        isVertical: Boolean = true,
+        header: LazyListScope.() -> Unit = {},
+        footer: LazyListScope.() -> Unit = {},
         content: @Composable ApexTrackContext.(Int) -> Unit
     ) {
         if (tracks.none { it != ApexTrack.EMPTY }) {
             emptyFallback()
             return
         }
-        lazyComposable {
-            items(min(limit, tracks.size)) { index ->
-                content(index)
-            }
+        val lazyContent: LazyListScope.() -> Unit = {
+            header()
+            items(tracks.size.coerceAtMost(limit)) { index -> content(index) }
+            footer()
         }
+        if (isVertical)
+            LazyColumn(modifier = modifier, state = state, content = lazyContent)
+        else
+            LazyRow(modifier = modifier, state = state, content = lazyContent)
     }
 
     companion object {

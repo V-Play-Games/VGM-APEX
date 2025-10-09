@@ -3,7 +3,6 @@ package net.vpg.apex.ui.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -18,15 +17,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.vpg.apex.core.apexMarquee
-import net.vpg.apex.core.bounceClick
-import net.vpg.apex.core.customShimmer
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.ui.components.common.AlbumImageWithInfoButton
 import net.vpg.apex.ui.components.common.TrackBar
 import net.vpg.apex.ui.components.common.TrackDownloadIcon
 import net.vpg.apex.ui.components.player.PlayerActions
 import net.vpg.apex.ui.components.player.SeekBar
+import net.vpg.apex.util.apexMarquee
+import net.vpg.apex.util.bounceClick
+import net.vpg.apex.util.customShimmer
 
 @OptIn(ExperimentalMaterial3Api::class)
 object NowPlayingScreen : ApexScreenStatic(
@@ -96,7 +95,6 @@ object NowPlayingScreen : ApexScreenStatic(
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(16.dp)
                 )
-                // Add your queue list here
                 player.nowPlayingContext.ComposeToList(
                     emptyFallback = {
                         Text(
@@ -105,11 +103,7 @@ object NowPlayingScreen : ApexScreenStatic(
                             modifier = Modifier.padding(16.dp)
                         )
                     },
-                    lazyComposable = { list ->
-                        LazyColumn(modifier = Modifier.padding(horizontal = 12.dp)) {
-                            list()
-                        }
-                    },
+                    modifier = Modifier.padding(horizontal = 12.dp),
                     content = { trackIndex ->
                         if (trackIndex >= player.nowPlayingIndex)
                             TrackBar(trackIndex)

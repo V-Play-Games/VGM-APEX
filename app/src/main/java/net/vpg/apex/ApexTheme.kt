@@ -7,16 +7,14 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import net.vpg.apex.core.ThemeMode
-import net.vpg.apex.core.asStateValue
-import net.vpg.apex.core.di.rememberSettings
+import net.vpg.apex.core.di.rememberSetting
 
 @Composable
 fun ApexTheme(content: @Composable () -> Unit) {
-    val settings = rememberSettings()
-    val themeMode = settings.theme.asStateValue()
-    val accentColor = settings.accentColor.asStateValue()
+    val theme = rememberSetting { theme }
+    val accentColor = rememberSetting { accentColor }
 
-    val isDark = when (themeMode) {
+    val isDark = when (theme) {
         ThemeMode.DARK -> true
         ThemeMode.LIGHT -> false
         ThemeMode.SYSTEM -> isSystemInDarkTheme()

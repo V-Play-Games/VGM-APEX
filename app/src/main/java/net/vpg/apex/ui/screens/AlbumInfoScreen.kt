@@ -3,7 +3,6 @@ package net.vpg.apex.ui.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -26,7 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
-import net.vpg.apex.core.bounceClick
+import net.vpg.apex.util.bounceClick
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.ui.components.common.AlbumImage
@@ -145,55 +144,52 @@ object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
                     )
                 }
             },
-            lazyComposable = { list ->
-                LazyColumn(state = scrollState) {
-                    // Album Header
-                    item {
-                        Box(modifier = Modifier.height(320.dp)) {
-                            // Album Art
-                            Box(modifier = Modifier.align(BiasAlignment(0f, 0.75f))) {
-                                AlbumImage(album, imageSize, 4)
-                            }
-
-                            // Gradient overlay
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize() // don't remove
-                                    .background(
-                                        Brush.verticalGradient(
-                                            colors = listOf(
-                                                Color.Transparent,
-                                                MaterialTheme.colorScheme.background.copy(alpha = 0.75f)
-                                            )
-                                        )
-                                    )
-                            )
-
-                            // Play button row
-                            Box(modifier = Modifier.align(Alignment.BottomStart)) {
-                                titleRow()
-                            }
+            state = scrollState,
+            header = {
+                item {
+                    Box(modifier = Modifier.height(320.dp)) {
+                        // Album Art
+                        Box(modifier = Modifier.align(BiasAlignment(0f, 0.75f))) {
+                            AlbumImage(album, imageSize, 4)
                         }
-                    }
-                    stickyHeader {
-                        AnimatedVisibility(firstItemIndex != 0) {
-                            Box(
-                                modifier = Modifier.background(
+
+                        // Gradient overlay
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize() // don't remove
+                                .background(
                                     Brush.verticalGradient(
                                         colors = listOf(
-                                            MaterialTheme.colorScheme.background,
-                                            MaterialTheme.colorScheme.background.copy(alpha = 0.8f),
-                                            MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
                                             Color.Transparent,
+                                            MaterialTheme.colorScheme.background.copy(alpha = 0.75f)
                                         )
                                     )
                                 )
-                            ) {
-                                titleRow()
-                            }
+                        )
+
+                        // Play button row
+                        Box(modifier = Modifier.align(Alignment.BottomStart)) {
+                            titleRow()
                         }
                     }
-                    list()
+                }
+                stickyHeader {
+                    AnimatedVisibility(firstItemIndex != 0) {
+                        Box(
+                            modifier = Modifier.background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.background,
+                                        MaterialTheme.colorScheme.background.copy(alpha = 0.8f),
+                                        MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
+                                        Color.Transparent,
+                                    )
+                                )
+                            )
+                        ) {
+                            titleRow()
+                        }
+                    }
                 }
             },
             content = { trackIndex ->

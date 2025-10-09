@@ -1,7 +1,6 @@
 package net.vpg.apex.ui.components.common
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,14 +38,12 @@ fun ApexTrackContext.TrackDisplaySection(trailingComponents: @Composable () -> U
                     fontSize = 16.sp
                 )
             },
-            lazyComposable = {
-                LazyRow {
-                    item {
-                        Spacer(modifier = Modifier.padding(start = 12.dp))
-                    }
-                    it()
+            header = {
+                item {
+                    Spacer(modifier = Modifier.padding(start = 12.dp))
                 }
             },
+            isVertical = false,
             content = { trackIndex ->
                 TrackCard(trackIndex)
             }

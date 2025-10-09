@@ -1,7 +1,6 @@
 package net.vpg.apex.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
@@ -17,11 +16,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.vpg.apex.core.bounceClick
 import net.vpg.apex.core.di.rememberSearchHistory
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.entities.ApexTrackContext
 import net.vpg.apex.ui.components.common.TrackBar
+import net.vpg.apex.util.bounceClick
 
 object SearchScreen : ApexBottomBarScreen(
     route = "search",
@@ -97,7 +96,6 @@ object SearchScreen : ApexBottomBarScreen(
                         color = Color.Gray
                     )
                 },
-                lazyComposable = { LazyColumn(content = it) },
                 content = { trackIndex ->
                     TrackBar(
                         trackIndex = trackIndex,
@@ -120,7 +118,6 @@ object SearchScreen : ApexBottomBarScreen(
                         color = Color.Gray
                     )
                 },
-                lazyComposable = { LazyColumn(content = it) },
                 content = { trackIndex ->
                     TrackBar(trackIndex) {
                         Icon(

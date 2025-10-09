@@ -10,7 +10,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import net.vpg.apex.core.unwrapActivity
+import net.vpg.apex.util.unwrapActivity
 import javax.inject.Singleton
 
 @Module

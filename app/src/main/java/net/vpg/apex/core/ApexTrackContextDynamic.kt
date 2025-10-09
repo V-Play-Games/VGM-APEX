@@ -4,12 +4,13 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.Modifier
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.entities.ApexTrackContext
 import java.io.File
-import kotlin.math.min
 
 class SearchHistory(context: Context) : ApexTrackContextDynamic(
     name = "Recent Searches",
@@ -93,20 +94,22 @@ open class ApexTrackContextDynamic(
 
     @Composable
     override fun ComposeToList(
+        modifier: Modifier,
         limit: Int,
         emptyFallback: @Composable () -> Unit,
-        lazyComposable: @Composable (LazyListScope.() -> Unit) -> Unit,
+        state: LazyListState,
+        isVertical: Boolean,
+        header: LazyListScope.() -> Unit,
+        footer: LazyListScope.() -> Unit,
         content: @Composable ApexTrackContext.(Int) -> Unit
     ) {
         if (tracks.none { it != ApexTrack.EMPTY }) {
             emptyFallback()
             return
         }
-        lazyComposable {
-            items(min(limit, tracks.size)) { index ->
-                AnimatedVisibility(appearingOnScreen[index] == DISPLAYED) {
-                    content(index)
-                }
+        super.ComposeToList(modifier, limit, emptyFallback, state, isVertical, header, footer) { index ->
+            AnimatedVisibility(appearingOnScreen[index] == DISPLAYED) {
+                content(index)
             }
         }
         val toRemove = mutableListOf<Int>()

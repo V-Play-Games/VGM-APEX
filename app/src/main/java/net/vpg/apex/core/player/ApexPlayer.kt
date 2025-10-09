@@ -122,7 +122,6 @@ class ApexPlayer(
             play(trackIndex = currentIndex + delta, currentContext)
     }
 
-    @OptIn(UnstableApi::class)
     fun play(trackIndex: Int, context: ApexTrackContext, updateHistory: Boolean = true) {
         currentIndex = trackIndex
         if (context !is ShuffleOrderContext) {
@@ -166,7 +165,6 @@ class ApexPlayer(
         durationState = 0
     }
 
-    @OptIn(UnstableApi::class)
     private fun MediaSource.clip(
         startFrame: Long,
         endFrame: Long = Long.MAX_VALUE,
@@ -239,7 +237,6 @@ class ApexPlayer(
             REPEAT_MODE_OFF
     }
 
-    @OptIn(UnstableApi::class)
     override fun seekTo(positionMs: Long) {
         handler.post {
             val position = positionMs * 1000

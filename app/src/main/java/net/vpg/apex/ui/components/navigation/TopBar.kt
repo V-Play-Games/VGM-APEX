@@ -15,7 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.R
-import net.vpg.apex.core.bounceClick
+import net.vpg.apex.util.bounceClick
 import net.vpg.apex.ui.screens.SettingsScreen
 
 @Composable

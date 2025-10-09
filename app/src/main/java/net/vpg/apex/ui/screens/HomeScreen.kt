@@ -9,7 +9,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import net.vpg.apex.core.RandomPicks
-import net.vpg.apex.core.bounceClick
+import net.vpg.apex.util.bounceClick
 import net.vpg.apex.core.di.rememberPlayHistory
 import net.vpg.apex.ui.components.common.TrackDisplaySection
 

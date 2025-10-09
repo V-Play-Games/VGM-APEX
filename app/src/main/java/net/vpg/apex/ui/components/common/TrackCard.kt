@@ -11,10 +11,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.vpg.apex.core.asStateValue
-import net.vpg.apex.core.bounceClick
+import net.vpg.apex.util.bounceClick
 import net.vpg.apex.core.di.rememberPlayer
-import net.vpg.apex.core.di.rememberSettings
+import net.vpg.apex.core.di.rememberSetting
 import net.vpg.apex.core.rememberAnimationProvider
 import net.vpg.apex.entities.ApexTrackContext
 
@@ -22,7 +21,7 @@ import net.vpg.apex.entities.ApexTrackContext
 fun ApexTrackContext.TrackCard(trackIndex: Int) {
     val apexTrack = tracks[trackIndex]
     val player = rememberPlayer()
-    val gridSize = rememberSettings().gridSize.asStateValue()
+    val gridSize = rememberSetting { gridSize }
     val animatedColor by animateColorAsState(
         targetValue = if (player.nowPlaying != apexTrack)
             MaterialTheme.colorScheme.onPrimaryContainer
@@ -36,12 +35,12 @@ fun ApexTrackContext.TrackCard(trackIndex: Int) {
     Column(
         modifier = Modifier
             .padding(end = 12.dp)
-            .width(gridSize.trackCardWidth.dp)
+            .width(gridSize.cardSize.dp)
             .bounceClick { player.play(trackIndex, context = this) }
     ) {
         AlbumImageWithInfoButton(
             album = apexTrack.album,
-            size = gridSize.albumImageSize,
+            size = gridSize.cardSize,
             apexTrack = apexTrack
         )
         Spacer(modifier = Modifier.height(4.dp))

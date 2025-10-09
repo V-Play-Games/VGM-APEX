@@ -17,7 +17,10 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import net.vpg.apex.core.*
+import net.vpg.apex.core.di.rememberSetting
+import net.vpg.apex.core.di.rememberFloatSetting
 import net.vpg.apex.core.di.rememberSettings
+import net.vpg.apex.util.bounceClick
 
 object SettingsScreen : ApexScreenStatic(
     route = "settings",
@@ -34,8 +37,7 @@ object SettingsScreen : ApexScreenStatic(
                 title = "Theme",
                 subtitle = "Choose your app appearance",
                 icon = Icons.Default.Brightness6,
-                currentChoice = settings.theme.asStateValue(),
-                choices = ThemeMode.entries,
+                currentChoice = rememberSetting { theme },
                 onChoiceSelected = { settings.updateTheme(it) }
             )
 
@@ -43,8 +45,7 @@ object SettingsScreen : ApexScreenStatic(
                 title = "Accent Color",
                 subtitle = "Customize app color scheme",
                 icon = Icons.Default.Palette,
-                currentChoice = settings.accentColor.asStateValue(),
-                choices = AccentColor.entries,
+                currentChoice = rememberSetting { accentColor },
                 onChoiceSelected = { settings.updateAccentColor(it) }
             )
 
@@ -52,7 +53,7 @@ object SettingsScreen : ApexScreenStatic(
                 title = "Animation Speed",
                 subtitle = "Control shimmer and transition speeds",
                 icon = Icons.Default.Speed,
-                currentSpeed = settings.animationSpeed.collectAsState(1.0f).value,
+                currentSpeed = rememberFloatSetting { animationSpeed },
                 valueRange = 0.5f..2.0f,
                 steps = 2,
                 onSpeedChange = { settings.updateAnimationSpeed(it) }
@@ -62,7 +63,7 @@ object SettingsScreen : ApexScreenStatic(
                 title = "Marquee Speed",
                 subtitle = "Text scrolling speed for long titles",
                 icon = Icons.Default.TextFields,
-                currentSpeed = settings.marqueeSpeed.collectAsState(1.0f).value,
+                currentSpeed = rememberFloatSetting { marqueeSpeed },
                 valueRange = 0.5f..3.0f,
                 steps = 4,
                 onSpeedChange = { settings.updateMarqueeSpeed(it) }
@@ -72,8 +73,7 @@ object SettingsScreen : ApexScreenStatic(
                 title = "Grid Size",
                 subtitle = "Album and track grid density",
                 icon = Icons.Default.GridView,
-                currentChoice = settings.gridSize.asStateValue(),
-                choices = GridSize.entries,
+                currentChoice = rememberSetting { gridSize },
                 onChoiceSelected = { settings.updateGridSize(it) }
             )
         }
@@ -82,13 +82,12 @@ object SettingsScreen : ApexScreenStatic(
 
 // Helper Composable Functions
 @Composable
-private fun <T> ChoiceSettingItem(
+private inline fun <reified T> ChoiceSettingItem(
     title: String,
     subtitle: String,
     icon: ImageVector,
     currentChoice: T,
-    choices: List<T>,
-    onChoiceSelected: (T) -> Unit
+    crossinline onChoiceSelected: (T) -> Unit
 ) where T : ApexSetting, T : Enum<T> {
     SettingItem(
         title = title,
@@ -96,7 +95,7 @@ private fun <T> ChoiceSettingItem(
         icon = icon
     ) {
         Column(modifier = Modifier.selectableGroup()) {
-            choices.forEach { choice ->
+            enumValues<T>().forEach { choice ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
