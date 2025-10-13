@@ -18,19 +18,19 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "ap
 class ApexSettings(context: Context) {
     private val dataStore = context.dataStore
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    val theme = evaluateFlow(PreferenceKeys.THEME, ThemeMode.SYSTEM)
-    val accentColor = evaluateFlow(PreferenceKeys.ACCENT_COLOR, AccentColor.GREEN)
+    val theme = evaluateFlow<ThemeMode>(PreferenceKeys.THEME)
+    val accentColor = evaluateFlow<AccentColor>(PreferenceKeys.ACCENT_COLOR)
     val animationSpeed = dataStore.data.map { it[PreferenceKeys.ANIMATION_SPEED] ?: 1.0f }
     val marqueeSpeed = dataStore.data.map { it[PreferenceKeys.MARQUEE_SPEED] ?: 1.0f }
-    val gridSize = evaluateFlow(PreferenceKeys.GRID_SIZE, GridSize.MEDIUM)
+    val gridSize = evaluateFlow<GridSize>(PreferenceKeys.GRID_SIZE)
 
-    private inline fun <reified T> evaluateFlow(key: Preferences.Key<String>, default: T)
+    private inline fun <reified T> evaluateFlow(key: Preferences.Key<String>)
             where T : Enum<T>, T : ApexSetting =
         dataStore.data.map { preferences ->
             try {
                 enumValueOf(preferences[key]!!)
             } catch (_: Exception) {
-                default
+                enumValues<T>().first()
             }
         }
 
@@ -75,11 +75,11 @@ enum class AccentColor(
     val light: Long,
     val dark: Long
 ) : ApexSetting {
+    RED("Red", 0xFFD32F2F, 0xFFEF5350, 0xFFB71C1C),
     GREEN("Green", 0xFF1DB954, 0xFF1ED760, 0xFF1AA34A),
     BLUE("Blue", 0xFF1976D2, 0xFF42A5F5, 0xFF0D47A1),
     PURPLE("Purple", 0xFF7B1FA2, 0xFFAB47BC, 0xFF4A148C),
-    ORANGE("Orange", 0xFFFF9800, 0xFFFFB74D, 0xFFE65100),
-    RED("Red", 0xFFD32F2F, 0xFFEF5350, 0xFFB71C1C)
+    ORANGE("Orange", 0xFFFF9800, 0xFFFFB74D, 0xFFE65100)
 }
 
 enum class GridSize(
