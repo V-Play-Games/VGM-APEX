@@ -37,8 +37,8 @@ VGM APEX is a dedicated audio streaming platform designed specifically for video
 ## 📱 Screenshots
 <div align="center">
   <img src="assets/screenshot_home.jpg" alt="Home Screen" width="200"/>
-  <img src="assets/screenshot_search_recent.jpg" alt="Search Screen" width="200"/>
-  <img src="assets/screenshot_search.jpg" alt="Recent Searches Screen" width="200"/>
+  <img src="assets/screenshot_library.jpg" alt="Library Screen" width="200"/>
+  <img src="assets/screenshot_search.jpg" alt="Searches Screen" width="200"/>
   <img src="assets/screenshot_player.jpg" alt="Player Screen" width="200"/>
 </div>
 
@@ -52,7 +52,7 @@ VGM APEX is a dedicated audio streaming platform designed specifically for video
 ### Download
 
 #### Mobile
-- [Download from GitHub Releases](https://github.com/V-Play-Games/VGM-APEX/releases)
+- [Download from GitHub Releases](https://github.com/V-Play-Games/VGM-APEX/releases/latest)
 - [Download on Google Play] (Coming Soon!)
 
 ## 🔧 For Developers
