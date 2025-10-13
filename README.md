@@ -20,11 +20,16 @@ VGM APEX is a dedicated audio streaming platform designed specifically for video
   - Seek through tracks with the SeekBar
   - Control playback from your phone's notification panel
   - Play all tracks in a category at once (Album, Uploader, Random Picks, etc.)
-- **Modern UI Elements**: 
+- **Modern UI Elements**:
   - Shimmer animations for loading content
   - Interactive tap animations
   - Marquee effect for long track names
   - Dark/Light Theme that changes automatically with system settings
+- **Customizable UI**
+  - Choose between different themes and color accents
+  - Choose between different layouts for the home screen
+  - Adjust animation speed
+- Regular updates with new features and improvements
 - ~~**Personalized Experience**: Create custom playlists, mark favorites, and get recommendations based on your listening habits~~ (Coming Soon!)
 - ~~**Advanced Search**: Find music by game, composer, genre, console, or year~~ (Coming Soon!)
 - ~~**Social Features**: Share your favorite tracks and playlists with friends~~ (Coming Soon!)
