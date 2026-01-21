@@ -1,7 +1,13 @@
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import net.vpg.vjson.parser.JSONParser.toJSON
+import net.vpg.vjson.value.JSONObject
+import net.vpg.vjson.value.SerializableObject
 import java.io.File
+import java.net.ConnectException
+import java.net.SocketException
 import java.net.URI
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 
 // customize as per needed
@@ -37,19 +43,10 @@ suspend fun <T, R> List<T>.executeTask(
     }
 
     // Execute tasks
-    val results = withContext(Dispatchers.Default) {
+    val results = withContext(Executors.newVirtualThreadPerTaskExecutor().asCoroutineDispatcher()) {
         tasks.map { task ->
             async {
-                try {
-                    val result = taskProcessor(task)
-                    successCounter.incrementAndGet()
-                    progressChannel.send(1)
-                    TaskResult.Success(task, result)
-                } catch (e: Exception) {
-                    errorCounter.incrementAndGet()
-                    progressChannel.send(1)
-                    TaskResult.Failure(task, e)
-                }
+                getResult(task, progressChannel, successCounter, errorCounter, taskProcessor)
             }
         }.awaitAll()
     }
@@ -69,12 +66,75 @@ suspend fun <T, R> List<T>.executeTask(
     return@coroutineScope results
 }
 
+private suspend fun <T, R> getResult(
+    task: T,
+    progressChannel: Channel<Int>,
+    successCounter: AtomicInteger,
+    errorCounter: AtomicInteger,
+    taskProcessor: suspend (T) -> R
+): TaskResult<T, R> = try {
+    val result = taskProcessor(task)
+    successCounter.incrementAndGet()
+    progressChannel.send(1)
+    TaskResult.Success(task, result)
+} catch (_: SocketException) {
+    getResult(task, progressChannel, successCounter, errorCounter, taskProcessor)
+} catch (_: ConnectException) {
+    getResult(task, progressChannel, successCounter, errorCounter, taskProcessor)
+} catch (e: Exception) {
+    errorCounter.incrementAndGet()
+    progressChannel.send(1)
+    TaskResult.Failure(task, e)
+}
+
+suspend fun <R : SerializableObject> List<File>.executeTask(
+    taskIdentifier: String,
+    taskSerializer: suspend (JSONObject) -> R,
+    taskProcessor: suspend (File) -> R?
+): List<TaskResult<File, R?>> =
+    executeTask(taskIdentifier) { file ->
+        val cacheFile = File("${file}.cache")
+        if (file.exists())
+            taskProcessor(file).also { result ->
+                cacheFile.writeText(result?.toObject()?.toPrettyString() ?: "null")
+                file.delete()
+            }
+        else if (cacheFile.exists())
+            cacheFile.toJSON()
+                .takeIf { !it.isNull }
+                ?.let { taskSerializer(it.toObject()) }
+        else
+            throw NoSuchFileException(file)
+    }
+
 suspend fun <T, R1, R2> List<TaskResult<T, R1>>.executeTask(
     taskIdentifier: String,
     taskProcessor: suspend (T, R1) -> R2
 ): List<TaskResult<T, R2>> =
     executeTask(taskIdentifier) {
         it.map { (task, result) -> taskProcessor(task, result) }
+    }.mapResults()
+
+suspend fun <T, R : SerializableObject> List<TaskResult<T, File>>.executeTask(
+    taskIdentifier: String,
+    taskSerializer: suspend (JSONObject) -> R,
+    taskProcessor: suspend (T, File) -> R?
+): List<TaskResult<T, R?>> =
+    executeTask(taskIdentifier) { taskResult ->
+        taskResult.map { (task, file) ->
+            val cacheFile = File("${file}.cache")
+            if (file.exists())
+                taskProcessor(task, file).also { result ->
+                    cacheFile.writeText(result?.toObject()?.toPrettyString() ?: "null")
+                    file.delete()
+                }
+            else if (cacheFile.exists())
+                cacheFile.toJSON()
+                    .takeIf { !it.isNull }
+                    ?.let { taskSerializer(it.toObject()) }
+            else
+                throw NoSuchFileException(file)
+        }
     }.mapResults()
 
 fun <T, R1, R2> List<TaskResult<TaskResult<T, R1>, R2>>.mapResults(): List<TaskResult<T, R2>> = map { result ->
@@ -86,12 +146,13 @@ fun <T, R1, R2> List<TaskResult<TaskResult<T, R1>, R2>>.mapResults(): List<TaskR
 
 suspend fun <T> List<T>.executeScrapeTask(
     taskIdentifier: String,
+    cachable: Boolean = false,
     urlFileProcessor: suspend (T) -> Pair<String, String>
 ): List<TaskResult<T, File>> =
     executeTask(taskIdentifier) { task ->
         urlFileProcessor(task).let { (url, fileName) ->
             File(baseScrapeCacheDir, fileName).also { file ->
-                if (!file.exists()) {
+                if (!file.exists() && !(cachable && File("${file}.cache").exists())) {
                     file.parentFile.mkdirs()
                     file.writeBytes(URI(url).toURL().readBytes())
                 }
@@ -101,9 +162,10 @@ suspend fun <T> List<T>.executeScrapeTask(
 
 suspend fun <T, R> List<TaskResult<T, R>>.executeScrapeTask(
     taskIdentifier: String,
+    cachable: Boolean = false,
     urlFileProcessor: suspend (T, R) -> Pair<String, String>
 ): List<TaskResult<T, File>> =
-    executeScrapeTask(taskIdentifier) {
+    executeScrapeTask(taskIdentifier, cachable) {
         it.map { (task, result) -> urlFileProcessor(task, result) }
     }.mapResults()
 

@@ -1,3 +1,5 @@
+package data
+
 import net.vpg.vjson.value.JSONObject
 import net.vpg.vjson.value.SerializableObject
 
@@ -12,6 +14,18 @@ data class TrackData(
     val dateAdded: String,
     val url: String
 ) : SerializableObject {
+    constructor(obj: JSONObject) : this(
+        id = obj.getString("id"),
+        title = obj.getString("title"),
+        uploaderId = obj.getString("uploaderId"),
+        albumId = obj.getString("albumId"),
+        loopStart = obj.getInt("loopStart"),
+        loopEnd = obj.getInt("loopEnd"),
+        sampleRate = obj.getInt("sampleRate"),
+        dateAdded = obj.getString("dateAdded"),
+        url = obj.getString("url")
+    )
+
     override fun toObject() = JSONObject()
         .put("id", id)
         .put("title", title)
