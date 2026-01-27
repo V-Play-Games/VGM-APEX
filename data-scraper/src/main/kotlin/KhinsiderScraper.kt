@@ -1,8 +1,11 @@
 import data.AlbumData
 import data.TrackData
+import data.UploaderData
+import net.vpg.vjson.value.JSONArray.Companion.toJSON
 import net.vpg.vjson.value.JSONObject
 import net.vpg.vjson.value.SerializableObject
 import org.jsoup.Jsoup
+import java.io.File
 
 const val khBaseUrl = "https://downloads.khinsider.com"
 const val khGamesPageUrl = "$khBaseUrl/game-soundtracks?page="
@@ -12,8 +15,7 @@ suspend fun main() {
         .get()
         .getElementsByClass("counter")
         .text()
-        .split(" of ")
-        .last()
+        .substringAfterLast(" of ")
         .toInt()
     // (1..pageCount)
     val albumTrackMap = (1..3) // do 3 pages for now, 195 too much
@@ -84,10 +86,9 @@ suspend fun main() {
         .executeTask("Parse Song Pages", { TrackData(it) }) { task, file ->
             val pageContent = Jsoup.parse(file).getElementById("pageContent")
             val title = pageContent?.getElementsByTag("p")
-                ?.text()
-                ?.lines()
+                ?.map { it.text() }
                 ?.firstOrNull { it.contains("Song name") }
-                ?.substringAfter(": ")
+                ?.substringAfter("Song name: ")
             if (title == null)
                 throw IllegalStateException("No title found for song page: ${task.second}")
             val url = pageContent.getElementsByTag("audio")
@@ -110,7 +111,23 @@ suspend fun main() {
         .filterSuccessful()
         .map { (task, trackData) -> task.first.albumData to trackData }
         .groupBy { it.first }
-        .mapValues { (_, list) -> list.map { (_, track) -> track } }
+        .mapValues { (_, list) -> list.map { (_, track) -> track!! } }
+        .mapKeys { (album, list) -> album.copy(trackIds = list.map { it.id }) }
+    val uploaderList = albumTrackMap.values
+        .flatten()
+        .groupBy { it.uploaderId }
+        .mapValues { (_, list) -> list.map { track -> track.id } }
+        .map { (id, list) -> UploaderData(id = id, name = id.substringBeforeLast("-"), trackIds = list) }
+        .toJSON()
+    val albumList = albumTrackMap.keys.toList().toJSON()
+    val trackList = albumTrackMap.values.flatten().toJSON()
+
+    File("data-scraper/khinsider-output").apply { mkdirs() }
+        .also { dir ->
+            File(dir, "uploaders.json").writeText(uploaderList.toPrettyString())
+            File(dir, "albums.json").writeText(albumList.toPrettyString())
+            File(dir, "tracks.json").writeText(trackList.toPrettyString())
+        }
 }
 
 data class InterimAlbumData(

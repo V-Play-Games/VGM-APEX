@@ -8,13 +8,15 @@ import java.net.ConnectException
 import java.net.SocketException
 import java.net.URI
 import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicInteger
 
 // customize as per needed
 val baseScrapeCacheDir = File("D:/scrape-cache")
+val virtualDispatcher = Executors.newVirtualThreadPerTaskExecutor().asCoroutineDispatcher()
+val cpuDispatcher = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()).asCoroutineDispatcher()
 
 suspend fun <T, R> List<T>.executeTask(
     taskIdentifier: String,
+    dispatcher: CoroutineDispatcher = virtualDispatcher,
     taskProcessor: suspend (T) -> R
 ): List<TaskResult<T, R>> = coroutineScope {
     val progressBarWidth = 50
@@ -24,33 +26,42 @@ suspend fun <T, R> List<T>.executeTask(
     val totalTasks = tasks.size
     val header = "Task: $taskIdentifier | Count: $totalTasks"
 
-    val progressChannel = Channel<Int>(Channel.BUFFERED)
-    val successCounter = AtomicInteger(0)
-    val errorCounter = AtomicInteger(0)
-    // Launch progress tracking coroutine if needed
+    val progressEvents = Channel<TaskResult<T, R>>(Channel.UNLIMITED)
+
     val progressJob = launch {
-        for (update in progressChannel) {
-            val success = successCounter.get()
-            val error = errorCounter.get()
+        var success = 0
+        var error = 0
+
+        for (event in progressEvents) {
+            when (event) {
+                is TaskResult.Success<T, R> -> success++
+                is TaskResult.Failure<T, R> -> error++
+            }
+
             val completed = success + error
             val percent = completed * 100 / totalTasks
             val completeWidth = progressBarWidth * percent / 100
-            val remainingWidth = progressBarWidth - completeWidth
-            val bar = "[" + "=".repeat(completeWidth) + " ".repeat(remainingWidth) + "]"
+            val bar = "[" + "=".repeat(completeWidth) +
+                    " ".repeat(progressBarWidth - completeWidth) + "]"
 
-            print("\r$header | Progress: $bar $percent% | Success: $success | Errors: $error")
+            print(
+                "\r$header | Progress: $bar $percent% " +
+                        "| Success: $success | Errors: $error"
+            )
         }
     }
 
-    // Execute tasks
-    val results = withContext(Executors.newVirtualThreadPerTaskExecutor().asCoroutineDispatcher()) {
+    val results = withContext(virtualDispatcher) {
         tasks.map { task ->
             async {
-                getResult(task, progressChannel, successCounter, errorCounter, taskProcessor)
+                getResult(task, taskProcessor).also {
+                    progressEvents.send(it)
+                }
             }
         }.awaitAll()
     }
-    progressChannel.close()
+
+    progressEvents.close()
     progressJob.join()
 
     val endTime = System.currentTimeMillis()
@@ -68,23 +79,23 @@ suspend fun <T, R> List<T>.executeTask(
 
 private suspend fun <T, R> getResult(
     task: T,
-    progressChannel: Channel<Int>,
-    successCounter: AtomicInteger,
-    errorCounter: AtomicInteger,
-    taskProcessor: suspend (T) -> R
-): TaskResult<T, R> = try {
-    val result = taskProcessor(task)
-    successCounter.incrementAndGet()
-    progressChannel.send(1)
-    TaskResult.Success(task, result)
-} catch (_: SocketException) {
-    getResult(task, progressChannel, successCounter, errorCounter, taskProcessor)
-} catch (_: ConnectException) {
-    getResult(task, progressChannel, successCounter, errorCounter, taskProcessor)
-} catch (e: Exception) {
-    errorCounter.incrementAndGet()
-    progressChannel.send(1)
-    TaskResult.Failure(task, e)
+    taskProcessor: suspend (T) -> R,
+    maxRetries: Int = 3
+): TaskResult<T, R> {
+    repeat(maxRetries) {
+        try {
+            return TaskResult.Success(task, taskProcessor(task))
+        } catch (e: SocketException) {
+            delay(50)
+        } catch (e: ConnectException) {
+            delay(50)
+        }
+    }
+    return try {
+        TaskResult.Success(task, taskProcessor(task))
+    } catch (e: Exception) {
+        TaskResult.Failure(task, e)
+    }
 }
 
 suspend fun <R : SerializableObject> List<File>.executeTask(
@@ -147,9 +158,10 @@ fun <T, R1, R2> List<TaskResult<TaskResult<T, R1>, R2>>.mapResults(): List<TaskR
 suspend fun <T> List<T>.executeScrapeTask(
     taskIdentifier: String,
     cachable: Boolean = false,
+    dispatcher: CoroutineDispatcher = virtualDispatcher,
     urlFileProcessor: suspend (T) -> Pair<String, String>
 ): List<TaskResult<T, File>> =
-    executeTask(taskIdentifier) { task ->
+    executeTask(taskIdentifier, dispatcher) { task ->
         urlFileProcessor(task).let { (url, fileName) ->
             File(baseScrapeCacheDir, fileName).also { file ->
                 if (!file.exists() && !(cachable && File("${file}.cache").exists())) {
@@ -163,9 +175,10 @@ suspend fun <T> List<T>.executeScrapeTask(
 suspend fun <T, R> List<TaskResult<T, R>>.executeScrapeTask(
     taskIdentifier: String,
     cachable: Boolean = false,
+    dispatcher: CoroutineDispatcher = virtualDispatcher,
     urlFileProcessor: suspend (T, R) -> Pair<String, String>
 ): List<TaskResult<T, File>> =
-    executeScrapeTask(taskIdentifier, cachable) {
+    executeScrapeTask(taskIdentifier, cachable, dispatcher) {
         it.map { (task, result) -> urlFileProcessor(task, result) }
     }.mapResults()
 

@@ -33,7 +33,7 @@ data class ApexTrack(
     )
 
     init {
-        TRACKS_DB.put(id, this)
+        TRACKS_DB[id] = this
     }
 
     val album by lazy { ApexAlbum.ALBUMS_DB[albumId]!! }
