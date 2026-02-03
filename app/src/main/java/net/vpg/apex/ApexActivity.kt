@@ -14,6 +14,9 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import net.vpg.apex.auth.AuthManager
+import net.vpg.apex.auth.AuthState
+import net.vpg.apex.auth.SignInScreen
 import net.vpg.apex.core.di.rememberContext
 import net.vpg.apex.core.di.rememberNavControllerProvider
 import net.vpg.apex.entities.ApexAlbum
@@ -43,6 +46,12 @@ class ApexActivity : ComponentActivity() {
 
     @Composable
     fun MainContent() {
+        val authState by AuthManager.authState.collectAsState()
+        if (authState !is AuthState.Authenticated) {
+            SignInScreen()
+            return
+        }
+
         val navController = rememberNavController()
         val navControllerProvider = rememberNavControllerProvider()
 

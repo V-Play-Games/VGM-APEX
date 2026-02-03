@@ -8,8 +8,6 @@ import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -17,7 +15,6 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "ap
 
 class ApexSettings(context: Context) {
     private val dataStore = context.dataStore
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     val theme = evaluateFlow<ThemeMode>(PreferenceKeys.THEME)
     val accentColor = evaluateFlow<AccentColor>(PreferenceKeys.ACCENT_COLOR)
     val animationSpeed = dataStore.data.map { it[PreferenceKeys.ANIMATION_SPEED] ?: 1.0f }
@@ -42,17 +39,22 @@ class ApexSettings(context: Context) {
         val GRID_SIZE = stringPreferencesKey("grid_size")
     }
 
-    fun updateTheme(theme: ThemeMode) = updatePreference(PreferenceKeys.THEME, theme.name)
+    fun updateTheme(theme: ThemeMode, scope: CoroutineScope) =
+        updatePreference(PreferenceKeys.THEME, theme.name, scope)
 
-    fun updateAccentColor(color: AccentColor) = updatePreference(PreferenceKeys.ACCENT_COLOR, color.name)
+    fun updateAccentColor(color: AccentColor, scope: CoroutineScope) =
+        updatePreference(PreferenceKeys.ACCENT_COLOR, color.name, scope)
 
-    fun updateAnimationSpeed(speed: Float) = updatePreference(PreferenceKeys.ANIMATION_SPEED, speed)
+    fun updateAnimationSpeed(speed: Float, scope: CoroutineScope) =
+        updatePreference(PreferenceKeys.ANIMATION_SPEED, speed, scope)
 
-    fun updateMarqueeSpeed(speed: Float) = updatePreference(PreferenceKeys.MARQUEE_SPEED, speed)
+    fun updateMarqueeSpeed(speed: Float, scope: CoroutineScope) =
+        updatePreference(PreferenceKeys.MARQUEE_SPEED, speed, scope)
 
-    fun updateGridSize(size: GridSize) = updatePreference(PreferenceKeys.GRID_SIZE, size.name)
+    fun updateGridSize(size: GridSize, scope: CoroutineScope) =
+        updatePreference(PreferenceKeys.GRID_SIZE, size.name, scope)
 
-    fun <T> updatePreference(key: Preferences.Key<T>, value: T) {
+    fun <T> updatePreference(key: Preferences.Key<T>, value: T, scope: CoroutineScope) {
         scope.launch {
             dataStore.edit { it[key] = value }
         }

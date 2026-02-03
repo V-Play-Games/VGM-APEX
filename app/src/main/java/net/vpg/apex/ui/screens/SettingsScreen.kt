@@ -27,6 +27,7 @@ object SettingsScreen : ApexScreenStatic(
     columnModifier = Modifier.fillMaxSize(),
     content = {
         val settings = rememberSettings()
+        val scope = rememberCoroutineScope()
 
         Column(
             modifier = Modifier
@@ -38,7 +39,7 @@ object SettingsScreen : ApexScreenStatic(
                 subtitle = "Choose your app appearance",
                 icon = Icons.Default.Brightness6,
                 currentChoice = rememberSetting { theme },
-                onChoiceSelected = { settings.updateTheme(it) }
+                onChoiceSelected = { settings.updateTheme(it, scope) }
             )
 
             ChoiceSettingItem(
@@ -46,7 +47,7 @@ object SettingsScreen : ApexScreenStatic(
                 subtitle = "Customize app color scheme",
                 icon = Icons.Default.Palette,
                 currentChoice = rememberSetting { accentColor },
-                onChoiceSelected = { settings.updateAccentColor(it) }
+                onChoiceSelected = { settings.updateAccentColor(it, scope) }
             )
 
             SpeedSettingItem(
@@ -56,7 +57,7 @@ object SettingsScreen : ApexScreenStatic(
                 currentSpeed = rememberFloatSetting { animationSpeed },
                 valueRange = 0.5f..2.0f,
                 steps = 2,
-                onSpeedChange = { settings.updateAnimationSpeed(it) }
+                onSpeedChange = { settings.updateAnimationSpeed(it, scope) }
             )
 
             SpeedSettingItem(
@@ -66,7 +67,7 @@ object SettingsScreen : ApexScreenStatic(
                 currentSpeed = rememberFloatSetting { marqueeSpeed },
                 valueRange = 0.5f..3.0f,
                 steps = 4,
-                onSpeedChange = { settings.updateMarqueeSpeed(it) }
+                onSpeedChange = { settings.updateMarqueeSpeed(it, scope) }
             )
 
             ChoiceSettingItem(
@@ -74,7 +75,7 @@ object SettingsScreen : ApexScreenStatic(
                 subtitle = "Album and track grid density",
                 icon = Icons.Default.GridView,
                 currentChoice = rememberSetting { gridSize },
-                onChoiceSelected = { settings.updateGridSize(it) }
+                onChoiceSelected = { settings.updateGridSize(it, scope) }
             )
         }
     }

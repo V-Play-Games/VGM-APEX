@@ -41,6 +41,7 @@ fun main() {
     val tracks = File("data-sorter/raw-tracks.json")
         .toJSON()
         .toArray()
+        .asSequence()
         .map { RawTrackData(it.toObject()) }
         .map {
             val encodedFileName = URLEncoder.encode(it.id, StandardCharsets.UTF_8.name()).replace("+", "%20")
@@ -67,6 +68,7 @@ fun main() {
             else
                 trackList.mapIndexed { index, track -> track.copy(id = "${id}${(index + 'a'.code).toChar()}") }
         }.flatten()
+        .toList()
 
     val albums = tracks.groupBy { it.albumId }.map { (albumId, albumTracks) ->
         val albumUrl = "https://github.com/VGM-Apex/apex-image/raw/main/$albumId.png"

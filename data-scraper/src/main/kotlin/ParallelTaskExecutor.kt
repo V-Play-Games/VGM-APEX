@@ -16,7 +16,7 @@ val cpuDispatcher = Executors.newFixedThreadPool(Runtime.getRuntime().availableP
 
 suspend fun <T, R> List<T>.executeTask(
     taskIdentifier: String,
-    dispatcher: CoroutineDispatcher = virtualDispatcher,
+    dispatcher: CoroutineDispatcher = cpuDispatcher,
     taskProcessor: suspend (T) -> R
 ): List<TaskResult<T, R>> = coroutineScope {
     val progressBarWidth = 50
@@ -51,7 +51,7 @@ suspend fun <T, R> List<T>.executeTask(
         }
     }
 
-    val results = withContext(virtualDispatcher) {
+    val results = withContext(dispatcher) {
         tasks.map { task ->
             async {
                 getResult(task, taskProcessor).also {
@@ -85,10 +85,12 @@ private suspend fun <T, R> getResult(
     repeat(maxRetries) {
         try {
             return TaskResult.Success(task, taskProcessor(task))
-        } catch (e: SocketException) {
+        } catch (_: SocketException) {
             delay(50)
-        } catch (e: ConnectException) {
+        } catch (_: ConnectException) {
             delay(50)
+        } catch (e: Exception) {
+            return TaskResult.Failure(task, e)
         }
     }
     return try {

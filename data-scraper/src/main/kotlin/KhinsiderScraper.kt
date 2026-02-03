@@ -6,6 +6,7 @@ import net.vpg.vjson.value.JSONObject
 import net.vpg.vjson.value.SerializableObject
 import org.jsoup.Jsoup
 import java.io.File
+import java.net.URLEncoder
 
 const val khBaseUrl = "https://downloads.khinsider.com"
 const val khGamesPageUrl = "$khBaseUrl/game-soundtracks?page="
@@ -17,8 +18,7 @@ suspend fun main() {
         .text()
         .substringAfterLast(" of ")
         .toInt()
-    // (1..pageCount)
-    val albumTrackMap = (1..3) // do 3 pages for now, 195 too much
+    val albumTrackMap = (1..pageCount)
         .toList()
         .executeScrapeTask("Scrape Game List Pages") { pageNum ->
             khGamesPageUrl + pageNum to "apex/khinsider/page/games-page-$pageNum.html"
@@ -34,7 +34,8 @@ suspend fun main() {
         .flatten()
         .distinct()
         .executeScrapeTask("Scrape Game Pages", true) { url ->
-            url to "apex/khinsider/album/${url.substringAfterLast("/")}.html"
+            url.substringBeforeLast('/') + "/" + URLEncoder.encode(url.substringAfterLast('/'), Charsets.UTF_8) to
+                    "apex/khinsider/album/${url.substringAfterLast("/")}.html"
         }
         .mapToResult()
         .executeTask("Extract Album Details", { InterimAlbumData(it) }) { file ->
