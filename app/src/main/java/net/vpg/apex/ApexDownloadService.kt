@@ -1,5 +1,6 @@
 package net.vpg.apex
 
+import android.app.Notification
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
@@ -25,7 +26,10 @@ class ApexDownloadService : DownloadService(
 
     override fun getScheduler() = PlatformScheduler(this, JOB_ID)
 
-    override fun getForegroundNotification(downloads: List<Download>, notMetRequirements: @RequirementFlags Int) =
+    override fun getForegroundNotification(
+        downloads: List<Download>,
+        notMetRequirements: @RequirementFlags Int
+    ): Notification =
         downloadNotificationHelper.buildProgressNotification(
             this,
             R.drawable.ic_giratina_chill,

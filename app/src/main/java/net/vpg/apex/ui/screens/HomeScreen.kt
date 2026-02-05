@@ -8,13 +8,17 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavKey
+import kotlinx.serialization.Serializable
 import net.vpg.apex.core.RandomPicks
 import net.vpg.apex.util.bounceClick
 import net.vpg.apex.core.di.rememberPlayHistory
 import net.vpg.apex.ui.components.common.TrackDisplaySection
 
-object HomeScreen : ApexBottomBarScreen(
-    route = "home",
+@Serializable object HomeRoute : NavKey
+
+object HomeScreen : ApexBottomBarScreen<HomeRoute>(
+    route = HomeRoute,
     icon = Icons.Default.Home,
     title = "Home",
     content = {

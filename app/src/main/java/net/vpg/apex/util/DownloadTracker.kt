@@ -96,7 +96,7 @@ class DownloadTracker(val context: Context, downloadManager: DownloadManager) {
         fun download() {
             if (isDownloaded || isPending || isDownloading) return
             downloadState = Download.STATE_QUEUED
-            download(ApexTrack.Companion.TRACKS_DB[id]!!)
+            download(ApexTrack.TRACKS_DB[id]!!)
         }
     }
 }

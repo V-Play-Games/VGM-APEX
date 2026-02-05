@@ -25,16 +25,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
-import net.vpg.apex.util.bounceClick
+import kotlinx.serialization.Serializable
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.ui.components.common.AlbumImage
 import net.vpg.apex.ui.components.common.TrackBar
 import net.vpg.apex.ui.components.common.TrackDownloadIcon
 import net.vpg.apex.ui.components.player.ShuffleButton
+import net.vpg.apex.util.bounceClick
 
-object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum>(
-    route = ApexAlbum::class,
+@Serializable class AlbumInfoRoute(override val data: ApexAlbum) : ApexDynamicNavKey<ApexAlbum>
+
+object AlbumInfoScreen : ApexScreenDynamic<ApexAlbum, AlbumInfoRoute>(
+    route = AlbumInfoRoute::class,
     content = { album ->
         val player = rememberPlayer()
 

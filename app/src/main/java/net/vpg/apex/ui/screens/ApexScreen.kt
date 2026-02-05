@@ -7,57 +7,46 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
 import kotlin.reflect.KClass
 
-sealed class ApexScreen {
-    abstract fun composeTo(builder: NavGraphBuilder, navController: NavHostController)
+sealed class ApexScreen<K : NavKey> {
+    abstract fun composeTo(scope: EntryProviderScope<NavKey>)
 }
 
-sealed class ApexScreenDynamic<T : Any>(
-    val route: KClass<T>,
-    columnModifier: Modifier = Modifier,
-    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
-    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
-    content: @Composable ColumnScope.(T) -> Unit
-) : ApexScreen() {
-    private lateinit var navigateFunction: (T) -> Unit
+interface ApexDynamicNavKey<T> : NavKey {
+    val data: T
+}
 
-    private val screen: @Composable (T) -> Unit by lazy {
-        @Composable { t ->
+sealed class ApexScreenDynamic<T, K : ApexDynamicNavKey<T>>(
+    val route: KClass<K>,
+    private val columnModifier: Modifier = Modifier,
+    private val verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    private val horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    private val content: @Composable ColumnScope.(T) -> Unit
+) : ApexScreen<K>() {
+    override fun composeTo(scope: EntryProviderScope<NavKey>) {
+        scope.addEntryProvider(route) { key ->
             Column(
                 modifier = columnModifier,
                 verticalArrangement = verticalArrangement,
                 horizontalAlignment = horizontalAlignment,
-                content = { content(t) }
+                content = { content(key.data) }
             )
         }
     }
-
-    override fun composeTo(builder: NavGraphBuilder, navController: NavHostController) {
-        builder.composable(route) { entry ->
-            screen(entry.toRoute(route))
-        }
-        navigateFunction = { t -> navController.navigate(t) }
-    }
-
-    fun navigate(t: T) = navigateFunction(t)
 }
 
-sealed class ApexScreenStatic(
-    val route: String,
-    columnModifier: Modifier = Modifier,
-    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
-    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
-    content: @Composable ColumnScope.() -> Unit
-) : ApexScreen() {
-    private lateinit var navigateFunction: () -> Unit
-
-    private val screen by lazy {
-        @Composable {
+sealed class ApexScreenStatic<K : NavKey>(
+    val route: K,
+    private val columnModifier: Modifier = Modifier,
+    private val verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    private val horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    private val content: @Composable ColumnScope.() -> Unit
+) : ApexScreen<K>() {
+    override fun composeTo(scope: EntryProviderScope<NavKey>) {
+        scope.addEntryProvider(route) {
             Column(
                 modifier = columnModifier,
                 verticalArrangement = verticalArrangement,
@@ -66,27 +55,14 @@ sealed class ApexScreenStatic(
             )
         }
     }
-
-    override fun composeTo(builder: NavGraphBuilder, navController: NavHostController) {
-        builder.composable(route) {
-            screen()
-        }
-        navigateFunction = {
-            if (navController.currentBackStackEntry?.destination?.route != route) {
-                navController.navigate(route)
-            }
-        }
-    }
-
-    fun navigate() = navigateFunction()
 }
 
-sealed class ApexBottomBarScreen(
-    route: String,
+sealed class ApexBottomBarScreen<K : NavKey>(
+    route: K,
     val icon: ImageVector,
     val title: String,
     columnModifier: Modifier = Modifier,
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     content: @Composable ColumnScope.() -> Unit
-) : ApexScreenStatic(route, columnModifier, verticalArrangement, horizontalAlignment, content)
+) : ApexScreenStatic<K>(route, columnModifier, verticalArrangement, horizontalAlignment, content)

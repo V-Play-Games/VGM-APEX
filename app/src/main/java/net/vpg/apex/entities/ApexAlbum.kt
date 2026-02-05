@@ -25,7 +25,7 @@ data class ApexAlbum(
     )
 
     init {
-        ALBUMS_DB.put(id, this)
+        ALBUMS_DB[id] = this
     }
 
     override val tracks: List<ApexTrack> by lazy { trackIds.mapNotNull { ApexTrack.TRACKS_DB[it] } }

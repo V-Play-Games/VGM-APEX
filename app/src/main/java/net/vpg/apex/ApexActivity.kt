@@ -11,14 +11,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
 import net.vpg.apex.auth.AuthManager
 import net.vpg.apex.auth.AuthState
 import net.vpg.apex.auth.SignInScreen
 import net.vpg.apex.core.di.rememberContext
-import net.vpg.apex.core.di.rememberNavControllerProvider
+import net.vpg.apex.core.di.rememberNavigationStateProvider
+import net.vpg.apex.core.di.rememberNavigator
+import net.vpg.apex.core.rememberNavigationState
+import net.vpg.apex.core.toEntries
 import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.entities.ApexUploader
@@ -52,32 +55,35 @@ class ApexActivity : ComponentActivity() {
             return
         }
 
-        val navController = rememberNavController()
-        val navControllerProvider = rememberNavControllerProvider()
+        val navigationState = rememberNavigationState(
+            startRoute = HomeRoute,
+            topLevelRoutes = setOf(HomeRoute)
+        )
 
-        CompositionLocalProvider(navControllerProvider provides navController) {
+        CompositionLocalProvider(rememberNavigationStateProvider() provides navigationState) {
+            val navigator = rememberNavigator()
             Scaffold(
                 modifier = Modifier.statusBarsPadding(),
                 topBar = { TopBar() },
                 bottomBar = { BottomBar() },
             ) { paddingValues ->
-                NavHost(
-                    navController = navController,
-                    startDestination = HomeScreen.route,
-                    modifier = Modifier.padding(paddingValues)
-                ) {
-                    listOf(
-                        HomeScreen,
-                        SearchScreen,
-                        LibraryScreen,
-                        NowPlayingScreen,
-                        TrackInfoScreen,
-                        AlbumInfoScreen,
-                        SettingsScreen
-                    ).forEach {
-                        it.composeTo(this, navController)
-                    }
-                }
+                NavDisplay(
+                    modifier = Modifier.padding(paddingValues),
+                    entries = navigationState.toEntries(entryProvider {
+                        listOf(
+                            HomeScreen,
+                            SearchScreen,
+                            LibraryScreen,
+                            NowPlayingScreen,
+                            TrackInfoScreen,
+                            AlbumInfoScreen,
+                            SettingsScreen
+                        ).forEach {
+                            it.composeTo(this)
+                        }
+                    }),
+                    onBack = { navigator.goBack() }
+                )
             }
         }
     }

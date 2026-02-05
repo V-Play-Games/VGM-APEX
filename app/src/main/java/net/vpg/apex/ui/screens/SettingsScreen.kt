@@ -16,14 +16,18 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavKey
+import kotlinx.serialization.Serializable
 import net.vpg.apex.core.*
 import net.vpg.apex.core.di.rememberSetting
 import net.vpg.apex.core.di.rememberFloatSetting
 import net.vpg.apex.core.di.rememberSettings
 import net.vpg.apex.util.bounceClick
 
-object SettingsScreen : ApexScreenStatic(
-    route = "settings",
+@Serializable object SettingsRoute : NavKey
+
+object SettingsScreen : ApexScreenStatic<SettingsRoute>(
+    route = SettingsRoute,
     columnModifier = Modifier.fillMaxSize(),
     content = {
         val settings = rememberSettings()

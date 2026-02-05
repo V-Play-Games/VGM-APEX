@@ -57,7 +57,8 @@ dependencies {
     implementation(libs.datastore.preferences)
 
     // Navigation
-    implementation(libs.navigation.compose)
+    implementation(libs.navigation3.runtime)
+    implementation(libs.navigation3.ui)
     implementation(libs.kotlinx.serialization.json)
 
     // Material UI
@@ -79,7 +80,6 @@ dependencies {
 
     // Dependency Injection
     implementation(libs.hilt.android)
-    implementation(libs.hilt.navigation.compose)
     ksp(libs.hilt.android.compiler)
 
     implementation(libs.compose.shimmer)

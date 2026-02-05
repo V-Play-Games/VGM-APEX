@@ -16,14 +16,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation3.runtime.NavKey
+import kotlinx.serialization.Serializable
 import net.vpg.apex.core.di.rememberSearchHistory
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.entities.ApexTrackContext
 import net.vpg.apex.ui.components.common.TrackBar
 import net.vpg.apex.util.bounceClick
 
-object SearchScreen : ApexBottomBarScreen(
-    route = "search",
+@Serializable object SearchRoute : NavKey
+
+object SearchScreen : ApexBottomBarScreen<SearchRoute>(
+    route = SearchRoute,
     icon = Icons.Default.Search,
     title = "Search",
     columnModifier = Modifier.padding(horizontal = 12.dp),

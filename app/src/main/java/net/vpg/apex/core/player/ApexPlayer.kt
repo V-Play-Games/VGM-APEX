@@ -44,7 +44,7 @@ class ApexPlayer(
 
     override fun isPlaying() = playingState
     val isBuffering get() = bufferingState
-    val nowPlaying get() = if (currentIndex < 0) ApexTrack.Companion.EMPTY else currentContext.tracks[currentIndex]
+    val nowPlaying get() = if (currentIndex < 0) ApexTrack.EMPTY else currentContext.tracks[currentIndex]
     val isLooping get() = loopingState
     val isShuffling get() = shuffleState
     override fun getDuration() = durationState
@@ -252,16 +252,14 @@ class ApexPlayer(
 
     private inner class ShuffleOrderContext(
         val wrappedContext: ApexTrackContext,
-        val ogToShuffledMapping: Map<Int, Int> = wrappedContext.tracks
-            .mapIndexed { index, track -> index }
+        val ogToShuffledMapping: Map<Int, Int> = List(wrappedContext.tracks.size) { it }
             .shuffled()
             .mapIndexed { originalIndex, shuffledIndex -> originalIndex to shuffledIndex }
             .toMap()
     ) :
         ApexTrackContextDynamic(
             name = wrappedContext.name,
-            tracks = wrappedContext.tracks
-                .mapIndexed { index, track -> wrappedContext.tracks[ogToShuffledMapping[index]!!] }
+            tracks = List(wrappedContext.tracks.size) { i -> wrappedContext.tracks[ogToShuffledMapping[i]!!] }
         ) {
         override operator fun equals(other: Any?): Boolean {
             return wrappedContext == other

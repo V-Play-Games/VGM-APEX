@@ -9,21 +9,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.vpg.apex.util.apexMarquee
-import net.vpg.apex.util.customShimmer
+import net.vpg.apex.core.di.rememberNavigator
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.ui.components.common.AlbumImage
-import net.vpg.apex.ui.screens.NowPlayingScreen
+import net.vpg.apex.ui.screens.NowPlayingRoute
+import net.vpg.apex.util.apexMarquee
+import net.vpg.apex.util.customShimmer
 
 @Composable
 fun NowPlayingBar() {
     val player = rememberPlayer()
+    val navigator = rememberNavigator()
     if (player.nowPlaying == ApexTrack.EMPTY) return
     Row(
         modifier = Modifier
             .customShimmer(condition = player.isBuffering, durationMillis = 800)
-            .clickable { NowPlayingScreen.navigate() }
+            .clickable { navigator.navigate(NowPlayingRoute) }
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

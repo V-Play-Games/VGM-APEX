@@ -22,15 +22,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.serialization.Serializable
+import net.vpg.apex.core.di.rememberNavigator
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.ui.components.common.AlbumImage
 
-object TrackInfoScreen : ApexScreenDynamic<ApexTrack>(
-    route = ApexTrack::class,
+@Serializable class TrackInfoRoute(override val data: ApexTrack) : ApexDynamicNavKey<ApexTrack>
+
+object TrackInfoScreen : ApexScreenDynamic<ApexTrack, TrackInfoRoute>(
+    route = TrackInfoRoute::class,
     columnModifier = Modifier
         .padding(16.dp)
         .composed { this.verticalScroll(rememberScrollState()) },
     content = { track ->
+        val navigator = rememberNavigator()
+
         Row(verticalAlignment = Alignment.CenterVertically) {
             AlbumImage(
                 album = track.album,
@@ -53,7 +59,7 @@ object TrackInfoScreen : ApexScreenDynamic<ApexTrack>(
 
                 Text(
                     text = track.album.name,
-                    modifier = Modifier.clickable { AlbumInfoScreen.navigate(track.album) },
+                    modifier = Modifier.clickable { navigator.navigate(AlbumInfoRoute(track.album)) },
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

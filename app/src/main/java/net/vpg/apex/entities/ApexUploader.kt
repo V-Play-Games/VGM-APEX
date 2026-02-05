@@ -21,7 +21,7 @@ data class ApexUploader(
     )
 
     init {
-        UPLOADERS_DB.put(id, this)
+        UPLOADERS_DB[id] = this
     }
 
     override val tracks: List<ApexTrack> by lazy { trackIds.mapNotNull { ApexTrack.TRACKS_DB[it] } }

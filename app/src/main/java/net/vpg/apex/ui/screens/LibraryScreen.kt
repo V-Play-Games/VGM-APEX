@@ -12,11 +12,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation3.runtime.NavKey
+import kotlinx.serialization.Serializable
 import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.ui.components.common.AlbumBar
 
-object LibraryScreen : ApexBottomBarScreen(
-    route = "library",
+@Serializable object LibraryRoute : NavKey
+
+object LibraryScreen : ApexBottomBarScreen<LibraryRoute>(
+    route = LibraryRoute,
     icon = Icons.Default.LibraryMusic,
     title = "Library",
     columnModifier = Modifier.padding(horizontal = 12.dp),

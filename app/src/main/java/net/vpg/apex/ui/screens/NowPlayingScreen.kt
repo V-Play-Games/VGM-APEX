@@ -17,6 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation3.runtime.NavKey
+import kotlinx.serialization.Serializable
+import net.vpg.apex.core.di.rememberNavigator
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.ui.components.common.AlbumImageWithInfoButton
 import net.vpg.apex.ui.components.common.TrackBar
@@ -27,12 +30,15 @@ import net.vpg.apex.util.apexMarquee
 import net.vpg.apex.util.bounceClick
 import net.vpg.apex.util.customShimmer
 
+@Serializable object NowPlayingRoute : NavKey
+
 @OptIn(ExperimentalMaterial3Api::class)
-object NowPlayingScreen : ApexScreenStatic(
-    route = "now_playing",
+object NowPlayingScreen : ApexScreenStatic<NowPlayingRoute>(
+    route = NowPlayingRoute,
     columnModifier = Modifier.padding(horizontal = 12.dp),
     content = {
         val player = rememberPlayer()
+        val navigator = rememberNavigator()
         val nowPlaying = player.nowPlaying
         var showBottomSheet by remember { mutableStateOf(false) }
 
@@ -68,7 +74,7 @@ object NowPlayingScreen : ApexScreenStatic(
                     text = nowPlaying.album.name,
                     modifier = Modifier
                         .apexMarquee()
-                        .clickable { AlbumInfoScreen.navigate(nowPlaying.album) },
+                        .clickable { navigator.navigate(AlbumInfoRoute(nowPlaying.album)) },
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 16.sp,
                 )
