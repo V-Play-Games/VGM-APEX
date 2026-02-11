@@ -45,10 +45,7 @@ class NavigationManager(
 fun rememberNavigationManager(startRoute: NavKey): NavigationManager {
     val backStack = rememberNavBackStack(startRoute)
     return remember(startRoute) {
-        NavigationManager(
-            startRoute = startRoute,
-            backStack = backStack
-        )
+        NavigationManager(startRoute, backStack)
     }
 }
 

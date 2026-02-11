@@ -5,26 +5,18 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.navigation3.runtime.entryProvider
-import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
+import net.vpg.apex.core.LocalNavigationManager
 import net.vpg.apex.core.auth.AuthManager
 import net.vpg.apex.core.auth.AuthState
-import net.vpg.apex.ui.screens.AuthScreen
-import net.vpg.apex.core.LocalNavigationManager
 import net.vpg.apex.core.di.rememberContext
 import net.vpg.apex.core.rememberNavigationManager
 import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.entities.ApexUploader
-import net.vpg.apex.ui.components.navigation.BottomBar
-import net.vpg.apex.ui.components.navigation.TopBar
+import net.vpg.apex.ui.components.navigation.MainScaffold
 import net.vpg.apex.ui.screens.*
 import net.vpg.vjson.parser.JSONParser.toJSON
 import net.vpg.vjson.value.JSONObject
@@ -53,32 +45,17 @@ class ApexActivity : ComponentActivity() {
             return
         }
 
-        val navManager = rememberNavigationManager(HomeRoute)
-
-        CompositionLocalProvider(LocalNavigationManager provides navManager) {
-            Scaffold(
-                modifier = Modifier.statusBarsPadding(),
-                topBar = { TopBar() },
-                bottomBar = { BottomBar() },
-            ) { paddingValues ->
-                NavDisplay(
-                    modifier = Modifier.padding(paddingValues),
-                    entries = navManager.toEntries(entryProvider {
-                        listOf(
-                            HomeScreen,
-                            SearchScreen,
-                            LibraryScreen,
-                            NowPlayingScreen,
-                            TrackInfoScreen,
-                            AlbumInfoScreen,
-                            SettingsScreen
-                        ).forEach {
-                            it.composeTo(this)
-                        }
-                    }),
-                    onBack = { navManager.goBack() }
-                )
-            }
+        CompositionLocalProvider(LocalNavigationManager provides rememberNavigationManager(HomeRoute)) {
+            MainScaffold(
+                HomeScreen,
+                SearchScreen,
+                LibraryScreen,
+                NowPlayingScreen,
+                TrackInfoScreen,
+                AlbumInfoScreen,
+                SettingsScreen,
+                ProfileScreen
+            )
         }
     }
 
