@@ -23,3 +23,4 @@ rootProject.name = "APEX"
 include(":app")
 include("data-sorter")
 include("data-scraper")
+include("backend")
