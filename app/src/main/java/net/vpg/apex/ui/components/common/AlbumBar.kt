@@ -12,10 +12,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import net.vpg.apex.core.di.rememberNavigator
 import net.vpg.apex.core.di.rememberPlayer
 import net.vpg.apex.core.di.rememberSetting
 import net.vpg.apex.core.rememberAnimationProvider
+import net.vpg.apex.core.rememberNavigationManager
 import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.ui.screens.AlbumInfoRoute
 import net.vpg.apex.util.bounceClick
@@ -24,7 +24,7 @@ import net.vpg.apex.util.bounceClick
 fun AlbumBar(apexAlbum: ApexAlbum) {
     val player = rememberPlayer()
     val animationProvider = rememberAnimationProvider()
-    val navigator = rememberNavigator()
+    val navManager = rememberNavigationManager()
     val gridSize = rememberSetting { gridSize }
 
     val color by animateColorAsState(
@@ -43,7 +43,7 @@ fun AlbumBar(apexAlbum: ApexAlbum) {
         modifier = Modifier
             .fillMaxWidth() // don't remove
             .padding(vertical = 8.dp)
-            .bounceClick { navigator.navigate(AlbumInfoRoute(apexAlbum)) }
+            .bounceClick { navManager.navigate(AlbumInfoRoute(apexAlbum)) }
     ) {
         AlbumImage(apexAlbum, size = gridSize.barSize, cornerRadius = 0)
         Spacer(modifier = Modifier.width(16.dp))

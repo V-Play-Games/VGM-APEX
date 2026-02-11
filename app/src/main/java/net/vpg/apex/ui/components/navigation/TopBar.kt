@@ -15,13 +15,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import net.vpg.apex.R
-import net.vpg.apex.core.di.rememberNavigator
+import net.vpg.apex.core.rememberNavigationManager
 import net.vpg.apex.ui.screens.SettingsRoute
 import net.vpg.apex.util.bounceClick
 
 @Composable
 fun TopBar() {
-    val navigator = rememberNavigator()
+    val navManager = rememberNavigationManager()
     Row(
         modifier = Modifier
             .fillMaxWidth() // don't remove
@@ -46,7 +46,7 @@ fun TopBar() {
         Row {
             Icon(
                 Icons.Default.Settings,
-                modifier = Modifier.bounceClick(onClick = { navigator.navigate(SettingsRoute) }),
+                modifier = Modifier.bounceClick(onClick = { navManager.navigate(SettingsRoute) }),
                 contentDescription = "Settings",
                 tint = MaterialTheme.colorScheme.onPrimaryContainer
             )

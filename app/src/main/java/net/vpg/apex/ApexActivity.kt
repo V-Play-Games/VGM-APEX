@@ -17,11 +17,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import net.vpg.apex.auth.AuthManager
 import net.vpg.apex.auth.AuthState
 import net.vpg.apex.auth.SignInScreen
+import net.vpg.apex.core.LocalNavigationManager
 import net.vpg.apex.core.di.rememberContext
-import net.vpg.apex.core.di.rememberNavigationStateProvider
-import net.vpg.apex.core.di.rememberNavigator
-import net.vpg.apex.core.rememberNavigationState
-import net.vpg.apex.core.toEntries
+import net.vpg.apex.core.rememberNavigationManager
 import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.entities.ApexUploader
@@ -55,13 +53,9 @@ class ApexActivity : ComponentActivity() {
             return
         }
 
-        val navigationState = rememberNavigationState(
-            startRoute = HomeRoute,
-            topLevelRoutes = setOf(HomeRoute)
-        )
+        val navManager = rememberNavigationManager(HomeRoute)
 
-        CompositionLocalProvider(rememberNavigationStateProvider() provides navigationState) {
-            val navigator = rememberNavigator()
+        CompositionLocalProvider(LocalNavigationManager provides navManager) {
             Scaffold(
                 modifier = Modifier.statusBarsPadding(),
                 topBar = { TopBar() },
@@ -69,7 +63,7 @@ class ApexActivity : ComponentActivity() {
             ) { paddingValues ->
                 NavDisplay(
                     modifier = Modifier.padding(paddingValues),
-                    entries = navigationState.toEntries(entryProvider {
+                    entries = navManager.toEntries(entryProvider {
                         listOf(
                             HomeScreen,
                             SearchScreen,
@@ -82,7 +76,7 @@ class ApexActivity : ComponentActivity() {
                             it.composeTo(this)
                         }
                     }),
-                    onBack = { navigator.goBack() }
+                    onBack = { navManager.goBack() }
                 )
             }
         }

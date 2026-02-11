@@ -21,7 +21,7 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import net.vpg.apex.core.di.rememberContext
-import net.vpg.apex.core.di.rememberNavigator
+import net.vpg.apex.core.rememberNavigationManager
 import net.vpg.apex.entities.ApexAlbum
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.ui.screens.TrackInfoRoute
@@ -72,7 +72,7 @@ fun AlbumImage(album: ApexAlbum, size: Int, cornerRadius: Int = 8) {
 
 @Composable
 fun AlbumImageWithInfoButton(album: ApexAlbum, size: Int, apexTrack: ApexTrack) {
-    val navigator = rememberNavigator()
+    val navManager = rememberNavigationManager()
 
     Box {
         AlbumImage(album, size)
@@ -84,7 +84,7 @@ fun AlbumImageWithInfoButton(album: ApexAlbum, size: Int, apexTrack: ApexTrack) 
                 .shadow(elevation = 4.dp)
                 .align(Alignment.TopEnd)
                 .zIndex(1f)
-                .bounceClick { navigator.navigate(TrackInfoRoute(apexTrack)) }
+                .bounceClick { navManager.navigate(TrackInfoRoute(apexTrack)) }
         )
     }
 }

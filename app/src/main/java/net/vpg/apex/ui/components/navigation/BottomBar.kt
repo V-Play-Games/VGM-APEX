@@ -11,8 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import net.vpg.apex.core.di.rememberNavigationState
-import net.vpg.apex.core.di.rememberNavigator
+import net.vpg.apex.core.rememberNavigationManager
 import net.vpg.apex.ui.components.player.NowPlayingBar
 import net.vpg.apex.ui.components.player.SeekBar
 import net.vpg.apex.ui.screens.HomeScreen
@@ -30,9 +29,8 @@ fun BottomBar() {
         unselectedTextColor = Color.Gray
     )
     val screens = listOf(HomeScreen, SearchScreen, LibraryScreen)
-    val navigationState = rememberNavigationState()
-    val destination = navigationState.backStacks[navigationState.topLevelRoute]!!.last()
-    val navigator = rememberNavigator()
+    val navManager = rememberNavigationManager()
+    val destination = navManager.backStack.last()
 
     Column {
         // Only show the NowPlayingBar if not on the NowPlayingScreen
@@ -55,7 +53,7 @@ fun BottomBar() {
                     icon = { Icon(screen.icon, contentDescription = screen.title) },
                     label = { Text(screen.title) },
                     selected = destination == screen.route,
-                    onClick = { navigator.navigate(screen.route) },
+                    onClick = { navManager.navigate(screen.route) },
                     colors = colors
                 )
             }
