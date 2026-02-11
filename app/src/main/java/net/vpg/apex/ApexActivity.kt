@@ -14,9 +14,9 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
-import net.vpg.apex.auth.AuthManager
-import net.vpg.apex.auth.AuthState
-import net.vpg.apex.auth.SignInScreen
+import net.vpg.apex.core.auth.AuthManager
+import net.vpg.apex.core.auth.AuthState
+import net.vpg.apex.ui.screens.AuthScreen
 import net.vpg.apex.core.LocalNavigationManager
 import net.vpg.apex.core.di.rememberContext
 import net.vpg.apex.core.rememberNavigationManager
@@ -49,7 +49,7 @@ class ApexActivity : ComponentActivity() {
     fun MainContent() {
         val authState by AuthManager.authState.collectAsState()
         if (authState !is AuthState.Authenticated) {
-            SignInScreen()
+            AuthScreen()
             return
         }
 

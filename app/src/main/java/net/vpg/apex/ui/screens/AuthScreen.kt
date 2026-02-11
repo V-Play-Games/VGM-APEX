@@ -1,5 +1,6 @@
-package net.vpg.apex.auth
+package net.vpg.apex.ui.screens
 
+import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -16,6 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialException
@@ -24,18 +26,49 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import kotlinx.coroutines.launch
 import net.vpg.apex.R
+import net.vpg.apex.core.auth.AuthManager
+import net.vpg.apex.core.auth.AuthState
 import net.vpg.apex.core.di.rememberContext
 
 @Composable
-fun SignInScreen() {
+fun AuthScreen() {
     val context = LocalContext.current
     val authState by AuthManager.authState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
 
+    var hasStartedFIlling by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var isSignUp by remember { mutableStateOf(false) }
+    val invalidCredentialsError by remember(email, password) {
+        derivedStateOf {
+            if (!hasStartedFIlling)
+                ""
+            else if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches())
+                "Please enter a valid email address"
+            else if (password.isEmpty())
+                "Please enter a password"
+            else if (password.length < 6)
+                "Password must be at least 6 characters"
+            else if (!password.contains("\\d".toRegex()))
+                "Password must contain at least one number"
+            else if (!password.contains("[A-Z]".toRegex()))
+                "Password must contain at least one uppercase letter"
+            else if (!password.contains("[a-z]".toRegex()))
+                "Password must contain at least one lowercase letter"
+            else if (!password.contains("[^A-Za-z0-9]".toRegex()))
+                "Password must contain at least one special character"
+            else null
+        }
+    }
+
+    LaunchedEffect(hasStartedFIlling) {
+        if (hasStartedFIlling) return@LaunchedEffect
+        if (email.isNotBlank() || password.isNotBlank()) {
+            hasStartedFIlling = true
+        }
+    }
 
     LaunchedEffect(authState) {
         if (authState is AuthState.Error) {
@@ -102,21 +135,17 @@ fun SignInScreen() {
                 Button(
                     onClick = {
                         coroutineScope.launch {
-                            if (email.isNotBlank() && password.isNotBlank()) {
-                                if (isSignUp) {
-                                    AuthManager.signUpWithEmail(email, password)
-                                } else {
-                                    AuthManager.signInWithEmail(email, password)
-                                }
+                            if (isSignUp) {
+                                AuthManager.signUpWithEmail(email, password)
                             } else {
-                                Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                                AuthManager.signInWithEmail(email, password)
                             }
                         }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
-                    enabled = authState !is AuthState.Loading
+                    enabled = authState !is AuthState.Loading && invalidCredentialsError == null
                 ) {
                     if (authState is AuthState.Loading) {
                         CircularProgressIndicator(
@@ -126,6 +155,14 @@ fun SignInScreen() {
                     } else {
                         Text(if (isSignUp) "Sign Up" else "Sign In")
                     }
+                }
+
+                if (invalidCredentialsError != null) {
+                    Text(
+                        text = invalidCredentialsError!!,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
 
                 Row(

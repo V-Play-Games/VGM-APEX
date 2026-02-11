@@ -1,4 +1,4 @@
-package net.vpg.apex.auth
+package net.vpg.apex.core.auth
 
 import com.google.firebase.auth.FirebaseUser
 
