@@ -3,5 +3,4 @@
 .kotlin
 .gradle
 build
-google-services.json
 local.properties
