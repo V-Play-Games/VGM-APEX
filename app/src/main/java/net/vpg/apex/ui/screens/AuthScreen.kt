@@ -1,6 +1,5 @@
 package net.vpg.apex.ui.screens
 
-import android.util.Patterns
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -28,6 +27,7 @@ import kotlinx.coroutines.launch
 import net.vpg.apex.R
 import net.vpg.apex.core.auth.AuthManager
 import net.vpg.apex.core.auth.AuthState
+import net.vpg.apex.core.auth.validateLoginInput
 import net.vpg.apex.core.di.rememberContext
 
 @Composable
@@ -36,37 +36,21 @@ fun AuthScreen() {
     val authState by AuthManager.authState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
 
-    var hasStartedFIlling by remember { mutableStateOf(false) }
+    var hasStartedFilling by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var isSignUp by remember { mutableStateOf(false) }
     val invalidCredentialsError by remember(email, password) {
         derivedStateOf {
-            if (!hasStartedFIlling)
-                ""
-            else if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches())
-                "Please enter a valid email address"
-            else if (password.isEmpty())
-                "Please enter a password"
-            else if (password.length < 6)
-                "Password must be at least 6 characters"
-            else if (!password.contains("\\d".toRegex()))
-                "Password must contain at least one number"
-            else if (!password.contains("[A-Z]".toRegex()))
-                "Password must contain at least one uppercase letter"
-            else if (!password.contains("[a-z]".toRegex()))
-                "Password must contain at least one lowercase letter"
-            else if (!password.contains("[^A-Za-z0-9]".toRegex()))
-                "Password must contain at least one special character"
-            else null
+            if (!hasStartedFilling) "" else validateLoginInput(email, password)
         }
     }
 
-    LaunchedEffect(hasStartedFIlling) {
-        if (hasStartedFIlling) return@LaunchedEffect
+    LaunchedEffect(hasStartedFilling) {
+        if (hasStartedFilling) return@LaunchedEffect
         if (email.isNotBlank() || password.isNotBlank()) {
-            hasStartedFIlling = true
+            hasStartedFilling = true
         }
     }
 
