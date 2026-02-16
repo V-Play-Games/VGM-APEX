@@ -73,6 +73,9 @@ dependencies {
     // JSON
     implementation(libs.vjson)
 
+    // Validation
+    implementation(libs.konform)
+
     // Image Loading
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
@@ -93,4 +96,10 @@ dependencies {
     implementation(libs.credentials)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)
+
+    // Ktor Client
+    implementation(libs.ktor.client.android)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.serialization.json)
 }

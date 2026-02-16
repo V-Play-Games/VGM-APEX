@@ -21,4 +21,5 @@ dependencies {
 
     // Firebase Admin SDK
     implementation(libs.firebase.admin)
+    implementation(libs.mongodb.driver)
 }
