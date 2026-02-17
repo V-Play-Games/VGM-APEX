@@ -10,7 +10,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ClippingMediaSource
 import androidx.media3.exoplayer.source.MediaSource
-import net.vpg.apex.core.ApexTrackContextDynamic
 import net.vpg.apex.core.PlayHistory
 import net.vpg.apex.entities.ApexTrack
 import net.vpg.apex.entities.ApexTrackContext
@@ -250,22 +249,18 @@ class ApexPlayer(
         }
     }
 
-    private inner class ShuffleOrderContext(
-        val wrappedContext: ApexTrackContext,
+    private inner class ShuffleOrderContext(val wrappedContext: ApexTrackContext) : ApexTrackContext {
+        override val name = wrappedContext.name
         val ogToShuffledMapping: Map<Int, Int> = List(wrappedContext.tracks.size) { it }
             .shuffled()
             .mapIndexed { originalIndex, shuffledIndex -> originalIndex to shuffledIndex }
             .toMap()
-    ) :
-        ApexTrackContextDynamic(
-            name = wrappedContext.name,
-            tracks = List(wrappedContext.tracks.size) { i -> wrappedContext.tracks[ogToShuffledMapping[i]!!] }
-        ) {
+        val shuffledToOgMapping = ogToShuffledMapping.entries.associate { (k, v) -> v to k }
+        override val tracks = List(wrappedContext.tracks.size) { i -> wrappedContext.tracks[ogToShuffledMapping[i]!!] }
+
         override operator fun equals(other: Any?): Boolean {
             return wrappedContext == other
         }
-
-        val shuffledToOgMapping = ogToShuffledMapping.entries.associate { (k, v) -> v to k }
 
         override fun hashCode(): Int {
             return wrappedContext.hashCode()

@@ -24,7 +24,7 @@ object HomeScreen : ApexBottomBarScreen<HomeRoute>(
     content = {
         val playHistory = rememberPlayHistory()
 
-        RandomPicks.currentPicks.TrackDisplaySection {
+        RandomPicks.TrackDisplaySection {
             Icon(
                 imageVector = Icons.Default.Refresh,
                 contentDescription = "Home",

@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import dagger.hilt.android.AndroidEntryPoint
 import net.vpg.apex.core.LocalNavigationManager
+import net.vpg.apex.core.api.ApiClient
 import net.vpg.apex.core.auth.AuthManager
 import net.vpg.apex.core.auth.AuthState
 import net.vpg.apex.core.di.rememberContext
@@ -43,6 +44,9 @@ class ApexActivity : ComponentActivity() {
         if (authState !is AuthState.Authenticated) {
             AuthScreen()
             return
+        }
+        LaunchedEffect(Unit) {
+            ApiClient.login()
         }
 
         CompositionLocalProvider(LocalNavigationManager provides rememberNavigationManager(HomeRoute)) {

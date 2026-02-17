@@ -1,5 +1,6 @@
 package net.vpg.apex.entities
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,13 +35,21 @@ interface ApexTrackContext {
         footer: LazyListScope.() -> Unit = {},
         content: @Composable ApexTrackContext.(Int) -> Unit
     ) {
-        if (tracks.none { it != ApexTrack.EMPTY }) {
+        val visibleTracks = tracks.filter { it != ApexTrack.EMPTY }.take(limit)
+        if (visibleTracks.isEmpty()) {
             emptyFallback()
             return
         }
         val lazyContent: LazyListScope.() -> Unit = {
             header()
-            items(tracks.size.coerceAtMost(limit)) { index -> content(index) }
+            items(
+                count = visibleTracks.size,
+                key = { visibleTracks[it].id }
+            ) { index ->
+                Box(modifier = Modifier.animateItem()) {
+                    content(tracks.indexOf(visibleTracks[index]))
+                }
+            }
             footer()
         }
         if (isVertical)

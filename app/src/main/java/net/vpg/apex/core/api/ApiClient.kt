@@ -13,6 +13,11 @@ import kotlinx.serialization.json.Json
 import net.vpg.apex.entities.HistoryResponse
 import net.vpg.apex.entities.User
 
+enum class HistoryType(val path: String) {
+    PLAY("play"),
+    SEARCH("search")
+}
+
 object ApiClient {
     private const val BASE_URL = "https://api.vplaygames.net"
 
@@ -42,58 +47,29 @@ object ApiClient {
         }.body()
     }
 
-    // Play History
-    suspend fun getPlayHistory(page: Int = 0, limit: Int = 50): Result<HistoryResponse> = runCatching {
-        client.get("$BASE_URL/history/play") {
+    // History
+    suspend fun getHistory(type: HistoryType, page: Int = 0, limit: Int = 50): Result<HistoryResponse> = runCatching {
+        client.get("$BASE_URL/history/${type.path}") {
             authorize()
             parameter("page", page)
             parameter("limit", limit)
         }.body()
     }
 
-    suspend fun addToPlayHistory(trackId: String): Result<String> = runCatching {
-        client.post("$BASE_URL/history/play/$trackId") {
+    suspend fun addToHistory(type: HistoryType, trackId: String): Result<String> = runCatching {
+        client.post("$BASE_URL/history/${type.path}/$trackId") {
             authorize()
         }.body()
     }
 
-    suspend fun clearPlayHistory(): Result<String> = runCatching {
-        client.delete("$BASE_URL/history/play") {
+    suspend fun clearHistory(type: HistoryType): Result<String> = runCatching {
+        client.delete("$BASE_URL/history/${type.path}") {
             authorize()
         }.body()
     }
 
-    suspend fun removeFromPlayHistory(trackId: String, timestamp: Long): Result<String> = runCatching {
-        client.delete("$BASE_URL/history/play/item") {
-            authorize()
-            parameter("trackId", trackId)
-            parameter("timestamp", timestamp)
-        }.body()
-    }
-
-    // Search History
-    suspend fun getSearchHistory(page: Int = 0, limit: Int = 50): Result<HistoryResponse> = runCatching {
-        client.get("$BASE_URL/history/search") {
-            authorize()
-            parameter("page", page)
-            parameter("limit", limit)
-        }.body()
-    }
-
-    suspend fun addToSearchHistory(trackId: String): Result<String> = runCatching {
-        client.post("$BASE_URL/history/search/$trackId") {
-            authorize()
-        }.body()
-    }
-
-    suspend fun clearSearchHistory(): Result<String> = runCatching {
-        client.delete("$BASE_URL/history/search") {
-            authorize()
-        }.body()
-    }
-
-    suspend fun removeFromSearchHistory(trackId: String, timestamp: Long): Result<String> = runCatching {
-        client.delete("$BASE_URL/history/search/item") {
+    suspend fun removeFromHistory(type: HistoryType, trackId: String, timestamp: Long): Result<String> = runCatching {
+        client.delete("$BASE_URL/history/${type.path}/item") {
             authorize()
             parameter("trackId", trackId)
             parameter("timestamp", timestamp)

@@ -1,12 +1,11 @@
 package net.vpg.apex.core
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import net.vpg.apex.entities.ApexTrack
+import net.vpg.apex.entities.ApexTrackContext
 
-object RandomPicks {
-    var currentPicks by mutableStateOf(ApexTrackContextDynamic("Random Picks", emptyList()))
+object RandomPicks : ApexTrackContext {
+    override val name = "Random Picks"
+    override var tracks: List<ApexTrack> = emptyList()
         private set
 
     init {
@@ -14,6 +13,6 @@ object RandomPicks {
     }
 
     fun refresh() {
-        currentPicks = ApexTrackContextDynamic("Random Picks", ApexTrack.TRACKS_DB.values.shuffled().take(5))
+        tracks = ApexTrack.TRACKS_DB.values.shuffled().take(5)
     }
 }
