@@ -14,7 +14,7 @@ import net.vpg.apex.entities.HistoryResponse
 import net.vpg.apex.entities.User
 
 object ApiClient {
-    private const val BASE_URL = "http://10.0.2.2:8080" // For Android emulator
+    private const val BASE_URL = "https://api.vplaygames.net"
 
     private val client = HttpClient(Android) {
         install(ContentNegotiation) {
