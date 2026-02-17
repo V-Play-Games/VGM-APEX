@@ -36,7 +36,7 @@ private fun Routing.historyRoutes(type: String, getHistory: User.() -> List<Hist
 
             call.respond(
                 mapOf(
-                    fieldName to paginatedHistory,
+                    "history" to paginatedHistory,
                     "page" to page,
                     "limit" to limit,
                     "totalItems" to totalItems,

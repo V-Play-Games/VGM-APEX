@@ -11,4 +11,3 @@ data class User(
     val playHistory: List<HistoryElement> = emptyList(),
     val searchHistory: List<HistoryElement> = emptyList()
 )
-

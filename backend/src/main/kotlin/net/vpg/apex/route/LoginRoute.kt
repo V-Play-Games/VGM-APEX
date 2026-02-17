@@ -25,7 +25,10 @@ fun Routing.loginRoute() {
                 }
             }
 
-            call.respond(user)
+            call.respond(user.copy(
+                playHistory = user.playHistory.take(10),
+                searchHistory = user.searchHistory.take(10)
+            ))
         } catch (e: Exception) {
             call.respond(HttpStatusCode.InternalServerError, "Failed to process login: ${e.message}")
         }

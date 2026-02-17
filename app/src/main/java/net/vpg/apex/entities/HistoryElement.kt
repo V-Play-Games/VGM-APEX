@@ -7,4 +7,3 @@ data class HistoryElement(
     val trackId: String,
     val timestamp: Long
 )
-
