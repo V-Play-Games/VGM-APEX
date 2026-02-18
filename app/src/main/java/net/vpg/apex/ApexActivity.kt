@@ -3,6 +3,8 @@ package net.vpg.apex
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
@@ -24,13 +26,13 @@ import net.vpg.vjson.value.JSONObject
 
 @AndroidEntryPoint
 class ApexActivity : ComponentActivity() {
+    private var isReady by mutableStateOf(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        var isDataLoaded by mutableStateOf(false)
-        installSplashScreen().setKeepOnScreenCondition { !isDataLoaded }
+        installSplashScreen().setKeepOnScreenCondition { !isReady }
         super.onCreate(savedInstanceState)
         setContent {
             loadData(rememberContext())
-            isDataLoaded = true
             ApexTheme {
                 MainContent()
             }
@@ -40,14 +42,25 @@ class ApexActivity : ComponentActivity() {
 
     @Composable
     fun MainContent() {
+        val context = rememberContext()
         val authState by AuthManager.authState.collectAsState()
         if (authState !is AuthState.Authenticated) {
+            isReady = true
             AuthScreen()
             return
         }
+        var isLoggedIn by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) {
             ApiClient.login()
+                .onSuccess { isLoggedIn = true }
+                .onFailure {
+                    Toast.makeText(context, "Login failed: ${it.message}", Toast.LENGTH_LONG).show()
+                    Log.e("ApexActivity", "Login failed", it)
+                    AuthManager.signOut()
+                }
         }
+        isReady = isLoggedIn
+        if (!isLoggedIn) return
 
         CompositionLocalProvider(LocalNavigationManager provides rememberNavigationManager(HomeRoute)) {
             MainScaffold(
