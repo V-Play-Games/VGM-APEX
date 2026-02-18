@@ -39,12 +39,12 @@ object SearchScreen : ApexBottomBarScreen<SearchRoute>(
         // Store search results
         val searchResults = remember(searchQuery) {
             if (searchQuery.isEmpty())
-                ApexTrackContext.Companion.EMPTY
+                ApexTrackContext.EMPTY
             else
                 object : ApexTrackContext {
                     override val name = "Search Results for \"$searchQuery\""
                     override val tracks by lazy {
-                        ApexTrack.Companion.TRACKS_DB.values.filter { it.title.contains(searchQuery, ignoreCase = true) }
+                        ApexTrack.TRACKS_DB.values.filter { it.title.contains(searchQuery, ignoreCase = true) }
                     }
 
                 }
@@ -72,7 +72,7 @@ object SearchScreen : ApexBottomBarScreen<SearchRoute>(
                 if (searchQuery.isNotEmpty()) {
                     Icon(
                         imageVector = Icons.Default.Clear,
-                        modifier = Modifier.Companion.bounceClick { searchQuery = "" },
+                        modifier = Modifier.bounceClick { searchQuery = "" },
                         contentDescription = "Clear Search",
                         tint = Color.Gray
                     )

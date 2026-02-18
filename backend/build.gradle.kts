@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.ktor)
 }
 
-group = "net.vplaygames.v-play-games"
+group = "net.vplaygames"
 version = "0.0.1"
 
 application {
@@ -12,19 +12,25 @@ application {
 }
 
 dependencies {
-    // Ktor
+    // Ktor Core
+    implementation(libs.ktor.server.configYaml)
+    implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.core.jvm)
     implementation(libs.ktor.server.netty)
-    implementation(libs.ktor.server.call.logging)
-    implementation(libs.ktor.server.content.negotiation)
-    implementation(libs.ktor.serialization.json)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.logback.classic)
-    implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.config.yaml)
-    testImplementation(libs.ktor.server.test.host)
+    implementation(libs.logbackClassic)
+
+    // Ktor Plugins
+    implementation(libs.kotlinx.serializationJson)
+    implementation(libs.ktor.serializationJson)
+    implementation(libs.ktor.server.callLogging)
+    implementation(libs.ktor.server.contentNegotiation)
 
     // Firebase Admin SDK
-    implementation(libs.firebase.admin)
+    implementation(libs.google.firebase.admin)
+
+    // Database
     implementation(libs.mongodb.driver)
+
+    // Testing
+    testImplementation(libs.ktor.server.testHost)
 }

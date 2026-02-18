@@ -30,54 +30,54 @@ splash-screen = "1.2.0"
 vjson = "2.0.0"
 
 [libraries]
-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
+androidx-compose-material-iconsExtended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material-icons-extended" }
+androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
+androidx-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose-ui" }
+androidx-concurrentFuturesKtx = { module = "androidx.concurrent:concurrent-futures-ktx", version.ref = "concurrent-futures-ktx" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
+androidx-core-splashScreen = { module = "androidx.core:core-splashscreen", version.ref = "splash-screen" }
+androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
+androidx-credentials-playServicesAuth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
+androidx-datastorePreferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }
+androidx-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3" }
+androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3" }
+androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation" }
+androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
-coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+coil-networkOkhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 compose-shimmer = { module = "com.valentinilk.shimmer:compose-shimmer", version.ref = "compose-shimmer" }
-compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose-ui" }
-concurrent-futures-ktx = { module = "androidx.concurrent:concurrent-futures-ktx", version.ref = "concurrent-futures-ktx" }
-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
-firebase-auth = { module = "com.google.firebase:firebase-auth" }
-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
-googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version = "1.2.0" }
+google-firebase-auth = { module = "com.google.firebase:firebase-auth" }
+google-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
+google-googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version = "1.2.0" }
+google-playServicesAuth = { module = "com.google.android.gms:play-services-auth", version.ref = "play-services-auth" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt-android" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt-android" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 konform = { module = "io.konform:konform", version.ref = "konform" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material-icons-extended" }
-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }
-media3-session = { module = "androidx.media3:media3-session", version.ref = "media3" }
-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3" }
+kotlinx-serializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 mongodb-driver = { module = "org.mongodb:mongodb-driver-kotlin-coroutine", version.ref = "mongodb" }
-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation" }
-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation" }
-play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "play-services-auth" }
-splash-screen = { module = "androidx.core:core-splashscreen", version.ref = "splash-screen" }
-vjson = { module = "com.github.v-play-games:vjson", version.ref = "vjson" }
+vjson = { module = "net.vplaygames:vjson", version.ref = "vjson" }
 
 # Backend
-firebase-admin = { module = "com.google.firebase:firebase-admin", version.ref = "firebase-admin" }
+google-firebase-admin = { module = "com.google.firebase:firebase-admin", version.ref = "firebase-admin" }
 ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
-ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-contentNegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
-ktor-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
-ktor-server-call-logging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
-ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
-ktor-server-config-yaml = { module = "io.ktor:ktor-server-config-yaml", version.ref = "ktor" }
+ktor-serializationJson = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-server-callLogging = { module = "io.ktor:ktor-server-call-logging", version.ref = "ktor" }
+ktor-server-configYaml = { module = "io.ktor:ktor-server-config-yaml", version.ref = "ktor" }
+ktor-server-contentNegotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
 ktor-server-core-jvm = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
-ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
-logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-classic" }
+ktor-server-testHost = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
+logbackClassic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-classic" }
 
 [plugins]
-android = { id = "com.android.application", version.ref = "android" }
+android-application = { id = "com.android.application", version.ref = "android" }
 google-services = { id = "com.google.gms.google-services", version.ref = "gms" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt-android" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.android)
+    alias(libs.plugins.android.application)
     alias(libs.plugins.google.services)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.android)
@@ -44,31 +44,31 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.core.ktx)
+    implementation(libs.androidx.core.ktx)
 
     // Jetpack Compose
-    implementation(libs.activity.compose)
-    implementation(libs.compose.ui)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.ui)
 
     // Splash Screen
-    implementation(libs.splash.screen)
+    implementation(libs.androidx.core.splashScreen)
 
     // Preferences
-    implementation(libs.datastore.preferences)
+    implementation(libs.androidx.datastorePreferences)
 
     // Navigation
-    implementation(libs.navigation3.runtime)
-    implementation(libs.navigation3.ui)
-    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.kotlinx.serializationJson)
 
     // Material UI
-    implementation(libs.material3)
-    implementation(libs.material.icons.extended)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.iconsExtended)
 
     // Media3
-    implementation(libs.media3.session)
-    implementation(libs.media3.exoplayer)
-    implementation(libs.media3.ui)
+    implementation(libs.androidx.media3.session)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui)
 
     // JSON
     implementation(libs.vjson)
@@ -78,8 +78,8 @@ dependencies {
 
     // Image Loading
     implementation(libs.coil.compose)
-    implementation(libs.coil.network.okhttp)
-    implementation(libs.concurrent.futures.ktx)
+    implementation(libs.coil.networkOkhttp)
+    implementation(libs.androidx.concurrentFuturesKtx)
 
     // Dependency Injection
     implementation(libs.hilt.android)
@@ -88,18 +88,18 @@ dependencies {
     implementation(libs.compose.shimmer)
 
     // Firebase BOM
-    implementation(platform(libs.firebase.bom))
+    implementation(platform(libs.google.firebase.bom))
 
     // Auth
-    implementation(libs.firebase.auth)
-    implementation(libs.play.services.auth)
-    implementation(libs.credentials)
-    implementation(libs.credentials.play.services.auth)
-    implementation(libs.googleid)
+    implementation(libs.google.firebase.auth)
+    implementation(libs.google.playServicesAuth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.playServicesAuth)
+    implementation(libs.google.googleid)
 
     // Ktor Client
     implementation(libs.ktor.client.android)
-    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.client.contentNegotiation)
     implementation(libs.ktor.client.core)
-    implementation(libs.ktor.serialization.json)
+    implementation(libs.ktor.serializationJson)
 }
