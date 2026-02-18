@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.ktor)
 }
 
-group = "com.github.v-play-games"
+group = "net.vplaygames.v-play-games"
 version = "0.0.1"
 
 application {

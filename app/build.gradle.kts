@@ -11,11 +11,11 @@ plugins {
 }
 
 android {
-    namespace = "net.vpg.apex"
+    namespace = "net.vplaygames.apex"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "net.vpg.apex"
+        applicationId = "net.vplaygames.apex"
         minSdk = 29
         targetSdk = 36
         versionCode = 7

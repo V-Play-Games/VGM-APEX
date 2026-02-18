@@ -1,0 +1,107 @@
+package net.vplaygames.apex.util
+
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import androidx.annotation.FloatRange
+import androidx.compose.animation.core.AnimationConstants.DefaultDurationMillis
+import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.foundation.MarqueeDefaults
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.input.pointer.pointerInput
+import com.valentinilk.shimmer.*
+import net.vplaygames.apex.core.di.rememberDownloadTracker
+import net.vplaygames.apex.core.di.rememberFloatSetting
+import net.vplaygames.apex.core.rememberAnimationProvider
+import net.vplaygames.apex.entities.ApexTrack
+
+fun Context.unwrapActivity(): Activity = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.unwrapActivity()
+    else -> throw IllegalStateException("Not an activity")
+}
+
+fun formatDuration(durationMs: Long): String {
+    val totalSeconds = durationMs / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return "%d:%02d".format(minutes, seconds)
+}
+
+fun Modifier.bounceClick(
+    @FloatRange(0.0, 1.0) scaleModifier: Float = 0.95f,
+    @FloatRange(0.0, 1.0) alphaModifier: Float = 0.8f,
+    onClick: () -> Unit
+) = composed {
+    var isPressed by remember { mutableStateOf(false) }
+    val animationProvider = rememberAnimationProvider()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) scaleModifier else 1f,
+        animationSpec = animationProvider.fastSpec()
+    )
+    val alpha by animateFloatAsState(
+        targetValue = if (isPressed) alphaModifier else 1f,
+        animationSpec = animationProvider.fastSpec()
+    )
+
+    this
+        .scale(scale)
+        .alpha(alpha)
+        .clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null,
+            onClick = { onClick(); isPressed = false }
+        )
+        .pointerInput(isPressed) {
+            awaitPointerEventScope {
+                if (isPressed) {
+                    waitForUpOrCancellation()
+                } else {
+                    awaitFirstDown()
+                }
+                isPressed = !isPressed
+            }
+        }
+}
+
+@Composable
+fun Modifier.customShimmer(
+    condition: Boolean = true,
+    durationMillis: Int = DefaultDurationMillis,
+    delayMillis: Int = 0,
+    easing: Easing = LinearEasing,
+) = this.takeIf { condition }?.shimmer(
+    rememberShimmer(
+        shimmerBounds = ShimmerBounds.View,
+        theme = LocalShimmerTheme.current.copy(
+            animationSpec = infiniteRepeatable(
+                animation = shimmerSpec(
+                    durationMillis = (durationMillis / rememberAnimationProvider().speedMultiplier).toInt(),
+                    delayMillis = delayMillis,
+                    easing = easing
+                )
+            )
+        )
+    )
+) ?: this
+
+@Composable
+fun Modifier.apexMarquee() = this.basicMarquee(
+    velocity = MarqueeDefaults.Velocity * rememberFloatSetting { marqueeSpeed }
+)
+
+@Composable
+fun ApexTrack.rememberDownloadState() = rememberDownloadTracker().getDownloadState(id)

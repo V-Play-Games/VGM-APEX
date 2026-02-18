@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm")
 }
 
-group = "com.github.v-play-games"
+group = "net.vplaygames"
 version = "0.0.1"
 
 dependencies {
