@@ -6,7 +6,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.vplaygames.apex.Database
 import net.vplaygames.apex.Database.authenticateUser
-import net.vplaygames.apex.entity.User
+import net.vplaygames.apex.entities.User
 
 fun Routing.loginRoute() {
     post("/login") {

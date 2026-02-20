@@ -11,7 +11,7 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import kotlinx.coroutines.flow.firstOrNull
-import net.vplaygames.apex.entity.User
+import net.vplaygames.apex.entities.User
 import org.bson.conversions.Bson
 
 object Database {

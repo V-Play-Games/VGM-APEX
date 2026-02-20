@@ -1,4 +1,4 @@
-package net.vplaygames.apex.entity
+package net.vplaygames.apex.entities
 
 import kotlinx.serialization.Serializable
 

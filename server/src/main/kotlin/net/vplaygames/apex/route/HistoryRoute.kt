@@ -6,8 +6,9 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.vplaygames.apex.Database.findUser
 import net.vplaygames.apex.Database.updateUser
-import net.vplaygames.apex.entity.HistoryElement
-import net.vplaygames.apex.entity.User
+import net.vplaygames.apex.entities.HistoryElement
+import net.vplaygames.apex.entities.HistoryResponse
+import net.vplaygames.apex.entities.User
 
 fun Routing.historyRoute() {
     historyRoutes("play", User::playHistory)
@@ -35,12 +36,12 @@ private fun Routing.historyRoutes(type: String, getHistory: User.() -> List<Hist
                 history.subList(startIndex, endIndex)
 
             call.respond(
-                mapOf(
-                    "history" to paginatedHistory,
-                    "page" to page,
-                    "limit" to limit,
-                    "totalItems" to totalItems,
-                    "hasMore" to (endIndex < totalItems)
+                HistoryResponse(
+                    history = paginatedHistory,
+                    page = page,
+                    limit = limit,
+                    totalItems = totalItems,
+                    hasMore = (endIndex < totalItems)
                 )
             )
         } catch (e: Exception) {
