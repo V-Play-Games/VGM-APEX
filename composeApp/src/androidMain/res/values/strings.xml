@@ -1,0 +1,4 @@
+<resources>
+  <string name="app_name">APEX</string>
+  <string name="notification_channel_name">Apex Playback</string>
+</resources>
