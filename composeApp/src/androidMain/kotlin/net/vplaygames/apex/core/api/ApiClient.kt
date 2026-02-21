@@ -10,7 +10,7 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.json.Json
-import net.vplaygames.apex.entities.HistoryResponse
+import net.vplaygames.apex.entities.responses.HistoryResponse
 import net.vplaygames.apex.entities.User
 
 enum class HistoryType(val path: String) {

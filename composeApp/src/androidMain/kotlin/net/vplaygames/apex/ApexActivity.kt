@@ -1,6 +1,5 @@
 package net.vplaygames.apex
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -16,14 +15,8 @@ import net.vplaygames.apex.core.auth.AuthManager
 import net.vplaygames.apex.core.auth.AuthState
 import net.vplaygames.apex.core.di.rememberContext
 import net.vplaygames.apex.core.rememberNavigationManager
-import net.vplaygames.apex.entities.ApexAlbum
-import net.vplaygames.apex.entities.ApexTrack
-import net.vplaygames.apex.entities.ApexUploader
 import net.vplaygames.apex.ui.components.navigation.MainScaffold
 import net.vplaygames.apex.ui.screens.*
-import net.vpg.vjson.parser.JSONParser.toJSON
-import net.vpg.vjson.value.JSONObject
-import net.vplaygames.apex.ui.screens.SearchScreen
 
 @AndroidEntryPoint
 class ApexActivity : ComponentActivity() {
@@ -33,7 +26,6 @@ class ApexActivity : ComponentActivity() {
         installSplashScreen().setKeepOnScreenCondition { !isReady }
         super.onCreate(savedInstanceState)
         setContent {
-            loadData(rememberContext())
             ApexTheme {
                 MainContent()
             }
@@ -50,18 +42,16 @@ class ApexActivity : ComponentActivity() {
             AuthScreen()
             return
         }
-        var isLoggedIn by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) {
             ApiClient.login()
-                .onSuccess { isLoggedIn = true }
+                .onSuccess { isReady = true }
                 .onFailure {
                     Toast.makeText(context, "Login failed: ${it.message}", Toast.LENGTH_LONG).show()
                     Log.e("ApexActivity", "Login failed", it)
                     AuthManager.signOut()
                 }
         }
-        isReady = isLoggedIn
-        if (!isLoggedIn) return
+        if (!isReady) return
 
         CompositionLocalProvider(LocalNavigationManager provides rememberNavigationManager(HomeRoute)) {
             MainScaffold(
@@ -74,20 +64,6 @@ class ApexActivity : ComponentActivity() {
                 SettingsScreen,
                 ProfileScreen
             )
-        }
-    }
-
-    fun loadData(context: Context) {
-        mapOf<String, (JSONObject) -> Unit>(
-            "tracks" to { ApexTrack(it) },
-            "albums" to { ApexAlbum(it) },
-            "uploaders" to { ApexUploader(it) }
-        ).forEach { (type, constructor) ->
-            context.assets
-                .open("$type.json")
-                .toJSON()
-                .toArray()
-                .forEach { constructor(it.toObject()) }
         }
     }
 }

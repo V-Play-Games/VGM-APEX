@@ -7,7 +7,7 @@ import io.ktor.server.routing.*
 import net.vplaygames.apex.Database.findUser
 import net.vplaygames.apex.Database.updateUser
 import net.vplaygames.apex.entities.HistoryElement
-import net.vplaygames.apex.entities.HistoryResponse
+import net.vplaygames.apex.entities.responses.HistoryResponse
 import net.vplaygames.apex.entities.User
 
 fun Routing.historyRoute() {
@@ -51,7 +51,8 @@ private fun Routing.historyRoutes(type: String, getHistory: User.() -> List<Hist
 
     delete("/history/$type") {
         try {
-            call.updateUser(Updates.set(fieldName, emptyList<HistoryElement>())) ?: return@delete
+            call.updateUser(Updates.set(fieldName, emptyList<HistoryElement>()))
+                ?: return@delete
             call.respond(HttpStatusCode.OK, "${type.replaceFirstChar { it.uppercase() }} history cleared")
         } catch (e: Exception) {
             call.respond(HttpStatusCode.InternalServerError, "Failed to clear $type history: ${e.message}")
@@ -60,14 +61,12 @@ private fun Routing.historyRoutes(type: String, getHistory: User.() -> List<Hist
 
     post("/history/$type/{trackId}") {
         val trackId = call.parameters["trackId"]
-
-        if (trackId.isNullOrBlank()) {
-            call.respond(HttpStatusCode.BadRequest, "Track ID is required")
-            return@post
-        }
+            ?.takeIf { it.isNotBlank() }
+            ?: return@post call.respond(HttpStatusCode.BadRequest, "Track ID is required")
 
         try {
-            call.updateUser(Updates.push(fieldName, HistoryElement(trackId))) ?: return@post
+            call.updateUser(Updates.push(fieldName, HistoryElement(trackId)))
+                ?: return@post
             call.respond(HttpStatusCode.OK, "Track added to $type history")
         } catch (e: Exception) {
             call.respond(HttpStatusCode.InternalServerError, "Failed to update $type history: ${e.message}")
@@ -76,22 +75,16 @@ private fun Routing.historyRoutes(type: String, getHistory: User.() -> List<Hist
 
     delete("/history/$type/item") {
         val trackId = call.request.queryParameters["trackId"]
-        val timestamp = call.request.queryParameters["timestamp"]?.toLongOrNull()
+            ?.takeIf { it.isNotBlank() }
+            ?: return@delete call.respond(HttpStatusCode.BadRequest, "Track ID is required")
 
-        if (trackId.isNullOrBlank()) {
-            call.respond(HttpStatusCode.BadRequest, "Track ID is required")
-            return@delete
-        }
-
-        if (timestamp == null) {
-            call.respond(HttpStatusCode.BadRequest, "Valid timestamp is required")
-            return@delete
-        }
+        val timestamp = call.request.queryParameters["timestamp"]
+            ?.toLongOrNull()
+            ?: return@delete call.respond(HttpStatusCode.BadRequest, "Valid timestamp is required")
 
         try {
-            call.updateUser(
-                Updates.pull(fieldName, HistoryElement(trackId, timestamp))
-            ) ?: return@delete
+            call.updateUser(Updates.pull(fieldName, HistoryElement(trackId, timestamp)))
+                ?: return@delete
             call.respond(HttpStatusCode.OK, "Item removed from $type history")
         } catch (e: Exception) {
             call.respond(HttpStatusCode.InternalServerError, "Failed to remove item from $type history: ${e.message}")

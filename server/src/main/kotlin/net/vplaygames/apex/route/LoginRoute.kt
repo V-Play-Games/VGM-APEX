@@ -6,6 +6,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import net.vplaygames.apex.Database
 import net.vplaygames.apex.Database.authenticateUser
+import net.vplaygames.apex.Database.users
 import net.vplaygames.apex.entities.User
 
 fun Routing.loginRoute() {
@@ -21,7 +22,7 @@ fun Routing.loginRoute() {
                     displayName = firebaseUser.displayName ?: "User${uid.take(6)}",
                     photoUrl = firebaseUser.photoUrl ?: "",
                 ).also { newUser ->
-                    Database.db.getCollection<User>("users").insertOne(newUser)
+                    users.insertOne(newUser)
                 }
             }
 

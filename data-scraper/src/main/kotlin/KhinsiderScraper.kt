@@ -71,7 +71,6 @@ suspend fun main() {
                     name = name,
                     dateAdded = dateAdded,
                     albumArtUrl = albumArtUrl,
-                    trackIds = mutableListOf()
                 ),
                 uploader = uploader,
                 songLinks = songLinks
@@ -113,12 +112,11 @@ suspend fun main() {
         .map { (task, trackData) -> task.first.albumData to trackData }
         .groupBy { it.first }
         .mapValues { (_, list) -> list.map { (_, track) -> track!! } }
-        .mapKeys { (album, list) -> album.copy(trackIds = list.map { it.id }) }
     val uploaderList = albumTrackMap.values
         .flatten()
         .groupBy { it.uploaderId }
         .mapValues { (_, list) -> list.map { track -> track.id } }
-        .map { (id, list) -> UploaderData(id = id, name = id.substringBeforeLast("-"), trackIds = list) }
+        .map { (id, _) -> UploaderData(id = id, name = id.substringBeforeLast("-")) }
         .toJSON()
     val albumList = albumTrackMap.keys.toList().toJSON()
     val trackList = albumTrackMap.values.flatten().toJSON()

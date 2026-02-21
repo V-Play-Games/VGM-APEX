@@ -7,15 +7,13 @@ data class AlbumData(
     val id: String,
     val name: String,
     val albumArtUrl: String?,
-    val dateAdded: String,
-    val trackIds: List<String>
+    val dateAdded: String
 ) : SerializableObject {
     constructor(data: JSONObject) : this(
         data.getString("id"),
         data.getString("name"),
         data.getString("albumArtUrl"),
-        data.getString("dateAdded"),
-        data.getArray("trackIds").map { it.toString() }
+        data.getString("dateAdded")
     )
 
     override fun toObject() = JSONObject()
@@ -23,5 +21,4 @@ data class AlbumData(
         .put("name", name)
         .put("albumArtUrl", albumArtUrl)
         .put("dateAdded", dateAdded)
-        .put("trackIds", trackIds)
 }

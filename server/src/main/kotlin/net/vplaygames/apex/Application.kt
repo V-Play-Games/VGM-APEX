@@ -14,8 +14,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
 import kotlinx.serialization.json.Json
-import net.vplaygames.apex.route.historyRoute
-import net.vplaygames.apex.route.loginRoute
+import net.vplaygames.apex.route.*
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import java.io.FileInputStream
@@ -80,6 +79,10 @@ fun initializeFirebase() {
 
 fun Application.configureRouting() = routing {
     get("/") { call.respondText("The server is running!") }
+    albumRoute()
     historyRoute()
     loginRoute()
+    trackRoute()
+    searchRoute()
+    uploaderRoute()
 }
