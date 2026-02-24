@@ -15,6 +15,7 @@ import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.DownloadService.sendAddDownload
 import kotlinx.coroutines.*
 import net.vplaygames.apex.ApexDownloadService
+import net.vplaygames.apex.core.api.ApiClient
 import net.vplaygames.apex.entities.ApexTrack
 
 @OptIn(UnstableApi::class)
@@ -93,10 +94,10 @@ class DownloadTracker(val context: Context, downloadManager: DownloadManager) {
         var progress by mutableFloatStateOf(if (isDownloaded) 1f else -1f)
             internal set
 
-        fun download() {
+        suspend fun download() {
             if (isDownloaded || isPending || isDownloading) return
             downloadState = Download.STATE_QUEUED
-            download(ApexTrack.TRACKS_DB[id]!!)
+            download(ApiClient.getTrack(id).getOrThrow())
         }
     }
 }

@@ -10,13 +10,13 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.tasks.await
 import kotlinx.serialization.json.Json
+import net.vplaygames.apex.entities.*
+import net.vplaygames.apex.entities.database.AlbumData
+import net.vplaygames.apex.entities.database.TrackData
+import net.vplaygames.apex.entities.database.UploaderData
+import net.vplaygames.apex.entities.responses.AlbumResponse
 import net.vplaygames.apex.entities.responses.HistoryResponse
-import net.vplaygames.apex.entities.User
-
-enum class HistoryType(val path: String) {
-    PLAY("play"),
-    SEARCH("search")
-}
+import net.vplaygames.apex.entities.responses.UploaderResponse
 
 object ApiClient {
     private const val BASE_URL = "https://api.vplaygames.net"
@@ -75,6 +75,39 @@ object ApiClient {
             parameter("timestamp", timestamp)
         }.body()
     }
+
+    // Album
+    suspend fun getAlbum(id: String): Result<ApexAlbum> = runCatching {
+        client.get("$BASE_URL/album/$id") {
+            authorize()
+        }.body<AlbumResponse>().toApexAlbum()
+    }
+
+    suspend fun AlbumData.toApexAlbum() = getAlbum(id)
+
+    // Track
+    suspend fun getTrack(id: String): Result<ApexTrack> = runCatching {
+        client.get("$BASE_URL/track/$id") {
+            authorize()
+        }.body()
+    }
+
+    suspend fun TrackData.toApexTrack() = getTrack(id)
+
+    // Uploader
+    suspend fun getUploader(id: String): Result<ApexUploader> = runCatching {
+        client.get("$BASE_URL/uploader/$id") {
+            authorize()
+        }.body<UploaderResponse>().toApexUploader()
+    }
+
+    suspend fun UploaderData.toApexUploader() = getUploader(id)
+
+    // Search
+    suspend fun search(query: String): Result<List<SearchResultEntry>> = runCatching {
+        client.get("$BASE_URL/search") {
+            authorize()
+            parameter("query", query)
+        }.body()
+    }
 }
-
-
