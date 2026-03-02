@@ -6,6 +6,7 @@ import com.google.firebase.FirebaseOptions
 import io.ktor.http.content.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
+import io.ktor.server.engine.*
 import io.ktor.server.logging.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.calllogging.*
@@ -18,8 +19,15 @@ import net.vplaygames.apex.route.*
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import java.io.FileInputStream
+import java.net.ServerSocket
 
-fun main(args: Array<String>) = EngineMain.main(args)
+fun main(args: Array<String>) {
+    embeddedServer(
+        factory = Netty,
+        port = args.firstOrNull()?.toIntOrNull() ?: ServerSocket(0).use { it.localPort },
+        module = Application::module
+    ).start(wait = true)
+}
 
 private val logger = LoggerFactory.getLogger("ResponseLogger")
 private val ResponseBodyKey = AttributeKey<String>("ResponseBody")

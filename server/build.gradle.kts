@@ -19,7 +19,6 @@ dependencies {
     implementation(projects.shared)
 
     // Ktor Core
-    implementation(libs.ktor.server.configYaml)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.core.jvm)
     implementation(libs.ktor.server.netty)
